@@ -25,7 +25,7 @@ SECRET_KEY = 'hbxp-uh_v=(r4cd)rn$6jv)p*u#!%zr1qp12w9qxyx)h&&_sfr'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'db_app.apps.DbAppConfig',
+    'apps_cenco.db_app.apps.DbAppConfig',
 ]
 
 MIDDLEWARE = [
@@ -123,7 +123,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATICFILES_DIR = [
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 

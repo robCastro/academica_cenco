@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class DbAppConfig(AppConfig):
-    name = 'db_app'
+    name = 'apps_cenco.db_app'

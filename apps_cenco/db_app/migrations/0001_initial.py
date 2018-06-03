@@ -60,26 +60,26 @@ class Migration(migrations.Migration):
                 ('codigo', models.AutoField(primary_key=True, serialize=False)),
                 ('horario', models.CharField(choices=[('Por la ma\xf1ana', (('L y M 7 - 9', 'Lunes y Miercoles, 7 a 9'), ('L y M 9 - 11', 'Lunes y Miercoles, 9 a 11'), ('M y J 7 - 9', 'Martes y Jueves, 7 a 9'), ('M y J 9 - 11', 'Martes y Jueves, 9 a 11'), ('S 7 - 11', 'Sabados 7 a 11'), ('D 7 - 11', 'Domingos 7 a 11'))), ('Por la tarde', (('L y M 1 - 3', 'Lunes y Miercoles, 1:30 a 3:30'), ('L y M 3 - 5', 'Lunes y Miercoles, 3:30 a 5:30'), ('M y J 1 - 3', 'Martes y Jueves, 1:30 a 3:30'), ('M y J 3 - 5', 'Martes y Jueves, 3:30 a 5:30'), ('S 1 - 5', 'Sabados 1:30 a 5:30')))], max_length=11)),
                 ('fechaInicio', models.DateField()),
-                ('profesor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='db_app.Empleado')),
+                ('profesor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='apps_cenco.db_app.Empleado')),
             ],
         ),
         migrations.CreateModel(
             name='Telefono',
             fields=[
                 ('numero', models.CharField(max_length=8, primary_key=True, serialize=False)),
-                ('alumno', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='db_app.Alumno')),
-                ('empleado', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='db_app.Empleado')),
-                ('encargado', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='db_app.Encargado')),
+                ('alumno', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='apps_cenco.db_app.Alumno')),
+                ('empleado', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='apps_cenco.db_app.Empleado')),
+                ('encargado', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='apps_cenco.db_app.Encargado')),
             ],
         ),
         migrations.AddField(
             model_name='alumno',
             name='encargado',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='db_app.Encargado'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='apps_cenco.db_app.Encargado'),
         ),
         migrations.AddField(
             model_name='alumno',
             name='grupo',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='db_app.Grupo'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='apps_cenco.db_app.Grupo'),
         ),
     ]
