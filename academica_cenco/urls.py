@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.conf.urls import include
+from apps_cenco.login.views import inicio
 from apps_cenco.modulo_grupos.views import *
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^grupos/(?P<id_grupo>[0-9])/$', detalle_grupo, name="detalle_grupo")
+    url(r'^grupos/', include('apps_cenco.modulo_grupos.urls')),
 ]

@@ -1,12 +1,69 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.shortcuts import render
-from django.http import Http404
+from django.shortcuts import render, render_to_response
+from django.http import Http404, HttpResponse
+from django.template import loader
 from django.views.generic.detail import  DetailView
+import itertools
 
-from apps_cenco.db_app.models import Empleado, Alumno, Grupo, Telefono
+from apps_cenco.db_app.models import Empleado, Alumno, Grupo, Telefono, Horario
+
 
 # Create your views here.
+from apps_cenco.modulo_grupos.forms import CrearGrupoForm
+
+
+def consultar_grupos(request):
+    limite_por_horario = 15*2
+    min_alum_inscritos = 5
+    grupos = Grupo.objects.order_by('codigo')
+    horarios = Horario.objects.order_by('codigo')
+    horarios_exceso = []
+    grupos_cant_baja = []
+
+    if request.method == 'POST':
+        form = CrearGrupoForm(request.POST)
+        if form.is_valid():
+            form.save()
+        grupo = form.save(commit=False)
+        grupo = leer_horario(grupo)
+        temp = loader.get_template('div_nuevo_grupo.html').render({'grupo': grupo})
+        return HttpResponse(temp)
+    else:
+        form = CrearGrupoForm()
+
+    for horario in horarios:
+        if horario.cantidad_alumnos > limite_por_horario:
+            horarios_exceso.append(horario)
+
+    for grupo in grupos:
+        if grupo.alumnosInscritos < min_alum_inscritos:
+            grupos_cant_baja.append(grupo)
+        grupo = leer_horario(grupo)
+
+    variables = {'grupos': grupos, 'horarios': horarios, 'horarios_exceso': horarios_exceso,'grupos_cant_baja': grupos_cant_baja,
+                 'lim_horario': limite_por_horario, 'min_alumnos': min_alum_inscritos, 'form': form}
+
+    return render(request, 'consultar_grupos.html', variables)
+
+
+def leer_horario(grupo):
+    aux = grupo.horario.__str__()
+
+    if "L y M" in aux:
+        grupo.tipo = 1
+
+    if "M y J" in aux:
+        grupo.tipo = 2
+
+    if "S" in aux:
+        grupo.tipo = 3
+
+    if "D" in aux:
+        grupo.tipo = 3
+
+    return grupo;
+
 def detalle_grupo(request, id_grupo):
     try:
         grupo = Grupo.objects.get(pk=id_grupo)

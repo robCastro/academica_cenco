@@ -1,0 +1,43 @@
+body {
+ font-size:16px;
+}
+
+.divGrupo {
+	width: 28%;
+    border: 2px solid black;
+    padding:1%;
+    margin: 1%;
+    text-align:left;
+    box-shadow: 5px 5px 2px #888888;
+    display: none;
+}
+
+.divNotifGrupo {
+    width: 90%;
+    border: 2px solid black;
+    padding:2%;
+    margin: 1%;
+    display: inline-block;
+    text-align:left;
+    box-shadow: 5px 5px 2px #888888;
+
+}
+
+.show {
+  display: inline-block;
+}
+
+.container {
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+
+.imgGrupo {
+	width: 60%;
+    height:auto;
+}
+
+a {
+    color: black;
+}

@@ -1,0 +1,9 @@
+{% load static %}
+<a href="{% url 'detalle_grupo' id_grupo=grupo.codigo %}">
+<div class='divGrupo {{ grupo.tipo }} all'>
+    <img class= 'imgGrupo' src="{% static 'img/Grupo.png' %}">
+    <h3>Grupo {{ grupo.codigo }}</h3>
+    <p><b>Horario:</b> {{ grupo.horario }}</p>
+    <p><b>Profesor:</b> {{ grupo.profesor }}</p>
+    <p><b>Alumnos:</b> {{ grupo.alumnosInscritos }}</p>
+</div></a>
