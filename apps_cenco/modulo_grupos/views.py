@@ -27,7 +27,7 @@ def consultar_grupos(request):
             form.save()
         grupo = form.save(commit=False)
         grupo = leer_horario(grupo)
-        temp = loader.get_template('div_nuevo_grupo.html').render({'grupo': grupo})
+        temp = loader.get_template('modulo_grupos/div_nuevo_grupo.html').render({'grupo': grupo})
         return HttpResponse(temp)
     else:
         form = CrearGrupoForm()
@@ -44,7 +44,7 @@ def consultar_grupos(request):
     variables = {'grupos': grupos, 'horarios': horarios, 'horarios_exceso': horarios_exceso,'grupos_cant_baja': grupos_cant_baja,
                  'lim_horario': limite_por_horario, 'min_alumnos': min_alum_inscritos, 'form': form}
 
-    return render(request, 'consultar_grupos.html', variables)
+    return render(request, 'modulo_grupos/consultar_grupos.html', variables)
 
 
 def leer_horario(grupo):
