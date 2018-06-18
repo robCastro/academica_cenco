@@ -3,36 +3,33 @@
 {% block titulo %} Ingresar Alumno {% endblock %}
 
 {% block head_content %}
-    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
      <script src="{% static 'js/crear_encargado.js' %}"></script>
 
 {% endblock %}
 {% block content %}
        <h1>Ingresar Alumno</h1>
-        <form method="POST" action="">{% csrf_token %}
+        <form method="POST" action="" id="ingresarAlumnoForm">
             {% csrf_token %}
-            <table width="80%" align="center">
-                        {{ form.as_table }}
+            <table width="45%">
+             {{ form }}
             </table>
-            <p>
-            </p>
+            <p></p>
             <table width="20%" align="left">
                 <tr>
                 <td>
-               <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarEncargadoModal" >Agregar Nuevo Encargado</button>
                 </td>
               <td>
-            <button type="submit" class="save btn btn-primary">Guardar</button>
+            <button type="button submit" id="btnGuardarAlumno" class="save btn btn-primary">Guardar</button>
               </td>
                </tr>
 
-
             </table>
-        <tr><th><label for="id_encargado">Encargado:</label></th><tr><select name="encargado" required class="form-control" id="id_encargado">
-  <option value="" selected>---------</option>
-            </tr>
+
         </form>
 
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarEncargadoModal" >Agregar Nuevo Encargado</button>
 
 <!-- Modal -->
 <div class="modal fade" id="agregarEncargadoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -45,13 +42,35 @@
             </button>
         </div>
         <div class="modal-body">
-            <form id="nuevoEncargadoForm" action="/alumnos/insertarEncargado/" method="post">
+            <form id="nuevoEncargadoForm" action="" method="post">
             {% csrf_token %}
-             <table width="100%" align="center">
-            {{form2.as_table}}
-                 </table>
+
+            <tr>
+                <th><label for="id_nombreE">Nombre:</label></th>
+                <td><input type="text" name="nombreE" id="id_nombreE" required class="form-control" maxlength="40" /></td>
+            </tr>
+            <tr>
+                <th><label for="id_apellidoE">Apellido:</label></th>
+                <td><input type="text" name="apellidoE" id="id_apellidoE" required class="form-control" maxlength="40" /></td>
+            </tr>
+            <tr>
+                <th><label for="id_direccionE">Direccion:</label></th>
+                <td><input type="text" name="direccionE" required class="form-control" id="id_direccionE" /></td>
+            </tr>
+            <tr>
+                <th><label for="id_correoE">Correo:</label></th>
+                <td><input type="email" name="correoE" id="id_correoE" required class="form-control" maxlength="254" /></td>
+            </tr>
+            <tr>
+                <th><label for="id_fechaNacimientoE">Fecha de nacimiento:</label></th>
+                <td><input type="date" name="fechaNacimientoE" required class="form-control" id="id_fechaNacimientoE" /></td>
+            </tr>
+            <tr>
+                <th><label for="id_duiE">Dui:</label></th>
+                <td><input type="text" name="duiE" id="id_duiE" required class="form-control" maxlength="10" /></td>
+            </tr>
             <p></p>
-            <button type="button submit" class="btn btn-primary" >Guardar Encargado</button>
+            <button type="button submit" id="btnNuevoEncargado" class="btn btn-primary" >Guardar Encargado</button>
             </form>
         </div>
         <div class="modal-footer">

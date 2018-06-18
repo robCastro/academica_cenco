@@ -28,9 +28,14 @@ class InsertarAlumnoForm(forms.ModelForm):
         }
 
         widgets ={
-
-            'grupo'     : forms.Select(attrs={'class':'form-control', 'required':True}),
-            'encargado' : forms.Select(attrs={'class':'form-control', 'required':True}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'apellido': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'correo': forms.EmailInput(attrs={'class': 'form-control', 'required': True}),
+            'fechaNacimiento': forms.DateTimeInput(attrs={'class': 'form-control', 'required': True, 'type': 'date'}, ),
+            'dui': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'grupo': forms.Select(attrs={'class': 'form-control', 'required': True}),
+            'encargado': forms.Select(attrs={'class': 'form-control', 'required': True}),
         }
     def __init__ (self,*args,**kwargs):
         super(InsertarAlumnoForm,self).__init__(*args,**kwargs)
@@ -49,11 +54,20 @@ class CrearEncargadoForm(forms.ModelForm):
             'dui',
             ]
         labels = {
-            'nombre'         :'Nombre',
-            'apellido'       :'Apellido',
-            'direccion'      :'Direccion',
-            'correo'         :'Correo',
-            'fechaNacimiento':'Fecha de nacimiento',
-            'dui'            :'Dui',
+            'nombre': 'Nombre',
+            'apellido': 'Apellido',
+            'direccion': 'Direccion',
+            'correo':'Correo',
+            'fechaNacimiento': 'Fecha de nacimiento',
+            'dui': 'Dui',
+        }
+
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class':'form-control', 'required': True}),
+            'apellido': forms.TextInput(attrs={'class':'form-control', 'required': True}),
+            'direccion': forms.TextInput(attrs={'class':'form-control', 'required': True}),
+            'correo': forms.EmailInput(attrs={'class':'form-control', 'required': True}),
+            'fechaNacimiento': forms.DateTimeInput(attrs={'class':'form-control', 'required':True,'type':'date'},),
+            'dui': forms.TextInput(attrs={'class':'form-control', 'required': True}),
         }
 
