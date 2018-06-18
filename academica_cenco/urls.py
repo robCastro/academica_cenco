@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.conf.urls import include
 from apps_cenco.login.views import inicio
 from apps_cenco.modulo_grupos.views import *
+from apps_cenco.modulo_alumnos.views import *
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^grupos/', include('apps_cenco.modulo_grupos.urls')),
+    url(r'^alumnos/', include('apps_cenco.modulo_alumnos.urls')),
 ]
