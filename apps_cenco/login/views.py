@@ -5,5 +5,5 @@ from django.shortcuts import render
 
 # Create your views here.
 
-def inicio(request):
-    return render(request, "base.html", {})
+def directorCredencialesPropias(request):
+    return render(request, "login/director_credenciales_propias.html", {})
