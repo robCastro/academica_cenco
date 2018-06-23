@@ -14,37 +14,38 @@ from apps_cenco.modulo_grupos.forms import CrearGrupoForm
 
 
 def consultar_grupos(request):
-    limite_por_horario = 15*2
-    min_alum_inscritos = 5
-    grupos = Grupo.objects.order_by('codigo')
-    horarios = Horario.objects.order_by('codigo')
-    horarios_exceso = []
-    grupos_cant_baja = []
-
     if request.method == 'POST':
         form = CrearGrupoForm(request.POST)
         if form.is_valid():
             form.save()
-        grupo = form.save(commit=False)
-        grupo = leer_horario(grupo)
-        temp = loader.get_template('modulo_grupos/div_nuevo_grupo.html').render({'grupo': grupo})
-        return HttpResponse(temp)
+            grupo = form.save(commit=False)
+            grupo = leer_horario(grupo)
+            temp = loader.get_template('modulo_grupos/div_nuevo_grupo.html').render({'grupo': grupo})
+            return HttpResponse(temp)
+        else:
+            return HttpResponse("")
     else:
         form = CrearGrupoForm()
+        limite_por_horario = 15*2
+        min_alum_inscritos = 5
+        grupos = Grupo.objects.order_by('codigo')
+        horarios = Horario.objects.order_by('codigo')
+        horarios_exceso = []
+        grupos_cant_baja = []
 
-    for horario in horarios:
-        if horario.cantidad_alumnos > limite_por_horario:
-            horarios_exceso.append(horario)
+        for horario in horarios:
+            if horario.cantidad_alumnos > limite_por_horario:
+                horarios_exceso.append(horario)
 
-    for grupo in grupos:
-        if grupo.alumnosInscritos < min_alum_inscritos:
-            grupos_cant_baja.append(grupo)
-        grupo = leer_horario(grupo)
+        for grupo in grupos:
+            if grupo.alumnosInscritos < min_alum_inscritos:
+                grupos_cant_baja.append(grupo)
+            grupo = leer_horario(grupo)
 
-    variables = {'grupos': grupos, 'horarios': horarios, 'horarios_exceso': horarios_exceso,'grupos_cant_baja': grupos_cant_baja,
-                 'lim_horario': limite_por_horario, 'min_alumnos': min_alum_inscritos, 'form': form}
+        variables = {'grupos': grupos, 'horarios': horarios, 'horarios_exceso': horarios_exceso,'grupos_cant_baja': grupos_cant_baja,
+                     'lim_horario': limite_por_horario, 'min_alumnos': min_alum_inscritos, 'form': form}
 
-    return render(request, 'modulo_grupos/consultar_grupos.html', variables)
+        return render(request, 'modulo_grupos/consultar_grupos.html', variables)
 
 
 def leer_horario(grupo):
@@ -62,7 +63,7 @@ def leer_horario(grupo):
     if "D" in aux:
         grupo.tipo = 3
 
-    return grupo;
+    return grupo
 
 def detalle_grupo(request, id_grupo):
     try:
