@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render, render_to_response, redirect
 from django.http import Http404, HttpResponse
 from django.template import loader
 from django.views.generic.detail import  DetailView
@@ -104,4 +104,13 @@ def detalle_grupo(request, id_grupo):
         'profesores' : profesores,
         'grupos' : grupos
     }
-    return render(request, 'modulo_grupos/detalle_grupo.html', context)
+    return render(request, 'modulo_grupos/detalle_grupo2.html', context)
+
+def eliminarGrupo(request, id_grupo):
+    try:
+        grupo = Grupo.objects.get(pk=id_grupo)
+    except Grupo.DoesNotExist:
+        raise Http404('Grupo no Existe')
+    if grupo.alumno_set.all().count() == 0:
+        grupo.delete()
+    return redirect('consultar_grupos')
