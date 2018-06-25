@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Empleado (models.Model):
     codigo = models.AutoField(primary_key=True)
+    username = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=40)
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
@@ -61,10 +63,11 @@ class Grupo(models.Model):
 
 class Encargado (models.Model):
     codigo = models.AutoField(primary_key=True)
+    username = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=40)
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
-    correo = models.EmailField(blank=True)
+    correo = models.EmailField(blank=True, null=True)
     fechaNacimiento = models.DateField()
     dui = models.CharField(max_length=10)
     def __unicode__(self):
@@ -72,22 +75,25 @@ class Encargado (models.Model):
 
 class Alumno (models.Model):
     codigo = models.AutoField(primary_key=True)
+    username = models.OneToOneField(User,blank=True,null=True,on_delete=models.CASCADE)
     nombre = models.CharField(max_length=40)
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
-    correo = models.EmailField(blank=True)
+    correo = models.EmailField(blank=True, null=True)
     fechaNacimiento = models.DateField()
-    dui = models.CharField(max_length=10, blank=True)
+    dui = models.CharField(max_length=10, blank=True, null=True)
     encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT)
     grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT)
     def __unicode__(self):
         return self.nombre + " " + self.apellido
 
-
+TIPOS_CHOICES = (('casa','Casa',),('trabajo','Trabajo',),('movil', 'Movil',))
 class Telefono (models.Model):
-    numero = models.CharField(max_length=8, primary_key=True)
+    codigo = models.AutoField(primary_key=True)
+    numero = models.CharField(max_length=8, null=False,blank=False)
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, null=True, blank=True)
     encargado = models.ForeignKey(Encargado, on_delete=models.CASCADE, null=True, blank=True)
     empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE, null=True, blank=True)
+    tipo = models.CharField(max_length=20,choices=TIPOS_CHOICES)
     def __unicode__(self):
         return self.numero

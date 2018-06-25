@@ -11,8 +11,11 @@
        <h1>Ingresar Alumno</h1>
         <form method="POST" action="" id="ingresarAlumnoForm">
             {% csrf_token %}
-            <table width="45%">
+            <table width="45%" >
              {{ form }}
+
+             {{ form3 }}
+
             </table>
             <p></p>
             <table width="20%" align="left">
@@ -57,18 +60,35 @@
                 <th><label for="id_direccionE">Direccion:</label></th>
                 <td><input type="text" name="direccionE" required class="form-control" id="id_direccionE" /></td>
             </tr>
-            <tr>
-                <th><label for="id_correoE">Correo:</label></th>
-                <td><input type="email" name="correoE" id="id_correoE" required class="form-control" maxlength="254" /></td>
-            </tr>
+            <tr><th><label for="id_correoE">Correo:</label></th><td><input type="email" name="correoE" id="id_correoE" class="form-control" maxlength="254" /></td></tr>
+
             <tr>
                 <th><label for="id_fechaNacimientoE">Fecha de nacimiento:</label></th>
                 <td><input type="date" name="fechaNacimientoE" required class="form-control" id="id_fechaNacimientoE" /></td>
             </tr>
+
             <tr>
                 <th><label for="id_duiE">Dui:</label></th>
-                <td><input type="text" name="duiE" id="id_duiE" required class="form-control" maxlength="10" /></td>
+                <td><input type="text" name="duiE" id="id_duiE" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" /></td>
             </tr>
+
+             <tr>
+                 <th><label for="id_numeroE">Telefono:</label></th>
+                 <td><input type="text" name="numeroE" maxlength="8" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" required class="form-control" id="id_numeroE" /></td>
+             </tr>
+
+            <tr>
+                <th><label for="id_tipoE">Tipo:</label></th><td><select name="tipoE" required class="form-control" id="id_tipoE">
+                    <option value="" selected>---------</option>
+
+                    <option value="ca">Casa</option>
+
+                    <option value="tra">Trabajo</option>
+
+                    <option value="mo">Movil</option>
+
+                </select></td></tr>
+
             <p></p>
             <button type="button submit" id="btnNuevoEncargado" class="btn btn-primary" >Guardar Encargado</button>
             </form>

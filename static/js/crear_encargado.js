@@ -11,11 +11,14 @@
                     correo: $('#id_correoE').val(),
                     fechaNacimiento: $('#id_fechaNacimientoE').val(),
                     dui: $('#id_duiE').val(),
+                    numero:$('#id_numeroE').val(),
+                    tipo:$('#id_tipoE').val(),
                     csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
                 },
+                dataType: "json",
                 success: function (response) {
-                    alert("Encargado creado con exito");
-                    $('#id_encargado').append(response);
+                    alert(response.mensaje);
+                    $('#id_encargado').append(response.Encargado);
                     $('#agregarEncargadoModal').modal('hide');
                 }
             })
@@ -36,10 +39,12 @@
                 dui:$('#id_dui').val(),
                 grupo:$('#id_grupo').val(),
                 encargado:$('#id_encargado').val(),
+                numero:$('#id_numero').val(),
+                tipo:$('#id_tipo').val(),
                 csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
             },
-            success:function () {
-              alert("Alumno creado con exito");
+            success:function (response) {
+              alert(response);
 
             }
         })
