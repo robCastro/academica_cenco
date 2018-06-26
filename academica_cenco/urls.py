@@ -22,6 +22,6 @@ from apps_cenco.modulo_alumnos.views import *
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^grupos/', include('apps_cenco.modulo_grupos.urls')),
-    url(r'^credenciales/', include('apps_cenco.login.urls'))
+    url(r'^credenciales/', include('apps_cenco.login.urls')),
     url(r'^alumnos/', include('apps_cenco.modulo_alumnos.urls')),
 ]
