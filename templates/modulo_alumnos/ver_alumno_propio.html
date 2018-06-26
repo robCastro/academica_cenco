@@ -1,7 +1,7 @@
-{%  extends 'plantillas_base/base.html' %}
+{%  extends 'plantillas_base/base_alumno.html' %}
 {% load staticfiles %}
 
-{% block titulo %}Ver Alumno{% endblock %}
+{% block titulo %}{{ alumno.apellido }}, {{ alumno.nombre }}{% endblock %}
 
 {% block head_content %}
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">

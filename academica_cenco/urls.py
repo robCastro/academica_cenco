@@ -26,7 +26,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^$', principal),  # Valida que sucede cuando se entra al localhost:8000/
-    url(r'^login/$', auth_views.login, {'template_name': 'sesiones/login.html'}, name='login'),
+    url(r'^accounts/login/$', auth_views.login, {'template_name': 'sesiones/login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, {'template_name': 'sesiones/logout.html'}, name='logout'),
     url(r'^admin/', admin.site.urls),
     url(r'^grupos/', include('apps_cenco.modulo_grupos.urls')),

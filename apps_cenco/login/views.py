@@ -130,4 +130,4 @@ def alumnoCredencialesPropias(request):
 
 def log_out(request):
     logout(request)
-    return render(request, "plantillas_base/base.html")
+    return render(request, "sesiones/logout.html")
