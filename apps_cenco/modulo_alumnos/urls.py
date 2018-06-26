@@ -6,5 +6,7 @@ urlpatterns = [
     url(r'^insertarEncargado/$',views.registrar_encargado, name="InsertarEncargado")
 
 
+    url(r'^(?P<id_alumno>\d+)$', views.modificar_alumno, name="modificar_alumno"),
+    url(r'^misdatos/$', views.ver_alumno_propio, name="ver_alumno_propio"),
 
 ]
