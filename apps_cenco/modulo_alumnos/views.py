@@ -34,7 +34,8 @@ def modificar_alumno(request,id_alumno):
         form = ModificarAlumnoForm(request.POST,instance=alumno)
         if form.is_valid():
             form.save()
-            return redirect('detalle_alumno', alumno.pk)
+            #return redirect('detalle_alumno', alumno.pk)
+            return redirect('InsertarAlumno')
     else:
         form = ModificarAlumnoForm(instance=alumno)
     edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
@@ -86,8 +87,6 @@ def registro_alumno(request):
                 cant=1
             else:
                 cant=cant+1
-
-
             usuario=str(usu)+str(cant)
             correo=request.POST['correo']
             contra=request.POST['fechaNacimiento']

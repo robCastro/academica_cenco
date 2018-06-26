@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import ProtectedError, Q
 from django.shortcuts import render, render_to_response, redirect
@@ -10,82 +12,98 @@ from apps_cenco.db_app.models import Horario
 
 from apps_cenco.modulo_horarios.forms import CrearHorarioForm
 
-
+@login_required
 def consultar_horario(request):
-    form = CrearHorarioForm()
-    horarios = Horario.objects.order_by('dias_asignados')
-    tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
-                                "order by dias_asignados")
-    return render(request, "modulo_horarios/consultar_editar_horario.html", {'horarios': horarios, 'form': form, 'tipos': tipos})
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Director").exists():
+        form = CrearHorarioForm()
+        horarios = Horario.objects.order_by('dias_asignados')
+        tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
+                                    "order by dias_asignados")
+        return render(request, "modulo_horarios/consultar_editar_horario.html", {'horarios': horarios, 'form': form, 'tipos': tipos})
+    else:
+        return render(request, "plantillas_base/base.html")
 
-
+@login_required
 def eliminar_horario(request):
-    try:
-        if request.method == 'POST':
-            id = request.POST.get('id')
-            if id != '-1':
-                horario = Horario.objects.get(codigo=id)
-                horario.delete()
-                return HttpResponse('', status=200)  # Exito
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Director").exists():
+        try:
+            if request.method == 'POST':
+                id = request.POST.get('id')
+                if id != '-1':
+                    horario = Horario.objects.get(codigo=id)
+                    horario.delete()
+                    return HttpResponse('', status=200)  # Exito
+                else:
+                    return HttpResponse('', status=500)
             else:
-                return HttpResponse('', status=500)
+                return redirect('crud_horario')  # Intento de acceso desde la url.
+        except ProtectedError:
+            # Fracaso. Error de Servidor por integridad Referencial.
+            return HttpResponse('', status=500)
+    else:
+        return render(request, "plantillas_base/base.html")
+
+@login_required
+def crear_nuevo_horario(request):
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Director").exists():
+        if request.method == 'POST':
+            form = CrearHorarioForm(request.POST)
+            if form.is_valid():
+                instancia = form.save(commit=False)
+                if validar_horario(instancia, 'crear'):
+                    form.save()
+                    respuesta = str(instancia.codigo) + ','
+                    respuesta += instancia.dias_asignados + ','
+                    respuesta += str(instancia.hora_inicio.strftime("%H:%M")) + ','
+                    respuesta += str(instancia.hora_fin.strftime("%H:%M")) + ','
+                    respuesta += str(instancia.cantidad_alumnos)
+                    return HttpResponse(respuesta, status=200)
+                else:
+                    # El horario choca
+                    return HttpResponse('', status=500)
+            else:
+                return HttpResponse('', status=500)  # Se envio un form no valido
         else:
             return redirect('crud_horario')  # Intento de acceso desde la url.
-    except ProtectedError:
-        # Fracaso. Error de Servidor por integridad Referencial.
-        return HttpResponse('', status=500)
-
-
-def crear_nuevo_horario(request):
-    if request.method == 'POST':
-        form = CrearHorarioForm(request.POST)
-        if form.is_valid():
-            instancia = form.save(commit=False)
-            if validar_horario(instancia, 'crear'):
-                form.save()
-                respuesta = str(instancia.codigo) + ','
-                respuesta += instancia.dias_asignados + ','
-                respuesta += str(instancia.hora_inicio.strftime("%H:%M")) + ','
-                respuesta += str(instancia.hora_fin.strftime("%H:%M")) + ','
-                respuesta += str(instancia.cantidad_alumnos)
-                return HttpResponse(respuesta, status=200)
-            else:
-                # El horario choca
-                return HttpResponse('', status=500)
-        else:
-            return HttpResponse('', status=500)  # Se envio un form no valido
     else:
-        return redirect('crud_horario')  # Intento de acceso desde la url.
+        return render(request, "plantillas_base/base.html")
 
-
+@login_required
 def editar_horario(request):
-    if request.method == 'POST':
-        id = request.POST.get('id')
-        try:
-            horario = Horario.objects.get(codigo=id)
-            horario_form = CrearHorarioForm(request.POST, instance=horario)
-            if horario_form.is_valid():
-                nuevo_horario= horario_form.save(commit=False)
-                if validar_horario(nuevo_horario, 'editar'):
-                    horario_form.save()
-                    respuesta = str(nuevo_horario.codigo) + ','
-                    respuesta += nuevo_horario.dias_asignados + ','
-                    respuesta += str(nuevo_horario.hora_inicio.strftime("%H:%M")) + ','
-                    respuesta += str(nuevo_horario.hora_fin.strftime("%H:%M")) + ','
-                    respuesta += str(nuevo_horario.cantidad_alumnos)
-                    return HttpResponse(respuesta, status=200)  # form valido y guardado con exito
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Director").exists():
+        if request.method == 'POST':
+            id = request.POST.get('id')
+            try:
+                horario = Horario.objects.get(codigo=id)
+                horario_form = CrearHorarioForm(request.POST, instance=horario)
+                if horario_form.is_valid():
+                    nuevo_horario= horario_form.save(commit=False)
+                    if validar_horario(nuevo_horario, 'editar'):
+                        horario_form.save()
+                        respuesta = str(nuevo_horario.codigo) + ','
+                        respuesta += nuevo_horario.dias_asignados + ','
+                        respuesta += str(nuevo_horario.hora_inicio.strftime("%H:%M")) + ','
+                        respuesta += str(nuevo_horario.hora_fin.strftime("%H:%M")) + ','
+                        respuesta += str(nuevo_horario.cantidad_alumnos)
+                        return HttpResponse(respuesta, status=200)  # form valido y guardado con exito
+                    else:
+                        print('horario en conflicto')
+                        return HttpResponse('', status=500)  # horario en conflicto.
                 else:
-                    print('horario en conflicto')
-                    return HttpResponse('', status=500)  # horario en conflicto.
-            else:
-                print('form no valido')
-                return HttpResponse('', status=500)  # form no valido.
+                    print('form no valido')
+                    return HttpResponse('', status=500)  # form no valido.
 
-        except ObjectDoesNotExist:
-            print('no encuentra el objeto')
-            return HttpResponse('', status=500)  # id inexistente.
+            except ObjectDoesNotExist:
+                print('no encuentra el objeto')
+                return HttpResponse('', status=500)  # id inexistente.
+        else:
+            return redirect('crud_horario')  # Intento de acceso desde la url.
     else:
-        return redirect('crud_horario')  # Intento de acceso desde la url.
+        return render(request, "plantillas_base/base.html")
 
 
 # Verifica que el nuevo horario o el horario modificado nunca choque con otro en el mismo día.

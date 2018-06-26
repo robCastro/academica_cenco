@@ -1,7 +1,8 @@
 from django import forms
 from django .forms import Form
 from apps_cenco.db_app.models import Alumno, Encargado, Telefono
-
+from django import forms
+from apps_cenco.db_app.models import Alumno,Encargado
 
 class InsertarAlumnoForm(forms.ModelForm):
     class Meta:
@@ -68,10 +69,33 @@ class TelefonoForm(forms.ModelForm):
 class CrearEncargadoForm(forms.ModelForm):
     class Meta:
         model = Encargado
-# -*- coding: utf-8 -*-
-from django import forms
+        fields = [
+            'nombre',
+            'apellido',
+            'direccion',
+            'correo',
+            'fechaNacimiento',
+            'dui',
+        ]
+        labels = {
+            'nombre': 'Nombre',
+            'apellido': 'Apellido',
+            'direccion': 'Direccion',
+            'correo': 'Correo',
+            'fechaNacimiento': 'Fecha de nacimiento',
+            'dui': 'Dui',
+        }
 
-from apps_cenco.db_app.models import Alumno,Encargado
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'apellido': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'correo': forms.EmailInput(attrs={'class': 'form-control', 'required': False}),
+            'fechaNacimiento': forms.DateTimeInput(attrs={'class': 'form-control', 'required': True, 'type': 'date'}, ),
+            'dui': forms.TextInput(attrs={'class': 'form-control', 'required': True,
+                                          'pattern': '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[-]' + '[0-9]'}),
+        }
+
 
 class ModificarAlumnoForm(forms.ModelForm):
     class Meta:
@@ -89,7 +113,7 @@ class ModificarAlumnoForm(forms.ModelForm):
         labels = {
             'nombre'            : 'Nombre:',
             'apellido'          : 'Apellido:',
-            'direccion'         : 'Dirección:',
+            'direccion'         : 'Direccion',
             'correo'            : 'Correo:',
             'fechaNacimiento'   : 'Fecha de Nacimiento:',
             'dui'               : 'DUI:',
@@ -110,25 +134,3 @@ class ModificarAlumnoForm(forms.ModelForm):
     def __init__(self,*args,**kwargs):
         super(ModificarAlumnoForm,self).__init__(*args,**kwargs)
         self.fields['encargado'].queryset=Encargado.objects.filter()
-
-
-
-            ]
-        labels = {
-            'nombre': 'Nombre',
-            'apellido': 'Apellido',
-            'direccion': 'Direccion',
-            'correo':'Correo',
-            'fechaNacimiento': 'Fecha de nacimiento',
-            'dui': 'Dui',
-        }
-
-        widgets = {
-            'nombre': forms.TextInput(attrs={'class':'form-control', 'required': True}),
-            'apellido': forms.TextInput(attrs={'class':'form-control', 'required': True}),
-            'direccion': forms.TextInput(attrs={'class':'form-control', 'required': True}),
-            'correo': forms.EmailInput(attrs={'class':'form-control', 'required': False}),
-            'fechaNacimiento': forms.DateTimeInput(attrs={'class':'form-control', 'required':True,'type':'date'},),
-            'dui': forms.TextInput(attrs={'class':'form-control', 'required': True,'pattern':'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[-]'+'[0-9]'}),
-        }
-

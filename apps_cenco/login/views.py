@@ -80,7 +80,7 @@ def asistenteCredencialesPropias(request):
 def principal(request):
     if request.user.is_authenticated:
         if has_group(request.user, 'Director'):
-            return redirect('credenciales_director')
+            return redirect('consultar_grupos')
 
         elif has_group(request.user, 'Asistente'):
             return redirect('home_asistente')
@@ -94,11 +94,11 @@ def principal(request):
 
 
 def homeAsistente(request):
-    return redirect('consultar_grupos')
+    return redirect('asistente_consultar_grupos')
 
 
 def homeAlumno(request):
-    return redirect('crud_horario')
+    return redirect('ver_alumno_propio')
 
 def has_group(user, group_name):
     group = Group.objects.get(name=group_name)
