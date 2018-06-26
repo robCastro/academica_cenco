@@ -1,0 +1,158 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %} Grupo {{ grupo.horario }}  {{ grupo.codigo }} {% endblock %}
+
+{% block head_content %}
+    <script>
+        function desbloqueoProfesores(){
+            document.getElementById('cbxProfesores').disabled = false;
+        }
+        function desbloqueoGrupos() {
+            document.getElementById('cbxGrupos').disabled = false;
+        }
+        function marcarCheckBox(){
+            document.getElementById('cambioGrupo').checked = true;
+        }
+    </script>
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <form method="post" action="{% url 'detalle_grupo' grupo.codigo %}">
+    {% csrf_token %}
+    <table width="100%">
+        <tr>
+            <td width='20%' style="padding-top: 5%" rowspan="{{ alumnos|length|add:"3" }}" valign="top">
+                <h4>Métricas</h4>
+                &nbsp;&nbsp;&nbsp;
+                <div class='divNotifGrupo'>
+                    <h5>Nota mayor:</h5>
+                    <p align="right"><b>Pendiente</b></p>
+                    <h5>Nota menor:</h5>
+                    <p align="right"><b>Pendiente</b></p>
+                    <h5>Promedio:</h5>
+                    <p align="right"><b>Pendiente</b></p>
+                </div>
+            </td>
+            <td height="100px" width="80%" align="left" style="padding-left: 7%" valign="top">
+                <p></p>
+                <h4>Grupo {{ grupo.codigo }}, {{ grupo.horario }}</h4>
+            </td>
+        </tr>
+        <tr>
+            <td align="left" style="padding-left: 12%" valign="top">
+                <table width="100%">
+                    <tr>
+                        <td width="10%%">
+                            Profesor:
+                        </td>
+                        <td align="right" width="30%">
+                            <select class="custom-select" id="cbxProfesores" name="cbxProfesores" disabled="disabled">
+                                <option value="{{ grupo.profesor.codigo }}">{{ grupo.profesor }}</option>
+                                {% for profesor in profesores %}
+                                <option value="{{ profesor.codigo }}">{{profesor.nombre}} {{ profesor.apellido }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td width="60%" style="padding-left: 2%">
+                            <a onclick="desbloqueoProfesores()" href="#" class="text-info">Cambiar</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            {% if alumnos|length > 0 %}
+            <td style="padding-left: 7%; padding-top: 3%" valign="top">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Codigo</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Telefono</th>
+                        <th>Correo</th>
+                        <th>Marcar</th>
+                    </tr>
+                    {% for alumno in alumnos %}
+                        <tr class=>
+                        <th scope="row">{{ alumno.codigo }}</th>
+                            <td>{{ alumno.nombre }}</td>
+                            <td>{{ alumno.apellido }}</td>
+                            <td>
+                                {% for telefono in telefonos  %}
+                                    {% if telefono.alumno == alumno %}
+                                        {{ telefono.numero }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ alumno.correo }}</td>
+                            <td><input type="checkbox" onclick="marcarCheckBox()" name="{{ alumno.codigo }}"></td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td></td><td></td><td></td><td></td>
+                        <td>
+                            <select class="custom-select" id="cbxGrupos" name="cbxGrupos" disabled="disabled">
+                                <option value="{{ grupo.codigo }}">Grupo {{ grupo.codigo }}, {{ grupo.horario }}</option>
+                                {% for iteracion_grupo in grupos %}
+                                    <option value="{{ iteracion_grupo.codigo }}">Grupo {{ iteracion_grupo.codigo }}, {{ iteracion_grupo.horario }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <a href="#" onclick="desbloqueoGrupos()" class="text-info" >Mover Alumnos</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+                {% else %}
+                <td style="padding-left: 7%;" valign="top">
+                    <h6>No hay Alumnos en este grupo.</h6>
+                </td>
+                {% endif %}
+        </tr>
+    </table>
+    <div style="padding-top: 3%; padding-left: 32%">
+        <table width="25%">
+            <td width="10%">
+                <input type="submit" value="Guardar" class="btn btn-primary">
+            </td>
+            <td width="10%">
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#eliminarGrupoModal">Eliminar</button>
+            </td>
+        </table>
+
+        <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
+    </div>
+    </form>
+
+    <!-- Modal -->
+    <div class="modal fade" id="eliminarGrupoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Eliminar Grupo</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            {% if alumnos|length_is:"0" %}
+                <form method="post" action="{% url 'eliminar_grupo' grupo.codigo %}">
+                {% csrf_token %}
+                <p>¿Seguro que desea eliminar el grupo {{ grupo.codigo }}, {{ grupo.horario }}?</p>
+                <input type="submit" value="Eliminar" class="btn btn-danger">
+                </form>
+            {% else %}
+                Aún hay Alumnos en este grupo, muevalos a otro para eliminarlo.
+            {% endif %}
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
