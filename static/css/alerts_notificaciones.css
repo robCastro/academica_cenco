@@ -1,0 +1,38 @@
+.alerta {
+    padding: 15px;
+    color: white;
+    box-shadow: 5px 5px 2px #888888;
+    opacity: 1;
+    transition: opacity 0.3s;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+
+}
+
+.alerta.accionPeligrosa {background-color: #f44336;}
+.alerta.exito {background-color: #4CAF50;}
+.alerta.informacion {background-color: #2196F3;}
+.alerta.cuidado {background-color: #ff9800;}
+
+.btnCerrar {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 25px;
+    line-height: 22px;
+    cursor: pointer;
+    transition: 0.3s;
+
+}
+
+.btnCerrar:hover {
+    color: darkblue;
+
+}
+
+.divEscondido {
+    display:none;
+}
+

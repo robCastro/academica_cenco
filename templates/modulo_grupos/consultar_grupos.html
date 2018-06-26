@@ -19,7 +19,7 @@
                 <h4>Horarios con m&aacute;s de {{ lim_horario }} estudiantes</h4>
                 {% if horarios_exceso|length > 0 %}
                 {% for horario in horarios_exceso %}
-                <p><b>Horario:</b> {{ horario.cantidad_alumnos }}</p>
+                <p><b>Horario:</b> {{ horario }}</p>
                 {% endfor %}
                 {% else %}
                 <p>Ning&uacute;n horario excede el l&iacute;mite en este momento.</p>
@@ -44,18 +44,18 @@
             Filtrar Grupos:
             <select onchange="filterSelection(this.value)">
                 <option value="all" selected>Todos los Horarios</option>
-                <option value="1">Lunes y Miercoles</option>
-                <option value="2">Martes y Jueves</option>
-                <option value="3">Fines de Semana</option>
+                {% for valor in tipos %}
+                    <option value="{{ valor.dias_asignados }}">{{ valor.dias_asignados }}</option>
+                {% endfor %}
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         </td>
     </tr>
     <tr>
-        <td colspan="2" id="dinamicos">
+        <td colspan="2" id="dinamicos" valign="top">
             {% for grupo in grupos %}
             <a href="{% url 'detalle_grupo' id_grupo=grupo.codigo %}">
-            <div class='divGrupo {{ grupo.tipo }} all'>
+            <div class='divGrupo {{ grupo.horario.dias_asignados }} all'>
                 <img class= 'imgGrupo' src="{% static 'img/Grupo.png' %}">
                 <h3>Grupo {{ grupo.codigo }}</h3>
                 <p><b>Horario:</b> {{ grupo.horario }}</p>

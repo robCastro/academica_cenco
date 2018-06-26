@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_REDIRECT_URL = '/credenciales/director/'
 
 # Application definition
 
@@ -128,3 +129,5 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
+
+
