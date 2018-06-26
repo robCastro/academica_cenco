@@ -17,7 +17,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.conf.urls import include
 
-from apps_cenco import login
+from apps_cenco.login.views import *
 from apps_cenco.modulo_grupos.views import *
 from apps_cenco.modulo_alumnos.views import *
 from django.contrib.auth import views as auth_views
@@ -25,7 +25,7 @@ from django.contrib.auth import views as auth_views
 #  {'next_page': '/login'}
 
 urlpatterns = [
-    url(r'^$', login.views.principal),  # Valida que sucede cuando se entra al localhost:8000/
+    url(r'^$', principal),  # Valida que sucede cuando se entra al localhost:8000/
     url(r'^login/$', auth_views.login, {'template_name': 'sesiones/login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, {'template_name': 'sesiones/logout.html'}, name='logout'),
     url(r'^admin/', admin.site.urls),
