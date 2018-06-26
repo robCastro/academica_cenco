@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
 class Empleado (models.Model):
     codigo = models.AutoField(primary_key=True)
+    username = models.OneToOneField(User,blank=True,null=True,on_delete=models.CASCADE)
     nombre = models.CharField(max_length=40)
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
@@ -61,6 +64,7 @@ class Grupo(models.Model):
 
 class Encargado (models.Model):
     codigo = models.AutoField(primary_key=True)
+    username = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=40)
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
@@ -72,6 +76,7 @@ class Encargado (models.Model):
 
 class Alumno (models.Model):
     codigo = models.AutoField(primary_key=True)
+    username = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=40)
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
@@ -82,6 +87,10 @@ class Alumno (models.Model):
     grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT)
     def __unicode__(self):
         return self.nombre + " " + self.apellido
+    class Meta:
+        permissions = (
+            ("ver_alumno", "Ver alumno"),
+        )
 
 
 class Telefono (models.Model):

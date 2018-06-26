@@ -1,0 +1,162 @@
+{%  extends 'base.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Ver Alumno{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+{% endblock %}
+
+
+{% block content %}
+     <table width='100%'>
+        <tr>
+            <td width='17%' valign="top" rowspan="20">
+            <br><br>
+            <div class='divNotifGrupo' >
+                <h4>Atención:</h4>
+                    {% if not alumno.correo %}
+                        <p></p>
+                        <p><h6>Proporcionar Correo </h6></p>
+                    {% endif %}
+                    {% if not alumno.dui and edad >= 18 %}
+                        <p></p>
+                        <p><h6>Proporcionar DUI </h6> </p>
+                    {% endif %}
+                    {% if not telAlum %}
+                        <p></p>
+                        <p><h6>Proporcionar Teléfono del Alumno </h6> </p>
+                    {% endif %}
+                    {% if not telEnc %}
+                        <p></p>
+                        <p><h6>Proporcionar Teléfono del Encargado </h6> </p>
+                    {% endif %}
+                    <br><br><br><br><br><br><br><br>
+            </div>
+            </td>
+
+            <td width="10%" rowspan="20">
+            </td>
+
+            <td width='60%' height='100px' colspan="1" rowspan="2">
+                <br><br>
+                <h4 >Alumno</h4>
+                        <p></p>
+                        <p></p>
+
+                    <table width="80%" align="center" height="300px">
+                            <tr>
+                            <td width="35%">
+                                <h6><b>Nombre:</b></h6>
+                            </td>
+                            <td width="40%">
+                                <h6>{{ alumno.nombre }}</h6>
+                            </td>
+                            <td width="25%"></td>
+                        </tr>
+                        <tr><td><p></p></td></tr>
+                        <tr>
+                            <td>
+                                <h6><b>Apellido:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ alumno.apellido }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr><td><p></p></td></tr>
+                        <tr>
+                            <td>
+                                <h6><b>Dirección:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ alumno.direccion }}</h6>
+                             </td>
+                            <td></td>
+                        </tr>
+                        <tr><td><p></p></td></tr>
+                        {% if alumno.correo %}
+                        <tr>
+                            <td>
+                                <h6><b>Correo:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ alumno.correo }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr><td><p></p></td></tr>
+                        {% endif %}
+                        <tr>
+                            <td>
+                                <h6><b>Fecha de nacimiento:</b></h6>
+                            </td>
+                            <td>
+                                {% if alumno.fechaNacimiento.month < 10 and alumno.fechaNacimiento.day >= 10%}
+                                    <h6>{{ alumno.fechaNacimiento.day }}/0{{ alumno.fechaNacimiento.month }}/{{ alumno.fechaNacimiento.year }}</h6>
+                                {% endif %}
+                                {% if alumno.fechaNacimiento.day < 10 and alumno.fechaNacimiento.month >= 10%}
+                                    <h6>0{{ alumno.fechaNacimiento.day }}/{{ alumno.fechaNacimiento.month }}/{{ alumno.fechaNacimiento.year }}</h6>
+                                {% endif %}
+                                {% if alumno.fechaNacimiento.month < 10 and alumno.fechaNacimiento.day < 10 %}
+                                    <h6>0{{ alumno.fechaNacimiento.day }}/0{{ alumno.fechaNacimiento.month }}/{{ alumno.fechaNacimiento.year }}</h6>
+                                {% endif %}
+                                {% if alumno.fechaNacimiento.month >= 10 and alumno.fechaNacimiento.day >= 10 %}
+                                    <h6>{{ alumno.fechaNacimiento.day }}/{{ alumno.fechaNacimiento.month }}/{{ alumno.fechaNacimiento.year }}</h6>
+                                {% endif %}
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr><td><p></p></td></tr>
+                        {% if alumno.dui %}
+                        <tr>
+                            <td>
+                                 <h6><b> DUI:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ alumno.dui }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr><td><p></p></td></tr>
+                        {% endif %}
+                        <tr>
+                            <td>
+                                 <h6><b> Encargado:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ alumno.encargado.nombre }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <p></p>
+                    <table width="40%" align="left">
+                        <tr>
+                            <td width="45%">
+                            </td>
+                            <td width="40%">
+                                <br>
+                                {% if not telefonos == 0 %}
+                                <table class="table container table-sm" style="text-align: center">
+                                    <tr bgcolor="#e6e6fa">
+                                        <th><h6><b>Teléfonos</b></h6></th>
+                                    </tr>
+
+                                    {% for telefono in telefonos %}
+                                         <tr>
+                                            <td><h6>{{telefono.numero}}</h6></td>
+                                         </tr>
+                                    {% endfor %}
+                                </table>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    </table>
+            </td>
+            <td width='13%' height='100px' rowspan="20" >
+            </td>
+        </tr>
+    </table>
+{% endblock %}
