@@ -1,0 +1,66 @@
+{%  extends 'base.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Consultar Grupos{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/consultar_grupos.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <table width='100%'>
+    <tr>
+        <td width='20%' rowspan="2" valign="top">
+            <p></p>
+            <h4>&Aacute;rea de Notificaciones:</h4>
+            <div class='divNotifGrupo'>
+                <h4>Horarios con m&aacute;s de {{ lim_horario }} estudiantes</h4>
+                {% if horarios_exceso|length > 0 %}
+                {% for horario in horarios_exceso %}
+                <p><b>Horario:</b> {{ horario.cantidad_alumnos }}</p>
+                {% endfor %}
+                {% else %}
+                <p>Ning&uacute;n horario excede el l&iacute;mite en este momento.</p>
+                {% endif %}
+                <p></p>
+                <h4>Grupos con menos de {{ min_alumnos }} estudiantes</h4>
+                {% if grupos_cant_baja|length > 0 %}
+                {% for grupo in grupos_cant_baja %}
+                <p><b>Grupo {{ grupo.codigo }}:</b> {{ grupo.horario }}</p>
+                {% endfor %}
+                {% else %}
+                <p>Ning&uacute;n grupo se encuentra actualmente por debajo del m&iacute;nimo.</p>
+                {% endif %}
+            </div>
+        </td>
+
+        <td width='80%' align="right">
+            <p></p>
+            Filtrar Grupos:
+            <select onchange="filterSelection(this.value)">
+                <option value="all" selected>Todos los Horarios</option>
+                <option value="1">Lunes y Miercoles</option>
+                <option value="2">Martes y Jueves</option>
+                <option value="3">Fines de Semana</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" id="dinamicos">
+            {% for grupo in grupos %}
+            <a href="{% url 'detalle_grupo' id_grupo=grupo.codigo %}">
+            <div class='divGrupo {{ grupo.tipo }} all'>
+                <img class= 'imgGrupo' src="{% static 'img/Grupo.png' %}">
+                <h3>Grupo {{ grupo.codigo }}</h3>
+                <p><b>Horario:</b> {{ grupo.horario }}</p>
+                <p><b>Profesor:</b> {{ grupo.profesor }}</p>
+                <p><b>Alumnos:</b> {{ grupo.alumnosInscritos }}</p>
+            </div></a>
+            {% endfor %}
+        </td>
+    </tr>
+    </table>
+{% endblock %}
