@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_REDIRECT_URL = '/'
 
 # Application definition
 
@@ -129,3 +130,5 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
+
+
