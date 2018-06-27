@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post" action="{% url 'detalle_grupo' grupo.codigo %}">
+    <form method="post" action="{% url 'asist_detalle_grupo' grupo.codigo %}">
     {% csrf_token %}
     <table width="100%">
         <tr>

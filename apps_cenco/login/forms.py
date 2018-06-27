@@ -6,10 +6,10 @@ from django.contrib.auth.models import User
 
 class AsistenteCredencialesPropiasForm(forms.Form):
 
-    usuario=forms.CharField(max_length=10,widget=forms.TextInput(attrs={'size':'25','requerid':'True'}),label='Usuario:')
-    contrasenia3 = forms.CharField(max_length=10, widget=forms.PasswordInput(attrs={'size': '25', 'requerid': 'True'}),label='Contraseña antigua:')
-    contrasenia1=forms.CharField(max_length=10,widget=forms.PasswordInput(attrs={'size':'25','requerid':'True'}),label='Contraseña nueva:')
-    contrasenia2=forms.CharField(max_length=10,widget=forms.PasswordInput(attrs={'size':'25','requerid':'True'}),label="Repetir contraseña nueva:")
+    usuario=forms.CharField(max_length=25,widget=forms.TextInput(attrs={'size':'25','requerid':'True'}),label='Usuario:')
+    contrasenia3 = forms.CharField(max_length=15, widget=forms.PasswordInput(attrs={'size': '15', 'requerid': 'True'}),label='Contraseña antigua:')
+    contrasenia1=forms.CharField(max_length=15,widget=forms.PasswordInput(attrs={'size':'15','requerid':'True'}),label='Contraseña nueva:')
+    contrasenia2=forms.CharField(max_length=15,widget=forms.PasswordInput(attrs={'size':'15','requerid':'True'}),label="Repetir contraseña nueva:")
 
 
     def clean_contrasenia2(self):
@@ -42,9 +42,9 @@ class AsistenteCredencialesPropiasForm(forms.Form):
 
 class AlumnoCredencialesPropiasForm(forms.Form):
 
-    contrasenia3 = forms.CharField(max_length=10, widget=forms.PasswordInput(attrs={'size': '25', 'requerid': 'True'}),label='Contraseña antigua:')
-    contrasenia1=forms.CharField(max_length=10,widget=forms.PasswordInput(attrs={'size':'25','requerid':'True'}),label='Contraseña nueva:')
-    contrasenia2=forms.CharField(max_length=10,widget=forms.PasswordInput(attrs={'size':'25','requerid':'True'}),label="Repetir contraseña nueva:")
+    contrasenia3 = forms.CharField(max_length=15, widget=forms.PasswordInput(attrs={'size': '15', 'requerid': 'True'}),label='Contraseña antigua:')
+    contrasenia1=forms.CharField(max_length=15,widget=forms.PasswordInput(attrs={'size':'15','requerid':'True'}),label='Contraseña nueva:')
+    contrasenia2=forms.CharField(max_length=15,widget=forms.PasswordInput(attrs={'size':'15','requerid':'True'}),label="Repetir contraseña nueva:")
 
 
     def clean_contrasenia2(self):
