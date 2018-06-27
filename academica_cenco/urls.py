@@ -25,7 +25,7 @@ from django.contrib.auth import views as auth_views
 #  {'next_page': '/login'}
 
 urlpatterns = [
-    url(r'^$', principal),  # Valida que sucede cuando se entra al localhost:8000/
+    url(r'^$', principal, name="inicio"),  # Valida que sucede cuando se entra al localhost:8000/
     url(r'^accounts/login/$', auth_views.login, {'template_name': 'sesiones/login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, {'template_name': 'sesiones/logout.html'}, name='logout'),
     url(r'^admin/', admin.site.urls),

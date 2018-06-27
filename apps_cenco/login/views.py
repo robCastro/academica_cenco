@@ -50,7 +50,7 @@ def directorCredencialesPropias(request):
         }
         return render(request, "login/director_credenciales_propias.html", contexto)
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 @requires_csrf_token
 @login_required
 def asistenteCredencialesPropias(request):
@@ -74,7 +74,7 @@ def asistenteCredencialesPropias(request):
      context = {"form": form}
      return render(request, "login/asistente_credenciales_propias.html", context)
     else:
-        raise Http404('Error')
+        raise Http404('Error, no tiene permiso para esta página')
 
 # Esta view gestiona la ruta localhost:8000/
 def principal(request):
@@ -94,7 +94,7 @@ def principal(request):
 
 
 def homeAsistente(request):
-    return redirect('asistente_consultar_grupos')
+    return redirect('asistenteConsultarAlumnos')
 
 
 def homeAlumno(request):
@@ -125,7 +125,7 @@ def alumnoCredencialesPropias(request):
      context = {"form": form}
      return render(request, "login/alumno_credenciales_propias.html", context)
     else:
-        raise Http404('Error')
+        raise Http404('Error, no tiene permiso para esta página')
 
 
 def log_out(request):

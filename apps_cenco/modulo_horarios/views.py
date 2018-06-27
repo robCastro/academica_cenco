@@ -22,7 +22,7 @@ def consultar_horario(request):
                                     "order by dias_asignados")
         return render(request, "modulo_horarios/consultar_editar_horario.html", {'horarios': horarios, 'form': form, 'tipos': tipos})
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def eliminar_horario(request):
@@ -43,7 +43,7 @@ def eliminar_horario(request):
             # Fracaso. Error de Servidor por integridad Referencial.
             return HttpResponse('', status=500)
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def crear_nuevo_horario(request):
@@ -69,7 +69,7 @@ def crear_nuevo_horario(request):
         else:
             return redirect('crud_horario')  # Intento de acceso desde la url.
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def editar_horario(request):
@@ -103,7 +103,7 @@ def editar_horario(request):
         else:
             return redirect('crud_horario')  # Intento de acceso desde la url.
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 
 # Verifica que el nuevo horario o el horario modificado nunca choque con otro en el mismo día.

@@ -1,0 +1,42 @@
+body {
+ font-size:16px;
+}
+
+.divNotifAlumnos{
+    min-height: 400px;
+    width: 90%;
+    border: 2px solid black;
+    padding:2%;
+    margin: 1%;
+    display: inline-block;
+    text-align:left;
+    box-shadow: 5px 5px 2px #888888;
+
+}
+
+.label{
+   width: max-content;
+}
+
+.alumnoRow{
+    line-height: 15px;
+    display: none;
+}
+
+.show {
+display: table-row;
+}
+
+
+#example td:hover {
+    cursor: pointer;
+}
+
+#linkFila{
+    color: #000;
+}
+
+#tr_mod{
+    height: 80px;
+}
+

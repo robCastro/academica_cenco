@@ -58,7 +58,7 @@ def consultar_grupos(request):
 
             return render(request, 'modulo_grupos/consultar_grupos.html', variables)
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def detalle_grupo(request, id_grupo):
@@ -105,7 +105,7 @@ def detalle_grupo(request, id_grupo):
         }
         return render(request, 'modulo_grupos/detalle_grupo2.html', context)
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def eliminarGrupo(request, id_grupo):
@@ -119,7 +119,7 @@ def eliminarGrupo(request, id_grupo):
             grupo.delete()
         return redirect('consultar_grupos')
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def asist_consultar_grupos(request):
@@ -148,7 +148,7 @@ def asist_consultar_grupos(request):
 
         return render(request, 'modulo_grupos/asist_consultar_grupos.html', variables)
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def asist_detalle_grupo(request, id_grupo):
@@ -192,4 +192,4 @@ def asist_detalle_grupo(request, id_grupo):
         }
         return render(request, 'modulo_grupos/asist_detalle_grupo.html', context)
     else:
-        return render(request, "plantillas_base/base.html")
+        raise Http404('Error, no tiene permiso para esta página')

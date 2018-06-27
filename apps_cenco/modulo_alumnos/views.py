@@ -5,8 +5,9 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 from django.contrib.auth.decorators import permission_required, login_required
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render,redirect
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 import sys
 
 from apps_cenco.db_app.models import Alumno
@@ -18,6 +19,106 @@ from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
 
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from apps_cenco.db_app.models import Alumno,Telefono
+
+@login_required
+def consultar_alumnos(request):
+    if request.user.groups.filter(name="Asistente").exists():
+        alumnos=Alumno.objects.order_by('codigo')
+        telefonos = []
+
+        for alumno in alumnos:
+            telefonos.append(alumno.telefono_set.first())
+
+
+
+        tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
+                                    "order by dias_asignados")
+
+        page=request.GET.get('page',1)
+        paginator=Paginator(alumnos,10)
+        try:
+            users = paginator.page(page)
+        except PageNotAnInteger:
+            users = paginator.page(1)
+        except EmptyPage:
+            users = paginator.page(paginator.num_pages)
+
+        context = {
+            'users':users,
+            'alumnos': alumnos,
+            'telefonos': telefonos,
+            'tipos': tipos
+        }
+
+        return render(request, 'modulo_alumnos/consultar_alumnos.html', context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
+def detalle_alumno(request,id_alumno):
+    if request.user.groups.filter(name="Asistente").exists():
+        url = "/alumnos/" + str(id_alumno)
+
+        if 'eliminar1' in request.POST:
+            alumno = Alumno.objects.get(pk=id_alumno)
+            telefonos=Telefono.objects.filter(alumno=alumno)
+            for telefono in telefonos:
+                if request.POST.get(str(telefono.codigo)):
+                    telefono.delete()
+
+            #telefonos = Telefono.objects.order_by('alumno')
+            context={
+                'alumno': alumno,
+                'telefonos': telefonos
+            }
+            return HttpResponseRedirect(url)
+        elif request.method=='POST':
+            if request.method == 'POST':
+                alum=Alumno.objects.get(pk=id_alumno)
+
+
+                num=request.POST.get('numero')
+                tip=request.POST['tipo']
+
+                telefono = Telefono(numero=num, alumno=alum, tipo=tip)
+                telefono.save()
+                temp = loader.get_template('modulo_alumnos/nuevo_numero.html').render({'telefono': telefono})
+                return HttpResponse(temp)
+            else:
+                form = TelefonoForm()
+
+            try:
+                alumno = Alumno.objects.get(pk=id_alumno)
+            except Alumno.DoesNotExist:
+                raise Http404('Alumno no Existe')
+
+            telefonos =Telefono.objects.order_by('alumno')
+
+            edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
+            context = {
+                'alumno': alumno,
+                'telefonos': telefonos,
+                'form': form,
+                'edad':edad,
+
+            }
+        else:
+            form = TelefonoForm()
+            telefonos = Telefono.objects.order_by('alumno')
+            alumno = Alumno.objects.get(pk=id_alumno)
+            edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
+            telAlum = Telefono.objects.filter(alumno=alumno).count()
+            context={
+                'edad':edad,
+                'alumno':alumno,
+                'form': form,
+                'telefonos': telefonos,
+                'telAlum': telAlum,
+            }
+        return render(request, 'modulo_alumnos/detalle_alumno.html', context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
 
 @login_required
 @permission_required('db_app.change_alumno')
@@ -34,15 +135,14 @@ def modificar_alumno(request,id_alumno):
         form = ModificarAlumnoForm(request.POST,instance=alumno)
         if form.is_valid():
             form.save()
-            #return redirect('detalle_alumno', alumno.pk)
-            return redirect('InsertarAlumno')
+            return redirect('detalle_alumno', alumno.pk)
     else:
         form = ModificarAlumnoForm(instance=alumno)
     edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
     context = {"alumno": alumno, "form": form,"edad": edad,"telAlum":telAlum,"telEnc":telEnc}
     return render(request, 'modulo_alumnos/modificar_alumno.html',context)
    else:
-       raise Http404('Error')
+       raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 @permission_required('db_app.ver_alumno')
@@ -63,7 +163,7 @@ def ver_alumno_propio(request):
     context = {"alumno": alumno,"edad": edad,"telAlum":telAlum,"telEnc":telEnc,"telefonos":telefonos}
     return render(request, 'modulo_alumnos/ver_alumno_propio.html',context)
    else:
-     raise Http404('Error')
+     raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def registro_alumno(request):
@@ -126,7 +226,7 @@ def registro_alumno(request):
         }
         return render(request, "modulo_alumnos/registrar_alumnos.html", context)
     else:
-        raise Http404('Error')
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def registrar_encargado(request):
@@ -184,4 +284,4 @@ def registrar_encargado(request):
             }
             return render(request, "modulo_alumnos/registrar_alumnos.html", context)
     else:
-        raise Http404('Error')
+        raise Http404('Error, no tiene permiso para esta página')

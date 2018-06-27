@@ -1,0 +1,149 @@
+{%  extends 'plantillas_base/base_asistente.html' %}
+{% load staticfiles %}
+{% block titulo %}Listado de alumnos{% endblock %}
+
+#Espacio para los archivos de cabecera o head_content
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
+    <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        $(document).ready(function() {
+
+        $('#example tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });
+
+    });
+    </script>
+    <style>
+        .pagination {
+            display: inline-block;
+        }
+
+        .pagination a {
+            color: black;
+            float: left;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+        }
+
+        .pagination a.active {
+            background-color: #2C3E50;
+            color: white;
+        }
+        .pagination a:hover:not(.active) {background-color: #ddd;}
+    </style>
+
+{% endblock %}
+
+{% block content %}
+    <table width='100%'>
+
+    <tr id="tr_mod">
+        <td width='20%' rowspan="2" valign="top">
+            <p></p>
+            <h6> Notificaciones:</h6>
+            <div class='divNotifAlumnos'>
+                <h4></h4>
+
+
+            </div>
+
+        </td>
+
+        <br/>
+        <br/>
+        <h4 align="center">Listado de alumnos</h4>
+
+
+        <td width='20%' align="left" valign="top" >
+            <br/>
+            Filtrar por grupos:
+            <select onchange="filterSelection(this.value)">
+                <option value="all" selected>Todos</option>
+                {% for valor in tipos %}
+                    <option value="{{ valor.dias_asignados }}">{{ valor.dias_asignados }}</option>
+                {% endfor %}
+
+            </select>
+
+        </td>
+        <td width='60%' height='100px' align="right" valign="top">
+
+                <!-- Button trigger modal -->
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a type="button" class="btn btn-primary" href="{% url 'InsertarAlumno' %}">Inscribir Alumno</a>
+
+        </td>
+        <td width="40%" align="right">&nbsp;&nbsp;</td>
+
+
+    </tr>
+    <tr>
+        <td width="80%" valign="top">
+        <div style="overflow-x:auto;">
+            <table class="table table-hover table-responsive " id="example">
+                <tr bgcolor="#f0f8ff" >
+                    <th>Codigo</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Telefono</th>
+                    <th>Correo</th>
+                    <th>Encargado</th>
+                </tr>
+                {% for user in users%}
+
+                    <tr class='alumnoRow {{user.grupo.horario.dias_asignados}} all' size="10px">
+                        <th scope="row"> <a id="linkFila" href="{% url 'detalle_alumno' id_alumno=user.codigo %}">{{ user.codigo }}</a></th>
+                        <td>{{ user.nombre }} </td>
+                        <td>{{ user.apellido }}</td>
+                        <td>
+                            {% for telefono in telefonos  %}
+                                {% if telefono.alumno == user %}
+                                    {{ telefono.numero }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ user.correo }}</td>
+                        <td><a href="" ><font color=#4488ca>{{ user.encargado}}</font> </a></td>
+                    </tr>
+                {% endfor %}
+
+            </table>
+            <div class="pagination">
+            {% if users.has_other_pages %}
+
+                {% if users.has_previous %}
+                  <a href="?page={{ users.previous_page_number }}">&laquo;</a>
+                {% else %}
+                    <a class="disabled"><span>&laquo;</span></a>
+                {% endif %}
+                {% for i in users.paginator.page_range %}
+                  {% if users.number == i %}
+                    <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
+                  {% else %}
+                    <a href="?page={{ i }}">{{ i }}</a>
+                  {% endif %}
+                {% endfor %}
+                {% if users.has_next %}
+                  <a href="?page={{ users.next_page_number }}">&raquo;</a>
+                {% else %}
+                    <a class="disabled"><span>&raquo;</span></a>
+                {% endif %}
+
+            {% endif %}
+            </div>
+        </div>
+    </td>
+    </tr>
+    </table>
+
+
+{% endblock %}
