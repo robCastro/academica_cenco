@@ -36,23 +36,23 @@
             </div>
         </td>
 
-        <td width='80%' align="right">
+        <td width='80%' align="right" height="100px">
             <p></p>
             Filtrar Grupos:
             <select onchange="filterSelection(this.value)">
                 <option value="all" selected>Todos los Horarios</option>
-                <option value="1">Lunes y Miercoles</option>
-                <option value="2">Martes y Jueves</option>
-                <option value="3">Fines de Semana</option>
+                {% for tipo in tipos %}
+                <option value="{{ tipo.dias_asignados }}">{{ tipo.dias_asignados }}</option>
+                {% endfor %}
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         </td>
     </tr>
     <tr>
-        <td colspan="2" id="dinamicos">
+        <td colspan="2" id="dinamicos" valign="top">
             {% for grupo in grupos %}
             <a href="{% url 'asist_detalle_grupo' id_grupo=grupo.codigo %}">
-            <div class='divGrupo {{ grupo.tipo }} all'>
+            <div class='divGrupo {{ grupo.horario.dias_asignados }} all'>
                 <img class= 'imgGrupo' src="{% static 'img/Grupo.png' %}">
                 <h3>Grupo {{ grupo.codigo }}</h3>
                 <p><b>Horario:</b> {{ grupo.horario }}</p>
