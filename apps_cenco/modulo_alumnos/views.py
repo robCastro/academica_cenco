@@ -8,12 +8,12 @@ from django.contrib.auth.decorators import permission_required, login_required
 from django.shortcuts import render,redirect
 from django.http import Http404
 import sys
-
+from django.contrib.auth.models import Group
 from apps_cenco.db_app.models import Alumno
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse,HttpResponseServerError
 from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
 
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
@@ -93,9 +93,10 @@ def registro_alumno(request):
                 correo=request.POST['correo']
                 contra=request.POST['fechaNacimiento']
                 contra=contra.replace("-","")
-                user=User.objects.create_user(username=usuario,email=correo,password=contra)
+                user=User.objects.create_user(username=usuario,email=correo,password=contra,first_name=nom,last_name=ape)
                 user.save()
-
+                groupEncargado = Group.objects.get(name='Alumno')
+                groupEncargado.user_set.add(user)
                 form.save()
                 alumno = form.save(commit=False)
                 alumno.username=user
@@ -110,12 +111,13 @@ def registro_alumno(request):
                 grupo.save()
                 horario.save()
             # Aqui quizas quepa un else para cuado algo falle. Error 500 talves?
+
                 telefono = Telefono()
                 telefono.numero= request.POST['numero']
                 telefono.alumno_id = alumno.codigo
                 telefono.tipo = request.POST['tipo']
                 telefono.save()
-            return HttpResponse("Usuario: "+usuario+" Contraseña: "+contra)
+                return HttpResponse("Usuario: "+usuario+" Contraseña: "+contra)
 
         else:
             form = InsertarAlumnoForm()
@@ -156,8 +158,10 @@ def registrar_encargado(request):
                 correo = request.POST['correo']
                 contra = request.POST['fechaNacimiento']
                 contra = contra.replace("-", "")
-                user = User.objects.create_user(username=usuario, email=correo, password=contra)
+                user = User.objects.create_user(username=usuario, email=correo, password=contra,first_name=nom,last_name=ape)
                 user.save()
+                groupEncargado = Group.objects.get(name='Encargado')
+                groupEncargado.user_set.add(user)
                 form2.save()
                 #alumno = form2.save(commit=False)
 
@@ -175,6 +179,7 @@ def registrar_encargado(request):
                 telefono.save()
                 return JsonResponse({'mensaje': "Usuario: "+usuario+" Contraseña: "+contra,'Encargado':'<option value="'+id+'">'+nombre+'</option>'})
             # Seria bueno agregar aqui un Internal Server error. Para cuando no guarde bien.
+
         else:
             form = InsertarAlumnoForm()
             form4 = TelefonoForm()
