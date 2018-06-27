@@ -1,0 +1,71 @@
+{%  extends 'plantillas_base/base_asistente.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Modificar Alumno{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+{% endblock %}
+
+
+{% block content %}
+     <table width='100%'>
+    <tr >
+        <td width='17%' valign="top" rowspan="10">
+            <br><br>
+            <div class='divNotifGrupo' >
+                <h4>Atención:</h4>
+                    {% if not alumno.correo %}
+                        <p></p>
+                        <p><h6>Ingresar Correo </h6></p>
+                    {% endif %}
+                    {% if not alumno.dui and edad >= 18 %}
+                        <p></p>
+                        <p><h6>Ingresar DUI </h6> </p>
+                    {% endif %}
+                    {% if not telAlum %}
+                        <p></p>
+                        <p><h6>Ingresar Telefono del Alumno </h6> </p>
+                    {% endif %}
+                    {% if not telEnc %}
+                        <p></p>
+                        <p><h6>Ingresar Telefono del Encargado </h6> </p>
+                    {% endif %}
+                    <br><br><br><br><br><br><br><br>
+            </div>
+        </td>
+        <td width="10%">
+        </td>
+        <td width='60%' height='100px' >
+            <br>
+            <br>
+                <h4 >Alumno</h4>
+                <p></p>
+                <p></p>
+
+                <form action="" method="post">
+                {% csrf_token %}
+                    <table width="80%" align="center" height="370px">
+                        {{ form.as_table }}
+                    </table>
+                <p></p>
+                    <table width="60%" align="center">
+
+                        <td align="left">
+                            <p></p>
+                        <button type="button submit" class="btn btn-primary" >Guardar</button>
+                        </td>
+                        <td align="left">
+                            <p></p>
+
+                        <a type="button" class="btn btn-secondary" href="{#% url 'detalle_alumno' id_alumno=alumno.codigo %#}">Cancelar</a>
+                        </td>
+                    </table>
+                </form>
+
+         </td>
+         <td width='30%' height='100px' >
+         </td>
+    </tr>
+    </table>
+{% endblock %}

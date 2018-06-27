@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 
-from apps_cenco.db_app.models import Grupo, Empleado
+from apps_cenco.db_app.models import Grupo, Empleado, Horario
 
 
 class CrearGrupoForm(forms.ModelForm):
@@ -26,3 +26,4 @@ class CrearGrupoForm(forms.ModelForm):
     def __init__ (self, *args, **kwargs):
         super(CrearGrupoForm, self).__init__(*args, **kwargs)
         self.fields['profesor'].queryset = Empleado.objects.filter(tipo='Pro')
+

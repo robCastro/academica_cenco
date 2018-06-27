@@ -16,10 +16,21 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.conf.urls import include
+
+from apps_cenco.login.views import *
 from apps_cenco.modulo_grupos.views import *
+from apps_cenco.modulo_alumnos.views import *
+from django.contrib.auth import views as auth_views
+
+#  {'next_page': '/login'}
 
 urlpatterns = [
+    url(r'^$', principal, name="inicio"),  # Valida que sucede cuando se entra al localhost:8000/
+    url(r'^accounts/login/$', auth_views.login, {'template_name': 'sesiones/login.html'}, name='login'),
+    url(r'^logout/$', auth_views.logout, {'template_name': 'sesiones/logout.html'}, name='logout'),
     url(r'^admin/', admin.site.urls),
     url(r'^grupos/', include('apps_cenco.modulo_grupos.urls')),
-    url(r'^credenciales/', include('apps_cenco.login.urls'))
+    url(r'^credenciales/', include('apps_cenco.login.urls')),
+    url(r'^alumnos/', include('apps_cenco.modulo_alumnos.urls')),
+    url(r'^horarios/', include('apps_cenco.modulo_horarios.urls')),
 ]

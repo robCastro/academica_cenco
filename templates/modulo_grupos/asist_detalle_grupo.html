@@ -1,4 +1,4 @@
-{% extends 'plantillas_base/base_director.html' %}
+{% extends 'plantillas_base/base_asistente.html' %}
 {% load staticfiles %}
 
 {% block titulo %} Grupo {{ grupo.horario }}  {{ grupo.codigo }} {% endblock %}
@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post" action="{% url 'detalle_grupo' grupo.codigo %}">
+    <form method="post" action="{% url 'asist_detalle_grupo' grupo.codigo %}">
     {% csrf_token %}
     <table width="100%">
         <tr>
@@ -47,16 +47,8 @@
                         <td width="10%%">
                             Profesor:
                         </td>
-                        <td align="right" width="30%">
-                            <select class="custom-select" id="cbxProfesores" name="cbxProfesores" disabled="disabled">
-                                <option value="{{ grupo.profesor.codigo }}">{{ grupo.profesor }}</option>
-                                {% for profesor in profesores %}
-                                <option value="{{ profesor.codigo }}">{{profesor.nombre}} {{ profesor.apellido }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td width="60%" style="padding-left: 2%">
-                            <a onclick="desbloqueoProfesores()" href="#" class="text-info">Cambiar</a>
+                        <td width="30%">
+                        {{ grupo.profesor }}
                         </td>
                     </tr>
                 </table>
@@ -118,41 +110,11 @@
             <td width="10%">
                 <input type="submit" value="Guardar" class="btn btn-primary">
             </td>
-            <td width="10%">
-                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#eliminarGrupoModal">Eliminar</button>
-            </td>
+
         </table>
 
         <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
     </div>
     </form>
 
-    <!-- Modal -->
-    <div class="modal fade" id="eliminarGrupoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Eliminar Grupo</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            {% if alumnos|length_is:"0" %}
-                <form method="post" action="{% url 'eliminar_grupo' grupo.codigo %}">
-                {% csrf_token %}
-                <p>¿Seguro que desea eliminar el grupo {{ grupo.codigo }}, {{ grupo.horario }}?</p>
-                <input type="submit" value="Eliminar" class="btn btn-danger">
-                </form>
-            {% else %}
-                Aún hay Alumnos en este grupo, muevalos a otro para eliminarlo.
-            {% endif %}
-
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
-        </div>
-    </div>
-    </div>
 {% endblock %}

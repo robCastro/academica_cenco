@@ -1,0 +1,19 @@
+{% extends 'plantillas_base/base.html' %}
+
+{% block sidebar_content %}
+    <li class="sidebar-brand">
+        <a href="#">Navegación</a>
+    </li>
+    <li>
+        <a href="{% url 'ver_alumno_propio' %}">Mis Datos</a>
+    </li>
+{% endblock %}
+
+{% block navbar_content %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'alumnoCredencialesPropias' %}">{{ user.get_full_name }}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar Sesión</a>
+    </li>
+{% endblock %}

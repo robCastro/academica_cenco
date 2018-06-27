@@ -1,0 +1,218 @@
+{% extends "plantillas_base/base_asistente.html" %}
+{% load staticfiles %}
+{% block titulo %} Datos de alumno {{ grupo.horario }}  {{ grupo.codigo }} {% endblock %}
+
+#Espacio para los archivos de cabecera o head_content
+{% block head_content %}
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/consultar_alumnos.js' %}"></script>
+        <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
+
+        <script>
+            function reloadform1(){
+                document.getElementById('form1')window.location.reload()
+            }
+            function reloadform2(){
+                document.getElementById('form2').location.reload()
+            }
+            function marcarCheckBox(){
+                document.getElementById('cambioGrupo').checked = true;
+            }
+
+
+
+        </script>
+{% endblock %}
+
+{% block content %}
+    <table width='100%'>
+
+    <tr>
+        <td width='20%' rowspan="2" valign="top">
+            <p></p>
+            <h6> Notificaciones:</h6>
+            <div class='divNotifAlumnos'>
+                {% if not alumno.correo %}
+                    <p></p>
+                    <p><h6>Ingresar Correo </h6></p>
+                {% endif %}
+                {% if not alumno.dui and edad >= 18 %}
+                    <p></p>
+                    <p><h6>Ingresar DUI </h6> </p>
+                {% endif %}
+                {% if not telAlum %}
+                    <p></p>
+                    <p><h6>Ingresar Telefono del Alumno </h6> </p>
+                {% endif %}
+
+
+
+
+
+            </div>
+
+        </td>
+
+        <br/><br/>
+        <h4 align="center">Datos del alumno</h4>
+
+
+        <td width='60%' height='40px' align="right" valign="top">
+
+                <!-- Button trigger modal -->
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a type="button" class="btn btn-primary" href="{% url 'modificar_alumno' alumno.codigo  %}">Modificar Datos</a>
+
+        </td>
+
+
+
+    </tr>
+    <tr>
+        <td width="80%" valign="top">
+        <div style="overflow-x:auto;">
+            <table>
+
+                    <tr >
+                        <td>Nombre: </td>
+                        <td>{{ alumno.nombre }} </td>
+                    </tr>
+                    <tr>
+                        <td>Apellido: </td>
+                        <td>{{ alumno.apellido }}</td>
+                    </tr>
+                    <tr>
+                        <td>Dirección:  </td>
+                        <td>{{ alumno.direccion }}</td>
+                    </tr>
+                    <tr>
+                        <td>Correo:  </td>
+                        <td>{{ alumno.correo}}</td>
+                    </tr>
+                    <tr>
+                        <td>Fecha de nacimiento:  </td>
+                        <td>{{ alumno.fechaNacimiento}}</td>
+                    </tr>
+                    <tr>
+                        <td>DUI:  </td>
+                        <td>{{ alumno.dui}}</td>
+                    </tr>
+                    <tr>
+                        <td>Encargado:  </td>
+                        <td>{{ alumno.encargado}}</td>
+                    </tr>
+                    <tr>
+                        <td>Telefonos:  </td>
+                    </tr>
+
+                    <tr align="right">
+                        <form method="post" action="" id="form1">
+                        {% csrf_token %}
+                        <td>    </td>
+
+                        <td>
+                            <table class="table table-hover container table-sm" id="dinamicos" style="text-align: center">
+
+                            <tr bgcolor="#f0f8ff" >
+
+                                <th>Número</th>
+                                <th>Tipo</th>
+                                <th>Eliminar</th>
+
+                            </tr>
+                            {% for telefono in telefonos %}
+                                <tr>
+                                {% if telefono.alumno == alumno %}
+                                <td>{{ telefono.numero}}</td>
+                                    <td>{{ telefono.tipo }}</td>
+                                <td align="center"><input type="checkbox" onclick="marcarCheckBox()" name="{{telefono.codigo}}" class="checkbox"></td>
+                                {% endif %}
+                                </tr>
+                            {% endfor %}
+
+                            <tr>
+
+
+                            </tr>
+
+                            </table>
+                        </td>
+
+                        <td>
+
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarTelefonoModal">Agregar Número</button>
+                            <button type="button" class="delete btn btn-primary " data-toggle="modal" data-target="#myDeleteModal" disabled="disabled">Borrar</button>
+                        </td>
+
+                        <td>
+
+                        </td>
+                        <div class="modal fade" id="myDeleteModal" tabindex="-1" role="dialog" aria-labelledby="myEditModalLabel" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                                <h4 class="modal-title" id="myDeleteModalLabel"></h4>
+                              </div>
+                              <div class="modal-body">
+                              <p>¿Desea borrar los datos?</p>
+
+
+                                        <div class="modal-footer">
+                                            <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
+                                                <i class="icon-remove"></i>Cancelar
+                                            </button>
+                                            <button type="submit button" class="btn btn-primary deletebutton" id="eliminar1" name="eliminar1" >Borrar</button>
+                                            <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
+                                        </div>
+
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        </form>
+
+                    </tr>
+
+
+            </table></div>
+    </td>
+    </tr>
+
+    <tr valign="bottom">
+
+
+    </tr>
+    </table>
+
+    <div class="modal fade" id="agregarTelefonoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Nuevo numero</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="nuevoTelefonoForm" action="" method="post" id="form2" autocomplete="off">
+                {% csrf_token %}
+                {{ form }}
+
+            <p></p>
+            <button type="button submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}

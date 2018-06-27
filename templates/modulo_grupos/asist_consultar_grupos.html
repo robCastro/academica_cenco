@@ -1,4 +1,4 @@
-{%  extends 'plantillas_base/base_director.html' %}
+{%  extends 'plantillas_base/base_asistente.html' %}
 {% load staticfiles %}
 
 {% block titulo %}Consultar Grupos{% endblock %}
@@ -19,7 +19,7 @@
                 <h4>Horarios con m&aacute;s de {{ lim_horario }} estudiantes</h4>
                 {% if horarios_exceso|length > 0 %}
                 {% for horario in horarios_exceso %}
-                <p><b>Horario:</b> {{ horario }}</p>
+                <p><b>Horario:</b> {{ horario.cantidad_alumnos }}</p>
                 {% endfor %}
                 {% else %}
                 <p>Ning&uacute;n horario excede el l&iacute;mite en este momento.</p>
@@ -35,27 +35,24 @@
                 {% endif %}
             </div>
         </td>
-        <td width='20%' height='100px'>
-                <!-- Button trigger modal -->
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarGrupoModal">Agregar Nuevo Grupo</button>
-        </td>
+
         <td width='80%' align="right">
+            <p></p>
             Filtrar Grupos:
             <select onchange="filterSelection(this.value)">
                 <option value="all" selected>Todos los Horarios</option>
-                {% for valor in tipos %}
-                    <option value="{{ valor.dias_asignados }}">{{ valor.dias_asignados }}</option>
-                {% endfor %}
+                <option value="1">Lunes y Miercoles</option>
+                <option value="2">Martes y Jueves</option>
+                <option value="3">Fines de Semana</option>
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         </td>
     </tr>
     <tr>
-        <td colspan="2" id="dinamicos" valign="top">
+        <td colspan="2" id="dinamicos">
             {% for grupo in grupos %}
-            <a href="{% url 'detalle_grupo' id_grupo=grupo.codigo %}">
-            <div class='divGrupo {{ grupo.horario.dias_asignados }} all'>
+            <a href="{% url 'asist_detalle_grupo' id_grupo=grupo.codigo %}">
+            <div class='divGrupo {{ grupo.tipo }} all'>
                 <img class= 'imgGrupo' src="{% static 'img/Grupo.png' %}">
                 <h3>Grupo {{ grupo.codigo }}</h3>
                 <p><b>Horario:</b> {{ grupo.horario }}</p>
@@ -66,29 +63,4 @@
         </td>
     </tr>
     </table>
-
-<!-- Modal -->
-<div class="modal fade" id="agregarGrupoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Nuevo Grupo</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="nuevoGrupoForm" action="" method="post">
-            {% csrf_token %}
-            {{ form }}
-            <p></p>
-            <button type="button submit" class="btn btn-primary" >Guardar Grupo</button>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

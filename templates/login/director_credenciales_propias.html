@@ -1,15 +1,47 @@
-{% extends 'base.html' %}
+{% extends 'plantillas_base/base_director.html' %}
 {% load staticfiles %}
 
 {% block titulo %} Credenciales Director {% endblock %}
 
 {% block head_content %}
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/panel_custom.css' %} " rel="stylesheet">
     <script src="{% static 'js/consultar_grupos.js' %}"></script>
+
+    <script>
+
+        function contraseniasIguales() {
+            var contrasenia = document.getElementById('contrasenia');
+            var repContrasenia = document.getElementById('repContrasenia');
+            var usuario = document.getElementById('txtUsuario');
+            var viejaContrasenia = document.getElementById('vieja_contrasenia');
+            var boton = document.getElementById('btnGuardar');
+            if(  contrasenia.value != repContrasenia.value ){
+
+                contrasenia.className = "form-control is-invalid";
+                repContrasenia.className = "form-control is-invalid";
+                boton.disabled = true;
+            }
+            else {
+                if(contrasenia.value == '' || viejaContrasenia.value == ''){
+                    boton.disabled = true;
+                }
+                else{
+                    if(usuario.value != ""){
+                        boton.disabled = false;
+                        contrasenia.className = "form-control is-valid";
+                        repContrasenia.className = "form-control is-valid";
+                    }
+                    else{
+                        boton.disabled = true;
+                    }
+                }
+            }
+        }
+    </script>
 {% endblock %}
 
 {% block content %}
-
     <table width="100%">
         <tr>
             <td width="20%" rowspan="5" valign="top" style="padding-top: 5%">
@@ -17,7 +49,7 @@
                 &nbsp;&nbsp;&nbsp;
                 <div class='divNotifGrupo'>
                     <p></p>
-                    <h5><u><a href="#">Director</a></u></h5>
+                    <h5><u><a href="{% url "director_credenciales_propias" %}">Director</a></u></h5>
                     <p></p>
                     <h5><u><a href="#">Asistentes</a></u></h5>
                     <p></p>
@@ -37,33 +69,62 @@
         <tr>
             <td align="left" style="padding-left: 15%; padding-top: 3%" valign="top">
                 <table width="100%" >
-                    <form>
+                    <form method="post" action="">
+                        {% csrf_token %}
                     <tr>
                         <td width="20%">
-                            Usuario:
+                            Usuario
                         </td>
                         <td width="25%">
-                            <input type="text" class="form-control" id="inputEmail" placeholder="Usuario">
+                            <input type="text" class="form-control" id="txtUsuario" name="txtUsuario" onkeyup="contraseniasIguales()" value="{{ user.get_username }}" autofocus>
                         </td>
-                        <td width="55%"></td>
+                        <td width="5%"></td>
+                        <td width="30%" rowspan="10" valign="top">
+                            {% if mensaje|length > 0 %}
+                                <!--<div class="alert alert-dismissible alert-light">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong>{{ mensaje }}</strong>
+                                </div>-->
+                                <div class="{{ clase_mensaje }}" style="max-width: 20rem;">
+                                    <div class="card-header">{{ mensaje }}</div>
+                                    <!--    <div class="card-body">
+                                            <h4 class="card-title">Danger card title</h4>
+                                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                        </div>-->
+                                </div>
+                            {% else %}
+                            {% endif %}
+                        </td>
+                        <td width="15%"></td>
                     </tr>
                     <tr><td><p></p></td></tr>
                     <tr>
                         <td>
-                            Contraseña
+                            Actual
                         </td>
                         <td>
-                            <input type="password" class="form-control" id="inputEmail" placeholder="Contraseña">
+                            <input type="password" class="form-control" id="vieja_contrasenia" name="vieja_contrasenia" onkeyup="contraseniasIguales()">
                         </td>
                         <td></td>
                     </tr>
                     <tr><td><p></p></td></tr>
                     <tr>
                         <td>
-                            Repetir Contraseña
+                            Nueva
                         </td>
                         <td>
-                            <input type="password" class="form-control" id="inputEmail" placeholder="Contraseña">
+                            <input type="password" class="form-control" id="contrasenia" name="contrasenia" onkeyup="contraseniasIguales()">
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr><td><p></p></td></tr>
+                    <tr>
+                        <td>
+                            Repetir Nueva
+                        </td>
+                        <td>
+                            <input type="password" class="form-control" id="repContrasenia" onkeyup="contraseniasIguales()">
+                            <div class="invalid-feedback">Contraseñas no coinciden</div>
                         </td>
                         <td></td>
                     </tr>
@@ -71,14 +132,14 @@
                     <tr><td><p></p></td></tr>
                     <tr>
                         <td colspan="2">
-                            <div align="center"><input type="submit" class="btn btn-default" value="Guardar" align="center"></div>
+                            <div align="center">
+                                <input type="submit" class="btn btn-default" disabled="disabled" id="btnGuardar" value="Guardar" align="center">
+                            </div>
                         </td>
-
                     </tr>
                     </form>
                 </table>
             </td>
         </tr>
     </table>
-
 {% endblock %}

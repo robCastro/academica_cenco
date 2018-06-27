@@ -1,0 +1,45 @@
+{%  extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Cambiar Credenciales{% endblock %}
+
+ {% block content %}
+     <table width="100%" xmlns:height="http://www.w3.org/1999/xhtml">
+     <tr>
+         <td width="25%">
+        </td>
+         <td width="50%" height='100px' >
+             <br>
+            <br>
+             {% for message in messages %}
+             {% if 'success' in message.tags %}
+             <div class="alert alert-success" style="background-color: #2C3E50">
+            <a class="close" href="#" data-dismiss="alert">×</a>
+            {{ message }}
+            </div>
+             {% endif %}
+         {% endfor %}
+             <br>
+            <h4>Mi Usuario:</h4>
+             <br>
+            <br>
+            <form action="" method="post">
+                {% csrf_token %}
+                 <table width="65%" align="center" height="135px">
+                      {{ form.as_table }}
+                 </table>
+             <br>
+              <table width="40%" align="center">
+
+                         <td align="center">
+                            <p></p>
+                        <button type="button submit" class="btn btn-primary" >Guardar</button>
+                        </td>
+                    </table>
+             </form>
+         </td>
+         <td width='30%'>
+         </td>
+     </tr>
+     </table>
+ {% endblock %}

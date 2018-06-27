@@ -1,0 +1,154 @@
+{%  extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Consultar Horarios{% endblock %}
+
+{% block head_content %}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/mant_horarios.js' %}"></script>
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/resaltar_fila.css' %} " rel="stylesheet">
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+
+    <h3>Horarios Disponibles</h3>
+    <p></p>
+    <table width="100%">
+        <tr>
+            <td width="20%" align="right">
+            <button id="btnNuevoHorario" type="button" class="btn btn-primary" data-toggle="modal" data-target="#AgregarHorario">Agregar Nuevo Horario</button>
+            </td>
+            <td width="20%">
+            <button id="btnEditarHorario" type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditarHorario">Editar Horario Seleccionado</button>
+            </td>
+            <td width="50%" align="right">
+            <button id="btnEliminarHorario" type="button" class="btn btn-danger" data-toggle="modal" data-target="#EliminarHorario">Eliminar Horario Seleccionado</button>
+            </td>
+            <td width="5%"></td>
+        </tr>
+    </table>
+    <p></p> <p></p>
+    <table class="table table-sm" id="tabla_horarios">
+    <thead class="thead-dark">
+        <th >C&oacute;digo</th>
+        <th >Dias Asignados</th>
+        <th >Hora de Inicio</th>
+        <th >Hora de Finalizaci&oacute;n</th>
+        <th >No. Alumnos Inscritos</th>
+    </thead>
+    <tbody>
+    {% for horario in horarios %}
+        <tr>
+            <td>{{ horario.codigo }}</td>
+            <td>{{ horario.dias_asignados }}</td>
+            <td>{{ horario.hora_inicio }}</td>
+            <td>{{ horario.hora_fin }}</td>
+            <td>{{ horario.cantidad_alumnos }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+
+    <!-- Modal -->
+<div class="modal fade" id="AgregarHorario" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Nuevo Horario</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="nuevoHorarioForm" action="" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <p></p>
+            <button type="button submit" class="btn btn-primary" >Guardar Horario</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal -->
+<div class="modal fade" id="EditarHorario" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Editar Horario</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="editarHorarioForm" action="" method="post">
+            {% csrf_token %}
+            <tr>
+                <div id="id_horario_a_editar" style="display: none"></div>
+                <th><label for="id_dias_asignadosEd">Dias Asignados:</label></th>
+                <td><select name="dias_asignadosEd" required class="form-control" id="id_dias_asignadosEd">
+                    <option value="" selected>---------</option>
+                    {% for tipo in tipos %}
+                    <option value="{{ tipo.dias_asignados }}">{{ tipo.dias_asignados }}</option>
+                    {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="id_hora_inicioEd">Hora de Inicio:</label></th>
+                <td><input type="time" name="hora_inicioEd" required class="form-control" id="id_hora_inicioEd" /></td>
+            </tr>
+            <tr>
+                <th><label for="id_hora_finEd">Hora de Finalizacion:</label></th>
+                <td><input type="time" name="hora_finEd" required class="form-control" id="id_hora_finEd" /></td>
+            </tr>
+            <p></p>
+            <button type="button submit" class="btn btn-primary" >Actualizar Horario</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="EliminarHorario" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Eliminando Horario Seleccionado</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="EliminarHorarioForm" action="" method="post">
+            {% csrf_token %}
+                <div id="eliminar" style="display: none">-1</div>
+                <div id="eliminarElemento">Ningun horario seleccionado</div>
+            <p></p>
+            <button type="button submit" class="btn btn-danger" >Confirmar</button>
+            <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+            </form>
+        </div>
+        </div>
+    </div>
+</div>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+
+{% endblock %}

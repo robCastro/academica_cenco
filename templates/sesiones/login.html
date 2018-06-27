@@ -1,0 +1,21 @@
+{% extends 'plantillas_base/base_usuario_sinlog.html' %}
+
+{% block titulo %}Iniciar Sesi&oacute;n{% endblock %}
+
+{% block content %}
+    <br><br><br>
+  <h2 align="center">Centro de Ense&ntilde;anza en Computaci&oacute;n</h2>
+    <br>
+  <form method="post">
+
+    <table class="blockquote" cellpadding="10px"  align="center">
+    {% csrf_token %}
+    {{ form }}
+    </table>
+      <br><br>
+      <p align="center">
+    <button class="button btn-primary" style="font-size: 25px"  type="submit">Iniciar Sesi&oacute;n</button>
+</p>
+  </form>
+
+{% endblock %}
