@@ -65,3 +65,23 @@ class AlumnoCredencialesPropiasForm(forms.Form):
         self.user = kwargs.pop('user')
         super(AlumnoCredencialesPropiasForm, self).__init__(*args, **kwargs)
 
+class ModCredAsistForm(forms.Form):
+    usuario = forms.CharField(max_length=25, widget=forms.TextInput(attrs={'size': '25', 'requerid': 'True'}),label='Usuario:')
+    contrasenia1=forms.CharField(max_length=15,widget=forms.PasswordInput,label='Contraseña')
+    contrasenia2=forms.CharField(max_length=15,widget=forms.PasswordInput,label='Repetir')
+
+    def clean_contrasenia2(self):
+        contrasenia1 = self.cleaned_data.get('contrasenia1')
+        contrasenia2 = self.cleaned_data.get('contrasenia2')
+        if contrasenia1 and contrasenia2 and contrasenia1 != contrasenia2:
+            raise forms.ValidationError('Las contraseñas no coinciden')
+        return contrasenia2
+
+    def clean_usuario(self):
+        usuario=self.cleaned_data.get('usuario')
+        actual=self.user.username
+        existe= User.objects.filter(username = self.cleaned_data.get('usuario')).count()
+        if usuario != actual:
+            if existe:
+                raise forms.ValidationError('El nombre de usuario ya existe')
+        return usuario

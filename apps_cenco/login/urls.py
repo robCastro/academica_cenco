@@ -9,5 +9,7 @@ urlpatterns = [
     url(r'^director_home/$', views.directorCredencialesPropias, name='credenciales_director'),
     url(r'^asistente_home/$', views.homeAsistente, name='home_asistente'),
     url(r'^alumno_home/$', views.homeAlumno, name='home_alumno'),
+    url(r'^alumnos/$', views.consultar_alumnos,name='credenciales_alumno'),
+    url(r'^asistentes/$', views.consultar_asistentes,name='credenciales_asistente'),
 
 ]
