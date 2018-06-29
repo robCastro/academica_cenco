@@ -33,20 +33,25 @@ function RemoveClass(element, name) {
   element.className = arr1.join(" ");
 }
 
-
 $(".deletebutton").on('click', function() {
   var checked = jQuery('input:checkbox:checked').map(function () {
     return this.value;
-}).get();
+    }).get();
 jQuery('input:checkbox:checked').parents("tr").remove();
-
 });
 
-$(function() {
+
+
+
+$(function () {
+    habilitarBorrar();
+});
+
+function habilitarBorrar() {
     $(".checkbox").click(function(){
         $('.delete').prop('disabled',$('input.checkbox:checked').length == 0);
     });
-});
+}
 
 
 
@@ -67,7 +72,9 @@ $(document).on('submit', '#nuevoTelefonoForm', function (a) {
           $('#dinamicos').append(response);
           filterSelection('all');
           $('#agregarTelefonoModal').modal('hide');
-        }
+          habilitarBorrar();
+
+                  }
     })
 })
 
