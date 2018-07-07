@@ -25,6 +25,7 @@ SECRET_KEY = 'hbxp-uh_v=(r4cd)rn$6jv)p*u#!%zr1qp12w9qxyx)h&&_sfr'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = ['*']
 
 LOGIN_REDIRECT_URL = '/'
@@ -78,14 +79,15 @@ WSGI_APPLICATION = 'academica_cenco.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'cenco',
-        'USER' : 'postgres',
-        'PASSWORD' : 'disenio115sprint1',
-        'HOST' : '172.29.246.60',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'd8imaqbtc06d21',
+        'USER' : 'dprawldrttnoum',
+        'PASSWORD' : '6ef5882389db25d4431538211ca9ff78d82509bc2cde7f158fdaa14c5d2f1b0e',
+        'HOST' : 'ec2-50-16-231-2.compute-1.amazonaws.com',
         'PORT' : '5432',
     }
 }
+
 
 
 # Password validation
