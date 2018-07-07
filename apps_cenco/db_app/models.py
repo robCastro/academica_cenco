@@ -70,7 +70,6 @@ class Encargado (models.Model):
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
     correo = models.EmailField(blank=True, null=True)
-    fechaNacimiento = models.DateField()
     dui = models.CharField(max_length=10)
 
     def __unicode__(self):
