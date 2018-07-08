@@ -34,7 +34,7 @@ class InsertarAlumnoForm(forms.ModelForm):
             'username': forms.HiddenInput(attrs={'class':'form-control','required':True}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
-            'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'direccion': forms.Textarea(attrs={'rows':3, 'cols':70,'required':True}),
             'correo': forms.EmailInput(attrs={'class': 'form-control', 'required': False}),
             'fechaNacimiento': forms.DateTimeInput(attrs={'class': 'form-control', 'required': True, 'type': 'date'}, ),
             'dui': forms.TextInput(attrs={'class': 'form-control', 'required': False,'pattern':'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[-]'+'[0-9]'}),
@@ -74,7 +74,6 @@ class CrearEncargadoForm(forms.ModelForm):
             'apellido',
             'direccion',
             'correo',
-            'fechaNacimiento',
             'dui',
         ]
         labels = {
@@ -82,7 +81,6 @@ class CrearEncargadoForm(forms.ModelForm):
             'apellido': 'Apellido',
             'direccion': 'Direccion',
             'correo': 'Correo',
-            'fechaNacimiento': 'Fecha de nacimiento',
             'dui': 'Dui',
         }
 
@@ -91,7 +89,6 @@ class CrearEncargadoForm(forms.ModelForm):
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
             'correo': forms.EmailInput(attrs={'class': 'form-control', 'required': False}),
-            'fechaNacimiento': forms.DateTimeInput(attrs={'class': 'form-control', 'required': True, 'type': 'date'}, ),
             'dui': forms.TextInput(attrs={'class': 'form-control', 'required': True,
                                           'pattern': '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[-]' + '[0-9]'}),
         }

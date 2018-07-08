@@ -12,7 +12,7 @@
         <form method="POST" action="" id="ingresarAlumnoForm">
             {% csrf_token %}
             <table width="45%" >
-             {{ form }}
+             {{ form}}
 
              {{ form3 }}
 
@@ -24,15 +24,21 @@
                 </td>
               <td>
             <button type="button submit" id="btnGuardarAlumno" class="save btn btn-primary">Guardar</button>
+
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarEncargadoModal" >Agregar Nuevo Encargado</button>
               </td>
                </tr>
+                <tr>
+                </tr>
 
             </table>
+
 
         </form>
 
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarEncargadoModal" >Agregar Nuevo Encargado</button>
+
+
 
 <!-- Modal -->
 <div class="modal fade" id="agregarEncargadoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -56,20 +62,19 @@
                 <th><label for="id_apellidoE">Apellido:</label></th>
                 <td><input type="text" name="apellidoE" id="id_apellidoE" required class="form-control" maxlength="40" /></td>
             </tr>
-            <tr>
-                <th><label for="id_direccionE">Direccion:</label></th>
-                <td><input type="text" name="direccionE" required class="form-control" id="id_direccionE" /></td>
-            </tr>
-            <tr><th><label for="id_correoE">Correo:</label></th><td><input type="email" name="correoE" id="id_correoE" class="form-control" maxlength="254" /></td></tr>
+
 
             <tr>
-                <th><label for="id_fechaNacimientoE">Fecha de nacimiento:</label></th>
-                <td><input type="date" name="fechaNacimientoE" required class="form-control" id="id_fechaNacimientoE" /></td>
+                <th><label for="id_direccionE">Direccion:</label></th>
+                <td><textarea name="direccionE" id="id_direccionE" rows="3" cols="54" required></textarea></td>
             </tr>
+
+            <tr><th><label for="id_correoE">Correo:</label></th><td><input type="email" name="correoE" id="id_correoE" class="form-control" maxlength="254" /></td></tr>
+
 
             <tr>
                 <th><label for="id_duiE">Dui:</label></th><td>
-                <input type="text" name="duiE" id="id_duiE" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" required class="form-control" maxlength="10" /></td>
+                <input type="text" name="duiE" id="id_duiE" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" /></td>
             </tr>
 
              <tr>
