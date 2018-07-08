@@ -1,0 +1,385 @@
+{% extends 'plantillas_base/base_asistente.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Inscribir Alumnos{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    <!--<select id="filtroSeleccionarEncargado" class="custom-select">
+                <option value="0">Todos</option>
+                <option value="1">A-E</option>
+                <option value="2">F-J</option>
+                <option value="3">K-O</option>
+                <option value="4">P-T</option>
+                <option value="5">U-Z</option>
+    </select>-->
+    <script>
+
+    function direccionesAlumEncar(){
+        var dirAlumno = document.getElementById('txtDireccionAlumno');
+        var dirEncargado = document.getElementById('txtDireccionEncargado');
+        if(dirAlumno.value != "" && dirEncargado.value == ""){
+            dirEncargado.value = dirAlumno.value;
+        }
+        if(dirEncargado.value != "" && dirAlumno.value == ""){
+            dirAlumno.value = dirEncargado.value;
+        }
+    }
+
+    </script>
+
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+    <span class="btnCerrar">&times;</span>
+        <strong></strong>
+    </div>
+    <!-- FIN_ALERTAS -->
+
+    <div style="padding-left: 1%; padding-top: 1%">
+        <h3>Inscribir Alumno</h3>
+    </div>
+    {% if cantidadGrupos > 0 %}
+    <div style="padding-left: 10%">
+    <form>
+        <table width="100%">
+            <tr>
+                <td width="17%">
+                    <label for="txtNombreAlumno"><strong>Nombre*:</strong></label>
+                </td>
+                <td width="25%">
+                    <div class="form-group">
+                        <input class="form-control" required="" maxlength="30" id="txtNombreAlumno" name="txtNombreAlumno" type="text">
+                    </div>
+                </td>
+                <td width="58%"></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtApellidoAlumno"><strong>Apellido*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input class="form-control" required="" maxlength="30" id="txtApellidoAlumno" name="txtApellidoAlumno" type="text">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtDireccionAlumno"><strong>Dirección*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <textarea class="form-control" required="" id="txtDireccionAlumno" name="txtDireccionAlumno" rows="3"></textarea>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtFechaNacAlumno"><strong>Fecha de Nacimiento*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input id="txtFechaNacAlumno" type="date" />
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtDuiAlumno"><strong>DUI:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="txtDuiAlumno" id="txtDuiAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtCorreoAlumno"><strong>Correo:</strong></label>
+                    <!-- Small para mantener alineacion -->
+                    <small id="emailHelp" class="form-text text-muted">.</small>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input class="form-control" id="txtCorreoAlumno" name="txtCorreoAlumno" aria-describedby="emailHelp" type="email">
+                        <small id="emailHelp" class="form-text text-muted">Ejemplo: alumno@correo.com</small>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtTelefonoAlumno"><strong>Telefono:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="txtTelefonoAlumno" id="txtTelefonoAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="cbxTipoTelefonoAlumno"><strong>Tipo de Telefono:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxTipoTelefonoAlumno" name="cbxTipoTelefonoAlumno" class="custom-select">
+                            <option value="-1">---</option>
+                            <option value="1">Casa</option>
+                            <option value="2">Trabajo</option>
+                            <option value="3">Móvil</option>
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="cbxGrupo"><strong>Grupo*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxGrupo" name="cbxGrupo" class="custom-select">
+                            {% for grupo in grupos %}
+                                <option value="{{ grupo.codigo }}">{{ grupo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label><strong>Responsable Económico*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <div class="custom-control custom-radio">
+                            <input id="radioDependiente" name="radioEstado" class="custom-control-input" checked="" type="radio">
+                            <label class="custom-control-label" for="radioDependiente">Encargado</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input id="radioIndependiente" name="radioEstado" class="custom-control-input" type="radio">
+                            <label class="custom-control-label" for="radioIndependiente">Independiente</label>
+                        </div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <!--<tr>
+                <td>
+                    <label for="cbxEncargado"><strong>Encargado*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxEncargado" name="cbxEncargado" class="custom-select">
+                            <option selected="">Open this select menu</option>
+                            <option value="1">One</option>
+                            <option value="2">Two</option>
+                            <option value="3">Three</option>
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>-->
+        </table>
+    </form>
+    </div>
+
+    <div id="seccionEncargado">
+        <div style="padding-left: 1%; padding-top: 1%">
+            <h3>Encargado</h3>
+        </div>
+        <div style="padding-left: 10%">
+            <table width="100%">
+                <td width="15%">
+                    <button type="button" id="btnSeleccionarEncargado" onclick="filtrarEncargados()" data-toggle="modal" data-target="#seleccionarEncargado" class="btn btn-primary">Seleccionar Existente</button>
+                </td>
+                <td width="15%">
+                    <button type="button" id="btnRegistrarEncargado" onclick="direccionesAlumEncar()" data-toggle="modal" data-target="#RegistrarEncargado" class="btn btn-primary">Registrar Nuevo</button>
+                </td>
+                <td></td>
+            </table>
+
+        </div>
+    </div>
+
+
+    {% else %}
+        <h5>No hay grupos disponibles, solicite al director que cree grupos.</h5>
+    {% endif %}
+
+
+    <!-- Modal -->
+<div class="modal fade" id="RegistrarEncargado" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Registrar Encargado</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="">
+                <table width="100%">
+                    <tr>
+                        <td width="25%">
+                            <label for="txtNombreEncargado"><strong>Nombre*:</strong></label>
+                        </td>
+                        <td width="75%">
+                            <div class="form-group">
+                                <input class="form-control" required="" maxlength="30" id="txtNombreEncargado" name="txtNombreEncargado" type="text">
+                            </div>
+                        </td>
+                        <td width=""></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtApellidoEncargado"><strong>Apellido*:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input class="form-control" required="" maxlength="30" id="txtApellidoEncargado" name="txtApellidoEncargado" type="text">
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtDireccionEncargado"><strong>Dirección*:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <textarea class="form-control" required="" id="txtDireccionEncargado" name="txtDireccionEncargado" rows="3"></textarea>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtDuiEncargado"><strong>DUI:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="text" name="txtDuiEncargado" id="txtDuiEncargado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtCorreoEncargado"><strong>Correo:</strong></label>
+                            <!-- Small para mantener alineacion -->
+                            <small id="emailHelp" class="form-text text-muted">.</small>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input class="form-control" id="txtCorreoEncargado" name="txtCorreoEncargado" aria-describedby="emailHelp" type="email">
+                                <small id="emailHelp" class="form-text text-muted">Ejemplo: encargado@correo.com</small>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtTelefonoEncargado"><strong>Telefono:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="text" name="txtTelefonoEncargado" id="txtTelefonoEncargado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="cbxTipoTelefonoEncargado"><strong>Tipo de Telefono:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <select id="cbxTipoTelefonoEncargado" name="cbxTipoTelefonoEncargado" class="custom-select">
+                                    <option value="-1">---</option>
+                                    <option value="1">Casa</option>
+                                    <option value="2">Trabajo</option>
+                                    <option value="3">Móvil</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
+                <table width="100%">
+                    <tr>
+                        <td width="5%"></td>
+                        <td width="10%"><button type="button submit" class="btn btn-primary">Guardar</button></td>
+                    </tr>
+                </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <!-- Modal -->
+<div class="modal fade" id="seleccionarEncargado" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Seleccionar Encargado</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <table width="100%">
+                <tr>
+                    <td width="30%">
+                        Nombre inicia con:
+                    </td>
+                    <td>
+                        <select id="filtroSeleccionarEncargado" class="custom-select">
+                            <option value="0">Todos</option>
+                            <option value="1">A-E</option>
+                            <option value="2">F-J</option>
+                            <option value="3">K-O</option>
+                            <option value="4">P-T</option>
+                            <option value="5">U-Z</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Encargados:</td>
+                    <td>
+                        <select id="cbxEncargados" class="custom-select">
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <button type="button submit" class="btn btn-primary" >Seleccionar</button>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

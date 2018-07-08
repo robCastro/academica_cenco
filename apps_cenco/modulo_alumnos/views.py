@@ -290,3 +290,20 @@ def registrar_encargado(request):
             return render(request, "modulo_alumnos/registrar_alumnos.html", context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
+
+def inscribirAlumno(request):
+    grupos = Grupo.objects.all().order_by('-codigo')
+    cantidadGrupos = Grupo.objects.all().count()
+    encargados = Encargado.objects.all().order_by('nombre')
+    context = {
+        'grupos' : grupos,
+        'cantidadGrupos' : cantidadGrupos,
+        'encargados' : encargados,
+    }
+    return render(request, "modulo_alumnos/inscribir_alumnos.html", context)
+
+def registrarEncargado(request):
+    nombre = request.POST.get("txtNombreEncargado")
+    apellido = request.POST.get("txtApellidoEncargado")
+    direccion = request.POST.get("txtDireccionEncargado")
