@@ -8,19 +8,19 @@ class CrearGrupoForm(forms.ModelForm):
     class Meta:
         model = Grupo
         fields = [
-            'fechaInicio',
-            'horario',
-            'profesor',
+           'fechaInicio',
+           'horario',
+           'profesor',
             ]
         labels = {
-            'fechaInicio'	: 'Fecha de inicio:',
-            'horario'		: 'Horario asignado:',
-            'profesor'      : 'Profesor encargado:',
+           'fechaInicio'	: 'Fecha de inicio:',
+           'horario'		: 'Horario asignado:',
+           'profesor'       : 'Profesor encargado:',
         }
         widgets = {
-            'fechaInicio'   : forms.DateTimeInput(attrs={'class':'form-control', 'required':True,'type':'date'},),
-            'horario'       : forms.Select(attrs={'class':'form-control', 'required':True}),
-            'profesor'		: forms.Select(attrs={'class':'form-control', 'required':True}),
+           'fechaInicio'   : forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+           'horario'       : forms.Select(attrs={'class':'form-control', 'required':True}),
+           'profesor'		: forms.Select(attrs={'class':'form-control', 'required':True}),
         }
 
     def __init__ (self, *args, **kwargs):

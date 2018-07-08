@@ -47,10 +47,16 @@ $(document).on('submit', '#nuevoGrupoForm', function (a) {
             csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
         },
         success:function (response) {
-          alert("Grupo creado con exito");
           $('#dinamicos').append(response);
           filterSelection('all');
           $('#agregarGrupoModal').modal('hide');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html('Grupo guardado con exito');
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta exito');
+
         }
     })
 })

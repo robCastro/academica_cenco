@@ -10,17 +10,20 @@ from django.http import Http404, HttpResponse, JsonResponse
 
 from apps_cenco.db_app.models import Horario
 
-from apps_cenco.modulo_horarios.forms import CrearHorarioForm
+from apps_cenco.modulo_horarios.forms import CrearHorarioForm, EditarHorarioForm
+
 
 @login_required
 def consultar_horario(request):
     user = User.objects.get(username=request.user)
     if user.groups.filter(name="Director").exists():
         form = CrearHorarioForm()
+        form2 = EditarHorarioForm()
         horarios = Horario.objects.order_by('dias_asignados')
         tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
                                     "order by dias_asignados")
-        return render(request, "modulo_horarios/consultar_editar_horario.html", {'horarios': horarios, 'form': form, 'tipos': tipos})
+        context = {'horarios': horarios, 'form': form, 'tipos': tipos, 'form2': form2}
+        return render(request, "modulo_horarios/consultar_editar_horario.html", context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
 

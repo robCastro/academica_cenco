@@ -7,12 +7,32 @@
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/consultar_grupos.js' %}"></script>
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+	<link rel="stylesheet" href="{% static 'css/style.css' %}">
+	<script src="{% static 'js/jquery-ui.js' %}"></script>
+
+
+   	<script>
+	$( function() {
+		$( "#id_fechaInicio" ).datepicker();
+	} );
+	</script>
+
 {% endblock %}
 
 {% block content %}
+
+        <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+
     <table width='100%'>
     <tr>
-        <td width='20%' rowspan="2" valign="top">
+        <td width='20%' rowspan="2" valign="top"  style="min-width: 300px">
             <p></p>
             <h4>&Aacute;rea de Notificaciones:</h4>
             <div class='divNotifGrupo'>
@@ -37,8 +57,7 @@
         </td>
         <td width='20%' height='100px'>
                 <!-- Button trigger modal -->
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarGrupoModal">Agregar Nuevo Grupo</button>
+            <button style="align: center" type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarGrupoModal">Agregar Nuevo Grupo</button>
         </td>
         <td width='80%' align="right">
             Filtrar Grupos:
@@ -52,7 +71,7 @@
         </td>
     </tr>
     <tr>
-        <td colspan="2" id="dinamicos" valign="top">
+        <td colspan="2" id="dinamicos" valign="top"  style="min-width: 900px">
             {% for grupo in grupos %}
             <a href="{% url 'detalle_grupo' id_grupo=grupo.codigo %}">
             <div class='divGrupo {{ grupo.horario.dias_asignados }} all'>
@@ -91,4 +110,6 @@
         </div>
     </div>
 </div>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
+

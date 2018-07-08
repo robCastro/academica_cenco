@@ -29,8 +29,6 @@ def consultar_alumnos(request):
         for alumno in alumnos:
             telefonos.append(alumno.telefono_set.first())
 
-
-
         tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
                                     "order by dias_asignados")
 
@@ -75,7 +73,6 @@ def detalle_alumno(request,id_alumno):
         elif request.method=='POST':
             if request.method == 'POST':
                 alum=Alumno.objects.get(pk=id_alumno)
-
 
                 num=request.POST.get('numero')
                 tip=request.POST['tipo']
@@ -172,7 +169,7 @@ def registro_alumno(request):
             form = InsertarAlumnoForm(request.POST)
             form3 =TelefonoForm(request.POST)
             if form.is_valid() :
-                #gererando el usuario
+                # gererando el usuario
                 nom=request.POST['nombre']
                 ape = request.POST['apellido']
                 nomb = " ".join(nom.split())
@@ -181,19 +178,19 @@ def registro_alumno(request):
                 apell = apell.split()
                 usu = str(nomb[0]) + str(apell[0])
                 usu=usu.lower()
-                #consulta a la base para generar correlativo
+                # consulta a la base para generar correlativo
                 users = User.objects.filter(username__contains=usu)
 
-                cant=users.__len__()
-                if cant==0:
-                    cant=1
+                cant = users.__len__()
+                if cant == 0:
+                    cant = 1
                 else:
-                    cant=cant+1
-                usuario=str(usu)+str(cant)
-                correo=request.POST['correo']
-                contra=request.POST['fechaNacimiento']
-                contra=contra.replace("-","")
-                user=User.objects.create_user(username=usuario,email=correo,password=contra,first_name=nom,last_name=ape)
+                    cant = cant+1
+                usuario = str(usu)+str(cant)
+                correo = request.POST['correo']
+                contra = request.POST['fechaNacimiento']
+                contra = contra.replace("-", "")
+                user = User.objects.create_user(username=usuario,email=correo,password=contra,first_name=nom,last_name=ape)
                 user.save()
                 groupEncargado = Group.objects.get(name='Alumno')
                 groupEncargado.user_set.add(user)
@@ -244,7 +241,7 @@ def registrar_encargado(request):
                 apell = " ".join(ape.split())
                 apell = apell.split()
                 usu = str(nomb[0]) + str(apell[0])
-                usu=usu.lower()
+                usu = usu.lower()
                 # consulta a la base para generar correlativo
                 users = User.objects.filter(username__contains=usu)
 

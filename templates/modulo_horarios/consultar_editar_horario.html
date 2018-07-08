@@ -9,6 +9,7 @@
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <link href=" {% static 'css/resaltar_fila.css' %} " rel="stylesheet">
 
+
 {% endblock %}
 
 {% block content %}
@@ -97,24 +98,7 @@
             {% csrf_token %}
             <tr>
                 <div id="id_horario_a_editar" style="display: none"></div>
-                <th><label for="id_dias_asignadosEd">Dias Asignados:</label></th>
-                <td><select name="dias_asignadosEd" required class="form-control" id="id_dias_asignadosEd">
-                    <option value="" selected>---------</option>
-                    {% for tipo in tipos %}
-                    <option value="{{ tipo.dias_asignados }}">{{ tipo.dias_asignados }}</option>
-                    {% endfor %}
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="id_hora_inicioEd">Hora de Inicio:</label></th>
-                <td><input type="time" name="hora_inicioEd" required class="form-control" id="id_hora_inicioEd" /></td>
-            </tr>
-            <tr>
-                <th><label for="id_hora_finEd">Hora de Finalizacion:</label></th>
-                <td><input type="time" name="hora_finEd" required class="form-control" id="id_hora_finEd" /></td>
-            </tr>
-            <p></p>
+               {{ form2 }}
             <button type="button submit" class="btn btn-primary" >Actualizar Horario</button>
             </form>
         </div>

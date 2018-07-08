@@ -10,7 +10,7 @@
     <meta name="author" content="">
 
     <title>{% block titulo %}{% endblock %} - CENCO</title>
-
+    <script src="{% static 'js/jquery.min.js' %}"></script>
     <!-- Bootstrap core CSS -->
     <link href=" {% static 'css/bootstrap.min.css' %} " rel="stylesheet">
 
@@ -24,7 +24,7 @@
   </head>
 
   <body>
-    <div id="wrapper">
+  <div id="wrapper">
   <!-- Sidebar -->
         <div id="sidebar-wrapper" class="bg-primary">
             <ul class="sidebar-nav">
@@ -93,29 +93,14 @@
                     {% block content %}
                     {% endblock %}
                 </div>
-        </div>
+       </div>
         <!-- /#page-content-wrapper -->
 
-    </div>
-    <link href=" {% static 'css/footer.css' %} " rel="stylesheet">
-    <!-- /#wrapper -->
-    <!-- Bootstrap core JavaScript -->
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+                      <!-- footer -->
+    <footer class="footerc">
 
-
-    <!-- Menu Toggle Script -->
-    <script>
-    $("#menu-toggle").click(function(e) {
-        e.preventDefault();
-        $("#wrapper").toggleClass("toggled");
-    });
-    </script>
-
-    <!-- footer -->
-    <footer class="footer">
-      <div class="footerContainer footerColor">
-        <table width="100%"s>
+          <div class="footerContainer footerColor">
+        <table width="100%">
             <tr>
          <div style="width: 150px; display: inline-block"></div>
         <div class="footerDiv">
@@ -138,7 +123,23 @@
         </table>
       </div>
 
+
     </footer>
+    </div>
+    <link href=" {% static 'css/footer.css' %} " rel="stylesheet">
+    <!-- /#wrapper -->
+    <!-- Bootstrap core JavaScript -->
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+
+    <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
 
   </body>
 </html>
