@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.shortcuts import render
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseRedirect
@@ -41,9 +40,9 @@ def directorCredencialesPropias(request):
                     user.username = usuarioEscrito
                     user.set_password(contraseniaNueva)
                     user.save()
-                    update_session_auth_hash(request, user)
                     mensaje = "Cambios realizados"
                     clase_mensaje = "card border-info mb-3"
+                    return redirect('director_credenciales_propias')
             else:
                 mensaje = "Contraseña incorrecta"
                 clase_mensaje = "card border-danger mb-3"
@@ -193,7 +192,6 @@ def asistenteCredencialesPropias(request):
             u.username=form.cleaned_data.get('usuario')
             u.set_password(form.cleaned_data.get('contrasenia1'))
             u.save()
-            update_session_auth_hash(request, u)
             messages.success(request,'Sus credenciales han sido modificadas')
             return redirect('asistenteCredencialesPropias')
      else:
@@ -244,7 +242,6 @@ def alumnoCredencialesPropias(request):
         if form.is_valid():
             u.set_password(form.cleaned_data.get('contrasenia1'))
             u.save()
-            update_session_auth_hash(request, u)
             messages.success(request, 'Su contraseña ha sido modificada')
             return redirect('alumnoCredencialesPropias')
      else:

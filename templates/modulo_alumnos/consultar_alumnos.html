@@ -111,7 +111,7 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td>{{ user.correo }}</td>
+                        <td>{{ user.correo|default_if_none:"" }}</td>
                         <td><a href="" ><font color=#4488ca>{{ user.encargado}}</font> </a></td>
                     </tr>
                 {% endfor %}

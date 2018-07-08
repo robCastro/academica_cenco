@@ -86,7 +86,7 @@
                                     {% endif %}
                                 {% endfor %}
                             </td>
-                            <td>{{ alumno.correo }}</td>
+                            <td>{{ alumno.correo|default_if_none:"" }}</td>
                             <td><input type="checkbox" onclick="marcarCheckBox()" name="{{ alumno.codigo }}"></td>
                         </tr>
                     {% endfor %}

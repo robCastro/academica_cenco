@@ -138,8 +138,8 @@
 
                     <tr class='alumnoRow {{user.grupo.horario.dias_asignados}} all' size="10px" data-toggle="modal" data-target="#myDeleteModal">
                         <td scope="row"> <a id="linkFila edit" >{{ user.codigo }}</a></td>
-                        <td class="nombre">{{ user.nombre }} </td>
-                        <td>{{ user.apellido }}</td>
+                        <td class="nombre">{{ user.nombre|default_if_none:"" }} </td>
+                        <td>{{ user.apellido|default_if_none:"" }}</td>
                         <td>
                             {% for telefono in telefonos  %}
                                 {% if telefono.alumno == user %}
@@ -147,8 +147,8 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td>{{ user.correo }}</td>
-                        <td>{{ user.username}}</td>
+                        <td>{{ user.correo|default_if_none:"" }}</td>
+                        <td>{{ user.username |default_if_none:""}}</td>
                     </tr>
                 {% endfor %}
 

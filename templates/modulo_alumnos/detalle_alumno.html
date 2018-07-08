@@ -87,7 +87,7 @@
                     </tr>
                     <tr>
                         <td>Correo:  </td>
-                        <td>{{ alumno.correo}}</td>
+                        <td>{{ alumno.correo|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
                         <td>Fecha de nacimiento:  </td>
@@ -95,7 +95,7 @@
                     </tr>
                     <tr>
                         <td>DUI:  </td>
-                        <td>{{ alumno.dui}}</td>
+                        <td>{{ alumno.dui|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
                         <td>Encargado:  </td>
