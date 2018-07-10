@@ -78,12 +78,12 @@ WSGI_APPLICATION = 'academica_cenco.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sql10246352',
-        'USER' : 'sql10246352',
-        'PASSWORD' : '75n2L264uE',
-        'HOST' : 'sql10.freemysqlhosting.net',
-        'PORT' : '3306',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'd8imaqbtc06d21',
+        'USER' : 'dprawldrttnoum',
+        'PASSWORD' : '6ef5882389db25d4431538211ca9ff78d82509bc2cde7f158fdaa14c5d2f1b0e',
+        'HOST' : 'ec2-50-16-231-2.compute-1.amazonaws.com',
+        'PORT' : '5432',
     }
 }
 

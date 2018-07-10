@@ -193,6 +193,7 @@ def registro_alumno(request):
                 correo=request.POST['correo']
                 contra=request.POST['fechaNacimiento']
                 contra=contra.replace("-","")
+                contra = contra.replace("/", "")
                 user=User.objects.create_user(username=usuario,email=correo,password=contra,first_name=nom,last_name=ape)
                 user.save()
                 groupEncargado = Group.objects.get(name='Alumno')
@@ -256,9 +257,7 @@ def registrar_encargado(request):
 
                 usuario = str(usu) + str(cant)
                 correo = request.POST['correo']
-                contra = request.POST['fechaNacimiento']
-                contra = contra.replace("-", "")
-                user = User.objects.create_user(username=usuario, email=correo, password=contra,first_name=nom,last_name=ape)
+                user = User.objects.create_user(username=usuario, email=correo, password=usuario,first_name=nom,last_name=ape)
                 user.save()
                 groupEncargado = Group.objects.get(name='Encargado')
                 groupEncargado.user_set.add(user)
@@ -277,7 +276,7 @@ def registrar_encargado(request):
                 telefono.encargado_id = encargado.codigo
                 telefono.tipo=request.POST['tipo']
                 telefono.save()
-                return JsonResponse({'mensaje': "Usuario: "+usuario+" Contraseña: "+contra,'Encargado':'<option value="'+id+'">'+nombre+'</option>'})
+                return JsonResponse({'mensaje': "Usuario: "+usuario+" Contraseña: "+usuario,'Encargado':'<option value="'+id+'">'+nombre+'</option>'})
             # Seria bueno agregar aqui un Internal Server error. Para cuando no guarde bien.
 
         else:
