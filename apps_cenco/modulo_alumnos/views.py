@@ -19,6 +19,8 @@ from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
 
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from apps_cenco.db_app.models import Alumno,Telefono
+from datetime import datetime
+
 
 @login_required
 def consultar_alumnos(request):
@@ -290,19 +292,142 @@ def registrar_encargado(request):
     else:
         raise Http404('Error, no tiene permiso para esta página')
 
-
+@login_required
 def inscribirAlumno(request):
-    grupos = Grupo.objects.all().order_by('-codigo')
-    cantidadGrupos = Grupo.objects.all().count()
-    encargados = Encargado.objects.all().order_by('nombre')
-    context = {
-        'grupos' : grupos,
-        'cantidadGrupos' : cantidadGrupos,
-        'encargados' : encargados,
-    }
-    return render(request, "modulo_alumnos/inscribir_alumnos.html", context)
+    if request.user.groups.filter(name="Asistente").exists():
+        if request.method == 'POST':
+            mensaje = ""
+            nombre = request.POST.get('nombre')
+            apellido = request.POST.get('apellido')
+            direccion = request.POST.get('direccion')
+            fechaNacimiento = request.POST.get('fechaNacimiento')
+            correo = request.POST.get('correo')
+            dui = request.POST.get('dui')
+            codGrupo = request.POST.get('grupo')
+            codEncargado = request.POST.get('encargado')
+            numero = request.POST.get('numero')
+            tipo = request.POST.get('tipo')
+            fechaNacimientoConFormato = datetime.strptime(fechaNacimiento, "%d/%m/%Y").date()
+            print codEncargado
+            #validando existencia de encargado
+            if codEncargado != "-1":              #codigo -1 es para alumnos independientes
+                try:
+                    encargado = Encargado.objects.get(codigo=codEncargado)
+                except Encargado.DoesNotExist:
+                    #$ es para hacer split en JS
+                    mensaje = "Error en guardado de alumno, Encargado invalido.$"
+                    print mensaje
+                    return HttpResponse(mensaje, status=500)
 
+            #validando existencia de grupo
+            try:
+                grupo = Grupo.objects.get(codigo=codGrupo)
+            except Grupo.DoesNotExist:
+                mensaje = "Error en guardado de alumno, Grupo invalido.$"
+                print mensaje
+                return HttpResponse(mensaje, status=500)
+
+            # generando usuario
+            strUsuario = generarUsuario(nombre, apellido)
+            if correo == "":
+                usuario = User.objects.create(username=strUsuario, first_name=nombre, last_name=apellido)
+            else:
+                usuario = User.objects.create(username=strUsuario, first_name=nombre, last_name=apellido, email=correo)
+            usuario.set_password(fechaNacimiento)
+            usuario.save()
+            groupAlumno = Group.objects.get(name='Alumno')
+            groupAlumno.user_set.add(usuario)
+
+            if codEncargado != "-1":      #cod -1 es para alumnos independientes
+                alumno = Alumno.objects.create(username=usuario,nombre=nombre, apellido=apellido, direccion=direccion,
+                                           fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,encargado=encargado,
+                                           grupo=grupo)
+            else:
+                alumno = Alumno.objects.create(username=usuario, nombre=nombre, apellido=apellido, direccion=direccion,
+                                               fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,
+                                               grupo=grupo)
+            alumno.save()
+            grupo.horario.cantidad_alumnos = grupo.horario.cantidad_alumnos + 1
+            grupo.horario.save()
+            grupo.alumnosInscritos = grupo.alumnosInscritos + 1
+            grupo.save()
+            #Guardando telefono
+            if numero != "":
+                telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)
+                telefono.save()
+            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento + "$"
+            return HttpResponse(mensaje, status=200)
+        else:
+            grupos = Grupo.objects.all().order_by('-codigo')
+            cantidadGrupos = Grupo.objects.all().count()
+            encargados = Encargado.objects.all().order_by('nombre')
+            context = {
+                'grupos' : grupos,
+                'cantidadGrupos' : cantidadGrupos,
+                'encargados' : encargados,
+            }
+            return render(request, "modulo_alumnos/inscribir_alumnos.html", context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
 def registrarEncargado(request):
-    nombre = request.POST.get("txtNombreEncargado")
-    apellido = request.POST.get("txtApellidoEncargado")
-    direccion = request.POST.get("txtDireccionEncargado")
+    if request.user.groups.filter(name="Asistente").exists():
+        if request.method == 'POST':
+            nombre = request.POST.get("nombre")
+            apellido = request.POST.get("apellido")
+            direccion = request.POST.get("direccion")
+            dui = request.POST.get("dui")
+            correo = request.POST.get("correo")
+
+            numTelefono = request.POST.get("numero")
+            tipoTelefono = request.POST.get("tipo")
+
+            strUsuario = generarUsuario(nombre, apellido)
+
+            if correo == "":
+                usuario = User.objects.create(username=strUsuario, first_name=nombre, last_name=apellido)
+            else:
+                usuario = User.objects.create(username=strUsuario, first_name=nombre, last_name=apellido,email=correo)
+            usuario.set_password(strUsuario)
+            usuario.save()
+            groupEncargado = Group.objects.get(name='Encargado')
+            groupEncargado.user_set.add(usuario)
+            encargado = Encargado.objects.create(nombre=nombre, apellido=apellido, direccion=direccion, dui=dui, correo=correo,
+                                                 username=usuario)
+            encargado.save()
+            if numTelefono != "":
+                telefono = Telefono.objects.create(numero=numTelefono, encargado=encargado, tipo=tipoTelefono)
+                telefono.save()
+
+            respuesta = {
+                'mensaje' : 'Usuario: ' + strUsuario + ' Contraseña: ' + strUsuario,
+                'codEncargado' : encargado.codigo.__str__(),
+                'nombreEncargado': encargado.nombre,
+                'apellidoEncargado': encargado.apellido,
+                'direccionEncargado': encargado.direccion
+            }
+            #return JsonResponse(json.dumps(respuesta), safe=False)
+            return JsonResponse(respuesta)
+        else:
+            return Http404('Error, acceso solo mediante POST')
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+def generarUsuario(nom, ape):
+    nomb = " ".join(nom.split())
+    nomb = nomb.split()
+    apell = " ".join(ape.split())
+    apell = apell.split()
+    usu = str(nomb[0]) + str(apell[0])
+    usu = usu.lower()
+    # consulta a la base para generar correlativo
+    users = User.objects.filter(username__contains=usu)
+
+    cant = users.__len__()
+    if cant == 0:
+        cant = 1
+    else:
+        cant = cant + 1
+    usuario = str(usu) + str(cant)
+    return usuario
