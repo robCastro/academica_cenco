@@ -25,7 +25,6 @@ SECRET_KEY = 'hbxp-uh_v=(r4cd)rn$6jv)p*u#!%zr1qp12w9qxyx)h&&_sfr'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
 ALLOWED_HOSTS = ['*']
 
 LOGIN_REDIRECT_URL = '/'
@@ -87,7 +86,6 @@ DATABASES = {
         'PORT' : '5432',
     }
 }
-
 
 
 # Password validation

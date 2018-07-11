@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.shortcuts import render
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseRedirect
@@ -41,9 +40,9 @@ def directorCredencialesPropias(request):
                     user.username = usuarioEscrito
                     user.set_password(contraseniaNueva)
                     user.save()
-                    update_session_auth_hash(request, user)
                     mensaje = "Cambios realizados"
                     clase_mensaje = "card border-info mb-3"
+                    return redirect('director_credenciales_propias')
             else:
                 mensaje = "Contraseña incorrecta"
                 clase_mensaje = "card border-danger mb-3"
@@ -66,27 +65,24 @@ def consultar_alumnos(request):
             alumno = Alumno.objects.get(pk=idAlumno)
             contra1=request.POST.get('contrasena1')
             contra2 = request.POST.get('contrasena2')
-            nomUsuarioNuevo=request.POST.get('nombre_usuario_nuevo')
-            print idAlumno,contra1,contra2,nomUsuarioNuevo
-            nomUsuarioActual=request.POST.get('nombre_usuario_actual')
-            existe=User.objects.filter(username=nomUsuarioNuevo).count()
 
-            if nomUsuarioNuevo!=nomUsuarioActual:
-                if existe:
-                    raise forms.ValidationError('El nombre de usuario ya existe')
-                elif contra1 and contra2 and contra1 != contra2:
-                    raise forms.ValidationError('Las contraseñas no coinciden')
-                else:
-                    alumno.username.username=nomUsuarioNuevo
-                    alumno.username.set_password(contra1)
-                    alumno.username.save()
-                    messages.success(request, 'Las credenciales han sido modificadas')
+            print idAlumno,contra1,contra2
 
-                    return HttpResponseRedirect('/credenciales/alumnos/')
+
+
+            if contra1 and contra2 and contra1 != contra2:
+                raise forms.ValidationError('Las contraseñas no coinciden')
+            else:
+
+                alumno.username.set_password(contra1)
+                alumno.username.save()
+                messages.success(request, 'Las credenciales han sido modificadas')
+
+                return HttpResponseRedirect('/credenciales/alumnos/')
 
         else:
 
-            form = ModCredAsistForm()
+
             alumnos = Alumno.objects.order_by('codigo')
             telefonos = []
 
@@ -106,68 +102,7 @@ def consultar_alumnos(request):
                 users = paginator.page(paginator.num_pages)
 
             context = {
-                'form': form,
-                'users': users,
-                'alumnos': alumnos,
-                'telefonos': telefonos,
-                'tipos': tipos
-            }
 
-        return render(request, 'login/credenciales_alumno.html', context)
-    else:
-        raise Http404('Error, no tiene permiso para esta página')
-
-@login_required
-def consultar_alumnos(request):
-    user = User.objects.get(username = request.user)
-    if user.groups.filter(name = "Director").exists():
-
-        if request.method == 'POST':
-            idAlumno=request.POST.get('id_alumno')
-            alumno = Alumno.objects.get(pk=idAlumno)
-            contra1=request.POST.get('contrasena1')
-            contra2 = request.POST.get('contrasena2')
-            nomUsuarioNuevo=request.POST.get('nombre_usuario_nuevo')
-            print idAlumno,contra1,contra2,nomUsuarioNuevo
-            nomUsuarioActual=request.POST.get('nombre_usuario_actual')
-            existe=User.objects.filter(username=nomUsuarioNuevo).count()
-
-            if nomUsuarioNuevo!=nomUsuarioActual:
-                if existe:
-                    raise forms.ValidationError('El nombre de usuario ya existe')
-                elif contra1 and contra2 and contra1 != contra2:
-                    raise forms.ValidationError('Las contraseñas no coinciden')
-                else:
-                    alumno.username.username=nomUsuarioNuevo
-                    alumno.username.set_password(contra1)
-                    alumno.username.save()
-                    messages.success(request, 'Las credenciales han sido modificadas')
-
-                    return HttpResponseRedirect('/credenciales/alumnos/')
-
-        else:
-
-            form = ModCredAsistForm()
-            alumnos = Alumno.objects.order_by('codigo')
-            telefonos = []
-
-            for alumno in alumnos:
-                telefonos.append(alumno.telefono_set.first())
-
-            tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
-                                        "order by dias_asignados")
-
-            page = request.GET.get('page', 1)
-            paginator = Paginator(alumnos, 10)
-            try:
-                users = paginator.page(page)
-            except PageNotAnInteger:
-                users = paginator.page(1)
-            except EmptyPage:
-                users = paginator.page(paginator.num_pages)
-
-            context = {
-                'form': form,
                 'users': users,
                 'alumnos': alumnos,
                 'telefonos': telefonos,
@@ -193,7 +128,6 @@ def asistenteCredencialesPropias(request):
             u.username=form.cleaned_data.get('usuario')
             u.set_password(form.cleaned_data.get('contrasenia1'))
             u.save()
-            update_session_auth_hash(request, u)
             messages.success(request,'Sus credenciales han sido modificadas')
             return redirect('asistenteCredencialesPropias')
      else:
@@ -244,7 +178,6 @@ def alumnoCredencialesPropias(request):
         if form.is_valid():
             u.set_password(form.cleaned_data.get('contrasenia1'))
             u.save()
-            update_session_auth_hash(request, u)
             messages.success(request, 'Su contraseña ha sido modificada')
             return redirect('alumnoCredencialesPropias')
      else:
@@ -265,23 +198,20 @@ def consultar_asistentes(request):
             alumno = Empleado.objects.get(pk=idEmpleado)
             contra1=request.POST.get('contrasena1')
             contra2 = request.POST.get('contrasena2')
-            nomUsuarioNuevo=request.POST.get('nombre_usuario_nuevo')
-            print idEmpleado,contra1,contra2,nomUsuarioNuevo
+
+            print idEmpleado,contra1,contra2
             nomUsuarioActual=request.POST.get('nombre_usuario_actual')
-            existe=User.objects.filter(username=nomUsuarioNuevo).count()
 
-            if nomUsuarioNuevo!=nomUsuarioActual:
-                if existe:
-                    raise forms.ValidationError('El nombre de usuario ya existe')
-                elif contra1 and contra2 and contra1 != contra2:
+
+            if contra1 and contra2 and contra1 != contra2:
                     raise forms.ValidationError('Las contraseñas no coinciden')
-                else:
-                    alumno.username.username=nomUsuarioNuevo
-                    alumno.username.set_password(contra1)
-                    alumno.username.save()
-                    messages.success(request, 'Las credenciales han sido modificadas')
+            else:
 
-                    return render(request,"login/credenciales_asistente.html")
+                alumno.username.set_password(contra1)
+                alumno.username.save()
+                messages.success(request, 'Las credenciales han sido modificadas')
+
+                return render(request,"login/credenciales_asistente.html")
 
         else:
 

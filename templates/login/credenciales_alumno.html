@@ -10,6 +10,33 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
+        function contraseniasIguales() {
+            var contrasenia = document.getElementById('contrasenia');
+            var repContrasenia = document.getElementById('repContrasenia');
+
+
+            var boton = document.getElementById('guardarPass');
+            if(  contrasenia.value != repContrasenia.value ){
+
+                contrasenia.className = "form-control is-invalid";
+                repContrasenia.className = "form-control is-invalid";
+                boton.disabled = true;
+            }
+            else {
+                if(contrasenia.value == '' || repContrasenia.value == ''){
+                    boton.disabled = true;
+                }
+                else{
+                    contrasenia.className = "form-control is-valid";
+                    repContrasenia.className = "form-control is-valid";
+                    boton.disabled=false;
+                }
+
+            }
+        }
+
+
+
         $(document).ready(function() {
 
             $('#example tr').click(function () {
@@ -48,8 +75,8 @@
                 url: '/credenciales/alumnos/',
                 data: {
                     id_alumno: $('#id_alumno').text(),
-                    contrasena1: $('#id_contrasenia1').val(),
-                    contrasena2: $('#id_contrasenia2').val(),
+                    contrasena1: $('#contrasenia').val(),
+                    contrasena2: $('#repContrasenia').val(),
                     nombre_usuario_nuevo: $('#id_usuario').val(),
                     nombre_usuario_actual:$('#nombre_usuario_alumno').text(),
                     csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
@@ -96,7 +123,7 @@
 {% block content %}
     <table width='100%' align="center">
 
-    <tr id="tr_mod">
+    <tr id="tr_mod" style="height: 70px;">
         <td width='20%' rowspan="2" valign="top">
             <p></p>
             <h4> Credenciales</h4>
@@ -119,13 +146,15 @@
 
         <br/>
         <br/>
-        <h4 align="center">Listado de alumnos</h4>
+        <h4 align="center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Listado de alumnos</h4>
 
 
         <td width='20%' align="left" valign="top" >
             <br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Filtrar por grupos:
-            <select onchange="filterSelection(this.value)">
+            <select onchange="filterSelection(this.value)" class="active">
                 <option value="all" selected>Todos</option>
                 {% for valor in tipos %}
                     <option value="{{ valor.dias_asignados }}">{{ valor.dias_asignados }}</option>
@@ -134,7 +163,7 @@
             </select>
 
         </td>
-        <td width='60%' height='100px' align="right" valign="top">
+        <td width='60%' height='60px' align="right" valign="top">
 
                 <!-- Button trigger modal -->
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -147,9 +176,9 @@
     </tr>
     <tr>
         <td width="80%" valign="top">
-        <div style="overflow-x:auto;">
-            <table class="table table-hover table-responsive " id="example">
-                <tr bgcolor="#f0f8ff" >
+        <div style="overflow-x:auto; padding-left: 50px" >
+            <table class="table table-hover table-responsive " id="example" width="100%">
+                <tr bgcolor="#f0f8ff">
                     <th>Codigo</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
@@ -161,8 +190,8 @@
 
                     <tr class='alumnoRow {{user.grupo.horario.dias_asignados}} all' size="10px" data-toggle="modal" data-target="#myDeleteModal">
                         <td scope="row"> <a id="linkFila edit" >{{ user.codigo }}</a></td>
-                        <td class="nombre">{{ user.nombre }} </td>
-                        <td>{{ user.apellido }}</td>
+                        <td class="nombre">{{ user.nombre|default_if_none:""}} </td>
+                        <td>{{ user.apellido|default_if_none:"" }}</td>
                         <td>
                             {% for telefono in telefonos  %}
                                 {% if telefono.alumno == user %}
@@ -170,8 +199,8 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td>{{ user.correo }}</td>
-                        <td>{{ user.username}}</td>
+                        <td>{{ user.correo|default_if_none:"" }}</td>
+                        <td>{{ user.username|default_if_none:""}}</td>
                     </tr>
                 {% endfor %}
 
@@ -212,38 +241,61 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
+                 <h5 class="nombre">Cambiar Credenciales</h5>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
                 <h4 class="modal-title" id="myDeleteModalLabel"></h4>
               </div>
                 <div class="modal-body">
-                    <h5 class="nombre">Cambiar Credenciales</h5>
-                        <form method="post" id="cambiarPass">
 
+                        <form method="post" id="cambiarPass" autocomplete="off">
+                            {% csrf_token %}
                             <div id="id_alumno" style="display: none;"></div>
 
-                            <table>
+                            <table align="center">
                                 <tr>
-                                    <td>Nombre:</td>
+                                    <td><b>Nombre:</b></td>
                                     <td><div id="nombre_alumno"></div></td>
                                 </tr>
                                 <tr>
-                                    <td>Usuario actual: &nbsp; &nbsp;</td>
+                                    <td><b>Usuario actual:</b> &nbsp; &nbsp;</td>
                                     <td><div id="nombre_usuario_alumno"></div></td>
                                 </tr>
-                                {% csrf_token %}
-                                {{ form }}
+                                <tr>
+                                    <td>
+                                        <b>Contraseña:</b>
+                                    </td>
+                                    <td>
+                                        <input type="password" class="form-control" id="contrasenia" name="contrasenia" autocomplete="off" onkeyup="contraseniasIguales()">
+                                    </td>
+                                    <td></td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <b>Repetir:</b>
+                                    </td>
+                                    <td>
+                                        <input type="password" class="form-control" id="repContrasenia" autocomplete="off"  name="repContrasenia" onkeyup="contraseniasIguales()">
+                                        <div class="invalid-feedback">Contraseñas no coinciden</div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr><td><p></p></td></tr>
                             </table>
-                             <button type="submit button" class="btn btn-primary" id="guardarPass" name="guardarPass">Guardar</button>
+
+
+
+                             <div class="modal-footer">
+                                <button type="submit button" class="btn btn-primary" id="guardarPass" name="guardarPass" disabled="disabled">Guardar</button>
+                                <button class="btn btn-small pull-left" data-dismiss="modal"><i class="icon-remove"></i>Cancelar</button>
+
+                             </div>
+
                         </form>
 
-                        <div class="modal-footer">
-                            <button class="btn btn-small pull-left" data-dismiss="modal">
-                                <i class="icon-remove"></i>Cancelar
-                            </button>
 
-                            <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
-                        </div>
-                        <div id="id_usuario"></div>
+
                 </div>
             </div>
           </div>

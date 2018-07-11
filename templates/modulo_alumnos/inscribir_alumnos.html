@@ -1,0 +1,572 @@
+{% extends 'plantillas_base/base_asistente.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Inscribir Alumnos{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <script src="{% static 'js/crear_encargado2.js' %}"></script>
+
+    <script src="{% static 'js/jquery-1.12.4/jquery-1.12.4.js' %}"></script>
+    <script src="{% static 'js/jquery-1.12.4/jquery-ui.js' %}"></script>
+    <script>
+
+//Variables Globales
+
+    var codigosEncargados = [];
+    var nombresEncargados = [];
+    var apellidosEncargados = [];
+    var displayEncargados = [];
+    var direccionEncargados = [];
+
+//Comportamiento
+    function desplazoArriba(){
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    }
+
+    window.onload = function () {
+        //lelenando lista para busqueda dinamica
+        llenadoEncargados();
+
+        //quitando evento escritura en fecha
+        var fechaNac = document.getElementById('txtFechaNacAlumno');
+        fechaNac.onkeydown = function(e){
+          e.preventDefault();
+        };
+    };
+
+    function llenadoEncargados(){
+        {% for encargado in encargados %}
+            codigosEncargados.push('{{ encargado.codigo }}');
+            nombresEncargados.push('{{ encargado.nombre }}');
+            apellidosEncargados.push('{{ encargado.apellido }}');
+            displayEncargados.push('{{ encargado.codigo }} | {{ encargado }}');
+            direccionEncargados.push('{{ encargado.direccion }}');
+        {% endfor %}
+    }
+
+    function mostrarBusqueda(){
+        document.getElementById('buscarEncargado').hidden = false;
+        document.getElementById('detalleEncargado').hidden = true;
+        limpiarDetalleEncargado();
+        validarAlumno();
+        /* No se puede poner directamente el metodo de validacion en
+         * el text input escondido de codigo de encargado por lo que
+          * estoy poniendo la validacion en todo lugar que genere un
+          * valor para codigo y lo guarde en el textinput*/
+    }
+
+    function utilizarEncargado(){
+        if(document.getElementById('radioDependiente').checked){
+            document.getElementById('seccionEncargado').hidden = false;
+            limpiarDetalleEncargado();
+        }
+        else{
+            document.getElementById('seccionEncargado').hidden = true;
+            document.getElementById('detalleCodigoE').value = "-1";     //se utilizara -1 para dejar en el backend como independiente
+        }
+        validarAlumno();
+            /* No se puede poner directamente el metodo de validacion en
+             * el text input escondido de codigo de encargado por lo que
+              * estoy poniendo la validacion en todo lugar que genere un
+              * valor para codigo y lo guarde en el textinput*/
+    }
+
+    //verifica si alguno de los dos tiene direccion, si uno tiene y el otro no aplica la direccion
+    function direccionesAlumEncar(){
+        var dirAlumno = document.getElementById('txtDireccionAlumno');
+        var dirEncargado = document.getElementById('txtDireccionEncargado');
+        if(dirAlumno.value != "" && dirEncargado.value == ""){
+            dirEncargado.value = dirAlumno.value;
+        }
+        if(dirEncargado.value != "" && dirAlumno.value == ""){
+            dirAlumno.value = dirEncargado.value;
+        }
+    }
+//Autocompletado
+    $( function() {
+        $( "#tags" ).autocomplete({
+            source: displayEncargados,
+            minLength: 3,
+            close: function( event, ui ) {
+                var posicion = displayEncargados.indexOf(document.getElementById('tags').value);
+                if (posicion != -1){
+                    document.getElementById('detalleCodigoE').value = codigosEncargados[posicion];
+                    document.getElementById('detalleNombreE').value = nombresEncargados[posicion];
+                    document.getElementById('detalleApellidoE').value = apellidosEncargados[posicion];
+                    document.getElementById('detalleDireccionE').innerHTML = direccionEncargados[posicion];
+                    document.getElementById('detalleEncargado').hidden = false;
+                }
+                else{
+                    limpiarDetalleEncargado();
+                }
+                validarAlumno();
+                /* No se puede poner directamente el metodo de validacion en
+                 * el text input escondido de codigo de encargado por lo que
+                  * estoy poniendo la validacion en todo lugar que genere un
+                  * valor para codigo y lo guarde en el textinput*/
+            }
+        });
+    } );
+//Widget Fecha
+    $( function() {
+        $( "#txtFechaNacAlumno" ).datepicker({
+            dateFormat: "dd/mm/yy",     //display de la fecha
+            altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+            minDate: "-90Y",
+            yearRange: "-90:+1",
+            monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+            monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+            dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+            changeMonth: true,
+            changeYear: true,
+        });
+    } );
+
+//validaciones
+    function isEmail(email) {
+        if(email == ""){
+            return true;
+        }
+        else{
+            var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+            return regex.test(email);
+        }
+    }
+    function validarTelefono(telefono){
+        if(telefono == ""){
+            return true;}
+        else{
+            var regex = /(2|6|7)\d{7}/;
+            return regex.test(telefono);
+        }
+    }
+    function validarDUI(dui){
+        if(dui == ""){
+            return true;}
+        else{
+            var regex = /\d{8}-\d{1}/;
+            return regex.test(dui);
+        }
+    }
+    function validaciones(nombre, apellido, direccion, correo, dui, telefono){
+        var estado = false;
+        estado = (nombre != "" && apellido != "" && direccion != "" && validarDUI(dui) && validarTelefono(telefono) && isEmail(correo))
+        return estado;
+    }
+    function validarEncargado(){
+        var nombre = document.getElementById('txtNombreEncargado').value;
+        var apellido = document.getElementById('txtApellidoEncargado').value;
+        var direccion = document.getElementById('txtDireccionEncargado').value;
+        var correo = document.getElementById('txtCorreoEncargado').value;
+        var dui = document.getElementById('txtDuiEncargado').value;
+        var telefono = document.getElementById('txtTelefonoEncargado').value;
+        if (!isEmail(correo)){
+            document.getElementById('txtCorreoEncargado').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtCorreoEncargado').className = "form-control";
+        }
+        document.getElementById('btnGuardarEncargado').disabled = !validaciones(nombre, apellido, direccion, correo, dui, telefono)
+    }
+
+    function validarAlumno(){
+        var nombre = document.getElementById('txtNombreAlumno').value;
+        var apellido = document.getElementById('txtApellidoAlumno').value;
+        var direccion = document.getElementById('txtDireccionAlumno').value;
+        var fechaNac = document.getElementById('txtFechaNacAlumno').value;
+        var correo = document.getElementById('txtCorreoAlumno').value;
+        var dui = document.getElementById('txtDuiAlumno').value;
+        var telefono = document.getElementById('txtTelefonoAlumno').value;
+        var codEncargado = document.getElementById('detalleCodigoE').value;
+        if (!isEmail(correo)){
+            document.getElementById('txtCorreoAlumno').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtCorreoAlumno').className = "form-control";
+        }
+        var esValido = validaciones(nombre, apellido, direccion, correo, dui, telefono) && fechaNac != "" && codEncargado != "";
+        document.getElementById('btnGuardarAlumno').disabled = !esValido;
+    }
+
+//limpieza
+    function limpiarDatosAlumno(){
+        document.getElementById('txtNombreAlumno').value = "";
+        document.getElementById('txtApellidoAlumno').value = "";
+        document.getElementById('txtDireccionAlumno').value = "";
+        document.getElementById('txtFechaNacAlumno').value = "";
+        document.getElementById('txtCorreoAlumno').value = "";
+        document.getElementById('txtDuiAlumno').value = "";
+        document.getElementById('txtTelefonoAlumno').value = "";
+        document.getElementById('detalleCodigoE').value = "";
+    }
+    function limpiarModalEncargado(){
+        document.getElementById('txtNombreEncargado').value = "";
+        document.getElementById('txtApellidoEncargado').value = "";
+        document.getElementById('txtDireccionEncargado').value = "";
+        document.getElementById('txtCorreoEncargado').value = "";
+        document.getElementById('txtDuiEncargado').value = "";
+        document.getElementById('txtTelefonoEncargado').value = "";
+    }
+    function limpiarDetalleEncargado(){
+        document.getElementById('detalleCodigoE').value = "";
+        document.getElementById('detalleNombreE').value = "";
+        document.getElementById('detalleApellidoE').value = "";
+        document.getElementById('detalleDireccionE').innerHTML = "";
+        document.getElementById('detalleEncargado').hidden = true;
+    }
+    function limpiarPantalla(){
+        limpiarDatosAlumno();
+        limpiarModalEncargado();
+        limpiarDetalleEncargado();
+    }
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+    <!-- FIN_ALERTAS -->
+
+    <div style="padding-left: 1%; padding-top: 1%">
+        <h3>Inscribir Alumno</h3>
+    </div>
+    {% if cantidadGrupos > 0 %}
+    <div style="padding-left: 10%">
+        <table width="100%">
+            <tr>
+                <td width="17%">
+                    <label for="txtNombreAlumno"><strong>Nombre*:</strong></label>
+                </td>
+                <td width="25%">
+                    <div class="form-group">
+                        <input class="form-control" required="" onkeyup="validarAlumno()" maxlength="40" id="txtNombreAlumno" name="txtNombreAlumno" type="text">
+                    </div>
+                </td>
+                <td width="58%"></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtApellidoAlumno"><strong>Apellido*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input class="form-control" required="" onkeyup="validarAlumno()" maxlength="40" id="txtApellidoAlumno" name="txtApellidoAlumno" type="text">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtDireccionAlumno"><strong>Dirección*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <textarea class="form-control" required="" onkeyup="validarAlumno()" id="txtDireccionAlumno" name="txtDireccionAlumno" rows="3"></textarea>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtFechaNacAlumno"><strong>Fecha de Nacimiento*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input class="form-control" id="txtFechaNacAlumno" onchange="validarAlumno()" type="text" />
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtDuiAlumno"><strong>DUI:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="txtDuiAlumno" onkeyup="validarAlumno()" id="txtDuiAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtCorreoAlumno"><strong>Correo:</strong></label>
+                    <!-- Small para mantener alineacion -->
+                    <small id="emailHelp" class="form-text text-muted">.</small>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input class="form-control" id="txtCorreoAlumno" onkeyup="validarAlumno()" name="txtCorreoAlumno" aria-describedby="emailHelp" type="email">
+                        <small id="emailHelp" class="form-text text-muted">Ejemplo: alumno@correo.com</small>
+                        <div class="invalid-feedback">Correo no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtTelefonoAlumno"><strong>Telefono:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="txtTelefonoAlumno" onkeyup="validarAlumno()" id="txtTelefonoAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="cbxTipoTelefonoAlumno"><strong>Tipo de Telefono:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxTipoTelefonoAlumno" name="cbxTipoTelefonoAlumno" class="custom-select">
+                            <option value="casa">Casa</option>
+                            <option value="trabajo">Trabajo</option>
+                            <option value="movil">Móvil</option>
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="cbxGrupo"><strong>Grupo*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxGrupo" name="cbxGrupo" class="custom-select">
+                            {% for grupo in grupos %}
+                                <option value="{{ grupo.codigo }}">{{ grupo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label><strong>Responsable Económico*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <div class="custom-control custom-radio">
+                            <input id="radioDependiente" onclick="utilizarEncargado()" name="radioEstado" class="custom-control-input" checked="" type="radio">
+                            <label class="custom-control-label" for="radioDependiente">Encargado</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input id="radioIndependiente" onclick="utilizarEncargado()" name="radioEstado" class="custom-control-input" type="radio">
+                            <label class="custom-control-label" for="radioIndependiente">Independiente</label>
+                        </div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="seccionEncargado">
+        <div style="padding-left: 1%; padding-top: 1%">
+            <h3>Encargado</h3>
+        </div>
+        <div style="padding-left: 10%">
+            <table width="100%">
+                <td width="15%">
+                    <button type="button" id="btnSeleccionarEncargado" onclick="mostrarBusqueda()" class="btn btn-primary">Seleccionar Existente</button>
+                </td>
+                <td width="15%">
+                    <button type="button" id="btnRegistrarEncargado" onclick="direccionesAlumEncar()" data-toggle="modal" data-target="#RegistrarEncargado" class="btn btn-primary">Registrar Nuevo</button>
+                </td>
+                <td></td>
+            </table>
+            <div id="buscarEncargado" hidden="hidden" style="padding-top: 2%">
+                <table width="100%">
+                    <tr>
+                        <td width="17%">
+                            <label for="tags"><strong>Busqueda: </strong></label>
+                        </td>
+                        <td width="25%">
+                            <div class="ui-widget">
+                                <input id="tags" type="text">
+                            </div>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="detalleEncargado" hidden="hidden" style="padding-top: 2%">
+                <input type="text" disabled="" onchange="validarAlumno()" hidden="" id="detalleCodigoE">
+                <table width="100%">
+                    <tr>
+                        <td width="17%">
+                            <label for="detalleNombreE"><strong>Nombre: </strong></label>
+                        </td>
+                        <td width="25%">
+                            <div class="form-group"><input id="detalleNombreE" class="form-control" disabled="" type="text"></div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td width="17%">
+                            <label for="detalleApellidoE"><strong>Apellido: </strong></label>
+                        </td>
+                        <td width="25%">
+                            <div class="form-group"><input id="detalleApellidoE" class="form-control" disabled="" type="text"></div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td width="17%">
+                            <label for="detalleDireccionE"><strong>Direccion: </strong></label>
+                        </td>
+                        <td width="25%">
+                            <textarea class="form-control" disabled="" id="detalleDireccionE"  rows="3"></textarea>
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div style="padding-left: 5%; padding-top: 3%">
+    <form method="POST" id="inscribirAlumno">
+        {% csrf_token %}
+        <table width="100%">
+            <tr>
+                <td width="10%">
+                    <button type="button submit" id="btnGuardarAlumno" disabled="" class="btn btn-primary">Inscribir Alumno</button>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </form>
+    </div>
+    {% else %}
+        <h5>No hay grupos disponibles, solicite al director que cree grupos.</h5>
+    {% endif %}
+
+
+    <!-- Modal -->
+<div class="modal fade" id="RegistrarEncargado" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Registrar Encargado</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="registrarEncargado">
+                {% csrf_token %}
+                <table width="100%">
+                    <tr>
+                        <td width="25%">
+                            <label for="txtNombreEncargado"><strong>Nombre*:</strong></label>
+                        </td>
+                        <td width="75%">
+                            <div class="form-group">
+                                <input class="form-control" onkeyup="validarEncargado()" required="" maxlength="30" id="txtNombreEncargado" name="txtNombreEncargado" type="text">
+                            </div>
+                        </td>
+                        <td width=""></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtApellidoEncargado"><strong>Apellido*:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input class="form-control" required="" onkeyup="validarEncargado()" maxlength="30" id="txtApellidoEncargado" name="txtApellidoEncargado" type="text">
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtDireccionEncargado"><strong>Dirección*:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <textarea class="form-control" required="" onkeyup="validarEncargado()" id="txtDireccionEncargado" name="txtDireccionEncargado" rows="3"></textarea>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtDuiEncargado"><strong>DUI:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="text" name="txtDuiEncargado" id="txtDuiEncargado" onkeyup="validarEncargado()" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtCorreoEncargado"><strong>Correo:</strong></label>
+                            <!-- Small para mantener alineacion -->
+                            <small id="emailHelp" class="form-text text-muted">.</small>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input class="form-control" id="txtCorreoEncargado" name="txtCorreoEncargado" onkeyup="validarEncargado()" aria-describedby="emailHelp" type="email">
+                                <small id="emailHelp" class="form-text text-muted">Ejemplo: encargado@correo.com</small>
+                                <div class="invalid-feedback">Correo no válido</div>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtTelefonoEncargado"><strong>Telefono:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="text" name="txtTelefonoEncargado" onkeyup="validarEncargado()" id="txtTelefonoEncargado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="cbxTipoTelefonoEncargado"><strong>Tipo de Telefono:</strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <select id="cbxTipoTelefonoEncargado" name="cbxTipoTelefonoEncargado" class="custom-select">
+                                    <option value="casa">Casa</option>
+                                    <option value="trabajo">Trabajo</option>
+                                    <option value="movil">Móvil</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
+                <table width="100%">
+                    <tr>
+                        <td width="5%"></td>
+                        <td width="10%"><button type="button submit" disabled="disabled" id="btnGuardarEncargado" class="btn btn-primary">Guardar</button></td>
+                    </tr>
+                </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"  data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

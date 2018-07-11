@@ -14,6 +14,13 @@
         function marcarCheckBox(){
             document.getElementById('cambioGrupo').checked = true;
         }
+        function marcarTodos() {
+            var estado = document.getElementById('chbTodos').checked;
+            {% for alumno in alumnos %}
+                document.getElementById('{{ alumno.codigo }}').checked = estado;
+            {% endfor %}
+            document.getElementById('cambioGrupo').checked = estado;
+        }
     </script>
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
 {% endblock %}
@@ -86,10 +93,17 @@
                                     {% endif %}
                                 {% endfor %}
                             </td>
-                            <td>{{ alumno.correo }}</td>
+                            <td>{{ alumno.correo|default_if_none:"" }}</td>
                             <td><input type="checkbox" onclick="marcarCheckBox()" name="{{ alumno.codigo }}"></td>
                         </tr>
                     {% endfor %}
+                    <tr>
+                        <td></td><td></td><td></td><td></td>
+                        <td align="right">Marcar Todos</td>
+                        <td>
+                            <input type="checkbox" id="chbTodos" onclick="marcarTodos()">
+                        </td>
+                    </tr>
                     <tr>
                         <td></td><td></td><td></td><td></td>
                         <td>

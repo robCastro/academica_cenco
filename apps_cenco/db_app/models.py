@@ -70,7 +70,7 @@ class Encargado (models.Model):
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
     correo = models.EmailField(blank=True, null=True)
-    dui = models.CharField(max_length=10)
+    dui = models.CharField(max_length=10, blank=True, null=True)
 
     def __unicode__(self):
         return self.nombre + " " + self.apellido
@@ -85,7 +85,7 @@ class Alumno (models.Model):
     correo = models.EmailField(blank=True, null=True)
     fechaNacimiento = models.DateField()
     dui = models.CharField(max_length=10, blank=True, null=True)
-    encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT)
+    encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT, null=True, blank=True)
     grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT)
 
     def __unicode__(self):
