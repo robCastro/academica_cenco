@@ -66,9 +66,9 @@ class AlumnoCredencialesPropiasForm(forms.Form):
         super(AlumnoCredencialesPropiasForm, self).__init__(*args, **kwargs)
 
 class ModCredAsistForm(forms.Form):
-    usuario = forms.CharField(max_length=25, widget=forms.TextInput(attrs={'size': '25', 'requerid': 'True'}),label='Usuario:')
-    contrasenia1=forms.CharField(max_length=15,widget=forms.PasswordInput,label='Contraseña')
-    contrasenia2=forms.CharField(max_length=15,widget=forms.PasswordInput,label='Repetir')
+
+    contrasenia1=forms.CharField(max_length=127, widget=forms.PasswordInput, label='Contraseña')
+    contrasenia2=forms.CharField(max_length=127, widget=forms.PasswordInput, label='Repetir')
 
     def clean_contrasenia2(self):
         contrasenia1 = self.cleaned_data.get('contrasenia1')
