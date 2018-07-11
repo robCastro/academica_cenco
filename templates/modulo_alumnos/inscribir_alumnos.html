@@ -13,7 +13,7 @@
     <script src="{% static 'js/jquery-1.12.4/jquery-ui.js' %}"></script>
     <script>
 
-    //Variables Globales
+//Variables Globales
 
     var codigosEncargados = [];
     var nombresEncargados = [];
@@ -21,9 +21,20 @@
     var displayEncargados = [];
     var direccionEncargados = [];
 
-    //comportamiento
+//Comportamiento
+    function desplazoArriba(){
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    }
+
     window.onload = function () {
+        //lelenando lista para busqueda dinamica
         llenadoEncargados();
+
+        //quitando evento escritura en fecha
+        var fechaNac = document.getElementById('txtFechaNacAlumno');
+        fechaNac.onkeydown = function(e){
+          e.preventDefault();
+        };
     };
 
     function llenadoEncargados(){
@@ -47,14 +58,6 @@
           * valor para codigo y lo guarde en el textinput*/
     }
 
-    function limpiarDetalleEncargado(){
-        document.getElementById('detalleCodigoE').value = "";
-        document.getElementById('detalleNombreE').value = "";
-        document.getElementById('detalleApellidoE').value = "";
-        document.getElementById('detalleDireccionE').innerHTML = "";
-        document.getElementById('detalleEncargado').hidden = true;
-    }
-
     function utilizarEncargado(){
         if(document.getElementById('radioDependiente').checked){
             document.getElementById('seccionEncargado').hidden = false;
@@ -71,6 +74,7 @@
               * valor para codigo y lo guarde en el textinput*/
     }
 
+    //verifica si alguno de los dos tiene direccion, si uno tiene y el otro no aplica la direccion
     function direccionesAlumEncar(){
         var dirAlumno = document.getElementById('txtDireccionAlumno');
         var dirEncargado = document.getElementById('txtDireccionEncargado');
@@ -81,7 +85,7 @@
             dirAlumno.value = dirEncargado.value;
         }
     }
-    //Autocompletado
+//Autocompletado
     $( function() {
         $( "#tags" ).autocomplete({
             source: displayEncargados,
@@ -106,7 +110,7 @@
             }
         });
     } );
-
+//Widget Fecha
     $( function() {
         $( "#txtFechaNacAlumno" ).datepicker({
             dateFormat: "dd/mm/yy",     //display de la fecha
@@ -121,7 +125,7 @@
         });
     } );
 
-    //validaciones
+//validaciones
     function isEmail(email) {
         if(email == ""){
             return true;
@@ -159,6 +163,12 @@
         var correo = document.getElementById('txtCorreoEncargado').value;
         var dui = document.getElementById('txtDuiEncargado').value;
         var telefono = document.getElementById('txtTelefonoEncargado').value;
+        if (!isEmail(correo)){
+            document.getElementById('txtCorreoEncargado').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtCorreoEncargado').className = "form-control";
+        }
         document.getElementById('btnGuardarEncargado').disabled = !validaciones(nombre, apellido, direccion, correo, dui, telefono)
     }
 
@@ -171,10 +181,47 @@
         var dui = document.getElementById('txtDuiAlumno').value;
         var telefono = document.getElementById('txtTelefonoAlumno').value;
         var codEncargado = document.getElementById('detalleCodigoE').value;
+        if (!isEmail(correo)){
+            document.getElementById('txtCorreoAlumno').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtCorreoAlumno').className = "form-control";
+        }
         var esValido = validaciones(nombre, apellido, direccion, correo, dui, telefono) && fechaNac != "" && codEncargado != "";
         document.getElementById('btnGuardarAlumno').disabled = !esValido;
     }
 
+//limpieza
+    function limpiarDatosAlumno(){
+        document.getElementById('txtNombreAlumno').value = "";
+        document.getElementById('txtApellidoAlumno').value = "";
+        document.getElementById('txtDireccionAlumno').value = "";
+        document.getElementById('txtFechaNacAlumno').value = "";
+        document.getElementById('txtCorreoAlumno').value = "";
+        document.getElementById('txtDuiAlumno').value = "";
+        document.getElementById('txtTelefonoAlumno').value = "";
+        document.getElementById('detalleCodigoE').value = "";
+    }
+    function limpiarModalEncargado(){
+        document.getElementById('txtNombreEncargado').value = "";
+        document.getElementById('txtApellidoEncargado').value = "";
+        document.getElementById('txtDireccionEncargado').value = "";
+        document.getElementById('txtCorreoEncargado').value = "";
+        document.getElementById('txtDuiEncargado').value = "";
+        document.getElementById('txtTelefonoEncargado').value = "";
+    }
+    function limpiarDetalleEncargado(){
+        document.getElementById('detalleCodigoE').value = "";
+        document.getElementById('detalleNombreE').value = "";
+        document.getElementById('detalleApellidoE').value = "";
+        document.getElementById('detalleDireccionE').innerHTML = "";
+        document.getElementById('detalleEncargado').hidden = true;
+    }
+    function limpiarPantalla(){
+        limpiarDatosAlumno();
+        limpiarModalEncargado();
+        limpiarDetalleEncargado();
+    }
     </script>
 
 {% endblock %}
@@ -259,6 +306,7 @@
                     <div class="form-group">
                         <input class="form-control" id="txtCorreoAlumno" onkeyup="validarAlumno()" name="txtCorreoAlumno" aria-describedby="emailHelp" type="email">
                         <small id="emailHelp" class="form-text text-muted">Ejemplo: alumno@correo.com</small>
+                        <div class="invalid-feedback">Correo no válido</div>
                     </div>
                 </td>
                 <td></td>
@@ -475,6 +523,7 @@
                             <div class="form-group">
                                 <input class="form-control" id="txtCorreoEncargado" name="txtCorreoEncargado" onkeyup="validarEncargado()" aria-describedby="emailHelp" type="email">
                                 <small id="emailHelp" class="form-text text-muted">Ejemplo: encargado@correo.com</small>
+                                <div class="invalid-feedback">Correo no válido</div>
                             </div>
                         </td>
                         <td></td>

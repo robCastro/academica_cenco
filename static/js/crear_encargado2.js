@@ -26,6 +26,9 @@ $(document).on('submit', '#registrarEncargado', function (a) {
                 //escondiendo modal
                 $('#RegistrarEncargado').modal('hide');
 
+                //cambiando foco a msj
+                desplazoArriba();
+
                 //agregando a lista de Encargados
                 codigosEncargados.push(response.codEncargado);
                 nombresEncargados.push(response.nombreEncargado);
@@ -39,12 +42,14 @@ $(document).on('submit', '#registrarEncargado', function (a) {
                 document.getElementById('detalleApellidoE').value = response.apellidoEncargado;
                 document.getElementById('detalleDireccionE').innerHTML = response.direccionEncargado;
                 document.getElementById('detalleEncargado').hidden = false;
-
+                direccionesAlumEncar(); //si alumno no tiene direccion, toma la del recien registrado
+                limpiarModalEncargado();
                 validarAlumno();
                 /* No se puede poner directamente el metodo de validacion en
                  * el text input escondido de codigo de encargado por lo que
                   * estoy poniendo la validacion en todo lugar que genere un
                   * valor para codigo y lo guarde en el textinput*/
+
             },
             error: function (response) {
                   var m = $('#mensajeEmergente');
@@ -54,6 +59,7 @@ $(document).on('submit', '#registrarEncargado', function (a) {
                   m.removeClass();
                   m.addClass('alerta accionPeligrosa');
                   $('#RegistrarEncargado').modal('hide');
+                  desplazoArriba();
             }
         })
     });
@@ -84,7 +90,8 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             m.css('opacity',1);
             m.removeClass();
             m.addClass('alerta exito');
-            //funcion para limpiar toda la pantalla quiza
+            desplazoArriba();
+            limpiarPantalla();
         },
         error: function (response) {
             var m = $('#mensajeEmergente');
@@ -93,6 +100,7 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             m.css('opacity',1);
             m.removeClass();
             m.addClass('alerta accionPeligrosa');
+            desplazoArriba();
         }
     })
 });
