@@ -294,6 +294,9 @@ def registrar_encargado(request):
 
 @login_required
 def inscribirAlumno(request):
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     if request.user.groups.filter(name="Asistente").exists():
         if request.method == 'POST':
             mensaje = ""
@@ -372,6 +375,9 @@ def inscribirAlumno(request):
 
 @login_required
 def registrarEncargado(request):
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     if request.user.groups.filter(name="Asistente").exists():
         if request.method == 'POST':
             nombre = request.POST.get("nombre")
