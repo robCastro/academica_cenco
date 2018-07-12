@@ -36,6 +36,8 @@
 
         $(document).on('submit', '#EliminarHorarioForm', function (a) {
         a.preventDefault();
+        $('#btnEliminarHorario').attr('disabled', true);
+        $('#espereE').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/horarios/eliminar/',
@@ -45,6 +47,8 @@
                 },
                 success: function (response) {
                   $('#EliminarHorario').modal('hide');
+                  $('#btnEliminarHorario').attr('disabled', false);
+                  $('#espereE').css('display', 'none');
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Horario eliminado con exito');
                   m.css('display','block');
@@ -57,6 +61,8 @@
                 },
                 error: function (response) {
                   $('#EliminarHorario').modal('hide');
+                  $('#btnEliminarHorario').attr('disabled', false);
+                  $('#espereE').css('display', 'none');
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Error al eliminar. Seleccione un horario d&oacute;nde no asista ning&uacute;n estudiante.');
                   m.css('display','block');
@@ -69,6 +75,8 @@
 
         $(document).on('submit', '#nuevoHorarioForm', function (a) {
         a.preventDefault();
+        $('#btnGuardarHorario').attr('disabled', true);
+        $('#espereG').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/horarios/crear/',
@@ -80,6 +88,8 @@
                 },
                 success: function (response) {
                   $('#AgregarHorario').modal('hide');
+                  $('#btnGuardarHorario').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Horario agregado con exito.');
                   m.css('display','block');
@@ -103,6 +113,8 @@
                   },
                 error: function (response) {
                   $('#AgregarHorario').modal('hide');
+                  $('#btnGuardarHorario').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Ocurri&oacute; un error al guardar. Verifique que no choquen los horarios y las horas sean correctas');
                   m.css('display','block');
@@ -115,6 +127,8 @@
 
        $(document).on('submit', '#editarHorarioForm', function (a) {
         a.preventDefault();
+        $('#btnActualizarHorario').attr('disabled', true);
+        $('#espereA').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/horarios/editar/',
@@ -127,6 +141,8 @@
                 },
                 success: function (response) {
                   $('#EditarHorario').modal('hide');
+                  $('#btnActualizarHorario').attr('disabled', false);
+                  $('#espereA').css('display', 'none');
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Horario modificado con exito.');
                   m.css('display','block');
@@ -151,6 +167,8 @@
                 },
                 error: function (response) {
                   $('#EditarHorario').modal('hide');
+                  $('#btnActualizarHorario').attr('disabled', false);
+                  $('#espereA').css('display', 'none');
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Ocurri&oacute; un error al editar. Verifique que no choquen los horarios y las horas sean correctas');
                   m.css('display','block');

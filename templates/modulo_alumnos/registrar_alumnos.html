@@ -95,7 +95,11 @@
                 </select></td></tr>
 
             <p></p>
-            <button type="button submit" id="btnNuevoEncargado" class="btn btn-primary" >Guardar Encargado</button>
+            <button type="button submit" id="btnNuevoEncargado" class="btn btn-primary" id="btnGuardar">Guardar Encargado</button>
+                <div style="display: none" id="espere">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando.
+                </div>
             </form>
         </div>
         <div class="modal-footer">

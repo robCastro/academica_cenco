@@ -21,6 +21,9 @@ from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from apps_cenco.db_app.models import Alumno,Telefono
 from datetime import datetime
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 @login_required
 def consultar_alumnos(request):

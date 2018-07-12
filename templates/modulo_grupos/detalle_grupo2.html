@@ -156,7 +156,11 @@
                 <form method="post" action="{% url 'eliminar_grupo' grupo.codigo %}">
                 {% csrf_token %}
                 <p>¿Seguro que desea eliminar el grupo {{ grupo.codigo }}, {{ grupo.horario }}?</p>
-                <input type="submit" value="Eliminar" class="btn btn-danger">
+                <input type="submit" value="Eliminar" class="btn btn-danger" id="btnGuardar">
+                <div style="display: none" id="espere">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
                 </form>
             {% else %}
                 Aún hay Alumnos en este grupo, muevalos a otro para eliminarlo.

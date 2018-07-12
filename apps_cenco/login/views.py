@@ -19,6 +19,10 @@ from django.views.decorators.csrf import requires_csrf_token
 from apps_cenco.db_app.models import Alumno, Horario, Empleado
 from apps_cenco.login.forms import AsistenteCredencialesPropiasForm, AlumnoCredencialesPropiasForm, ModCredAsistForm
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 # Create your views here.
 

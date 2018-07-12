@@ -36,6 +36,8 @@ function RemoveClass(element, name) {
 
 $(document).on('submit', '#nuevoGrupoForm', function (a) {
     a.preventDefault();
+    $('#btnGuardar').attr('disabled', true);
+    $('#espere').css('display', 'inline');
 
     $.ajax({
         type: 'POST',
@@ -49,14 +51,15 @@ $(document).on('submit', '#nuevoGrupoForm', function (a) {
         success:function (response) {
           $('#dinamicos').append(response);
           filterSelection('all');
+          $('#btnGuardar').attr('disabled', false);
+          $('#espere').css('display', 'none');
           $('#agregarGrupoModal').modal('hide');
-                  var m = $('#mensajeEmergente');
-                  m.children('strong').html('Grupo guardado con exito');
-                  m.css('display','block');
-                  m.css('opacity',1);
-                  m.removeClass();
-                  m.addClass('alerta exito');
-
+          var m = $('#mensajeEmergente');
+          m.children('strong').html('Grupo guardado con exito');
+          m.css('display','block');
+          m.css('opacity',1);
+          m.removeClass();
+          m.addClass('alerta exito');
         }
     })
 })
