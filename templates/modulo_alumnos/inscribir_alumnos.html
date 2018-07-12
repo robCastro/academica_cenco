@@ -444,6 +444,11 @@
             <tr>
                 <td width="10%">
                     <button type="button submit" id="btnGuardarAlumno" disabled="" class="btn btn-primary">Inscribir Alumno</button>
+                <div style="display: none" id="espereI">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+
                 </td>
                 <td></td>
             </tr>
@@ -466,7 +471,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="POST" id="registrarEncargado">
+                <form method="POST" id="registrarEncargadoForm">
                 {% csrf_token %}
                 <table width="100%">
                     <tr>
@@ -558,7 +563,13 @@
                 <table width="100%">
                     <tr>
                         <td width="5%"></td>
-                        <td width="10%"><button type="button submit" disabled="disabled" id="btnGuardarEncargado" class="btn btn-primary">Guardar</button></td>
+                        <td width="10%">
+                            <button type="button submit" disabled="disabled" id="btnGuardarEncargado" class="btn btn-primary">Guardar</button>
+                        <div style="display: none" id="espereG">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
+                        </td>
                     </tr>
                 </table>
                 </form>
@@ -569,4 +580,5 @@
         </div>
     </div>
 </div>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}

@@ -5,6 +5,14 @@
 
 {% block head_content %}
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+
+
+    <script>
+    function mostrarEspera() {
+    $('#espereG').css('display', 'inline');
+    $('#btnGuardar').attr('disabled', true);
+    }
+    </script>
 {% endblock %}
 
 
@@ -53,7 +61,11 @@
 
                         <td align="left">
                             <p></p>
-                        <button type="button submit" class="btn btn-primary" >Guardar</button>
+                        <button type="button submit" class="btn btn-primary" onclick="mostrarEspera();">Guardar</button>
+                            <div style="display: none" id="espereG">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
                         </td>
                         <td align="left">
                             <p></p>

@@ -34,10 +34,11 @@ function RemoveClass(element, name) {
 }
 
 $(".deletebutton").on('click', function() {
-  var checked = jQuery('input:checkbox:checked').map(function () {
-    return this.value;
+    var checked = jQuery('input:checkbox:checked').map(function () {
+        return this.value;
     }).get();
-jQuery('input:checkbox:checked').parents("tr").remove();
+    jQuery('input:checkbox:checked').parents("tr").remove();
+
 });
 
 
@@ -57,6 +58,8 @@ function habilitarBorrar() {
 
 $(document).on('submit', '#nuevoTelefonoForm', function (a) {
     a.preventDefault();
+    $('#btnGuardar').attr('disabled', true);
+    $('#espereG').css('display', 'inline');
 
     $.ajax({
         type: 'POST',
@@ -68,6 +71,8 @@ $(document).on('submit', '#nuevoTelefonoForm', function (a) {
             csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
         },
         success:function(response) {
+          $('#btnGuardar').attr('disabled', false);
+          $('#espereG').css('display', 'none');
           alert("Número creado con exito");
           $('#dinamicos').append(response);
           filterSelection('all');

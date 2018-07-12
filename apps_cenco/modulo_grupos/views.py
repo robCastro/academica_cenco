@@ -15,6 +15,9 @@ import itertools
 
 from apps_cenco.db_app.models import Empleado, Alumno, Grupo, Telefono, Horario
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Create your views here.
 from apps_cenco.modulo_grupos.forms import CrearGrupoForm

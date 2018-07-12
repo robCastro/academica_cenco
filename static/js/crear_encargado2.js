@@ -1,5 +1,8 @@
-$(document).on('submit', '#registrarEncargado', function (a) {
+$(document).on('submit', '#registrarEncargadoForm', function (a) {
+
     a.preventDefault();
+    $('#btnGuardarEncargado').attr('disabled', true);
+    $('#espereG').css('display', 'inline');
         $.ajax({
             type: 'POST',
             url: '/alumnos/registrarEncargado/',
@@ -15,6 +18,8 @@ $(document).on('submit', '#registrarEncargado', function (a) {
             },
             dataType: "json",
             success: function (response) {
+                $('#btnGuardarEncargado').attr('disabled', false);
+                $('#espereG').css('display', 'none');
                 //mostrando msj
                 var m = $('#mensajeEmergente');
                 m.children('strong').html(response.mensaje);
@@ -47,11 +52,14 @@ $(document).on('submit', '#registrarEncargado', function (a) {
                 validarAlumno();
                 /* No se puede poner directamente el metodo de validacion en
                  * el text input escondido de codigo de encargado por lo que
-                  * estoy poniendo la validacion en todo lugar que genere un
+                  * estoy poniendo la validacion en to do lugar que genere un
                   * valor para codigo y lo guarde en el textinput*/
 
             },
             error: function (response) {
+                  $('#btnGuardarEncargado').attr('disabled'. false);
+                  $('#espereG').css('display', 'none');
+
                   var m = $('#mensajeEmergente');
                   m.children('strong').html('Error al Guardar el Encargado');
                   m.css('display','block');
@@ -66,6 +74,8 @@ $(document).on('submit', '#registrarEncargado', function (a) {
 
 $(document).on('submit', '#inscribirAlumno', function (a) {
     a.preventDefault();
+    $('#btnGuardarAlumno').attr('disabled', true);
+    $('#espereI').css('display', 'inline');
 
     $.ajax({
         type: 'POST',
@@ -84,6 +94,8 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
         },
         success:function (response) {
+            $('#btnGuardarAlumno').attr('disabled', false);
+            $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
             m.children('strong').html(response.split("$")[0]);
             m.css('display','block');
@@ -94,6 +106,8 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             limpiarPantalla();
         },
         error: function (response) {
+            $('#btnGuardarAlumno').attr('disabled', false);
+            $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
             m.children('strong').html(response.split("$")[0]);
             m.css('display','block');

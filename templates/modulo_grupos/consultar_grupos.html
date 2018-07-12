@@ -15,9 +15,30 @@
 
 
    	<script>
-	$( function() {
-		$( "#id_fechaInicio" ).datepicker();
-	} );
+    window.onload= function() {
+        filterSelection('all');
+        var fecha = document.getElementById('id_fechaInicio');
+        fecha.onkeydown = function (e) {
+            e.preventDefault();
+        };
+
+    };
+
+	    $( function() {
+        $( "#id_fechaInicio" ).datepicker({
+            dateFormat: "dd/mm/yy",     //display de la fecha
+            altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+            minDate: "-90Y",
+            yearRange: "-90:+1",
+            monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+            monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+            dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+            changeMonth: true,
+            changeYear: true,
+        });
+    } );
+
+
 	</script>
 
 {% endblock %}
@@ -101,7 +122,11 @@
             {% csrf_token %}
             {{ form }}
             <p></p>
-            <button type="button submit" class="btn btn-primary" >Guardar Grupo</button>
+            <button type="button submit" class="btn btn-primary" id="btnGuardar">Guardar Grupo</button>
+                <div style="display: none" id="espere">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
             </form>
         </div>
         <div class="modal-footer">

@@ -1,6 +1,8 @@
 
     $(document).on('submit', '#nuevoEncargadoForm', function (a) {
         a.preventDefault();
+        $('#btnGuardar').attr('disabled', true);
+        $('#espere').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/alumnos/insertarEncargado/',
@@ -17,6 +19,8 @@
                 },
                 dataType: "json",
                 success: function (response) {
+                    $('#btnGuardar').attr('disabled', false);
+                    $('#espere').css('display', 'none');
                     alert(response.mensaje);
                     $('#id_encargado').append(response.Encargado);
                     $('#agregarEncargadoModal').modal('hide');

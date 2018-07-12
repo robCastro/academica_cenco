@@ -73,7 +73,11 @@
             {% csrf_token %}
             {{ form }}
             <p></p>
-            <button type="button submit" class="btn btn-primary" >Guardar Horario</button>
+            <button type="button submit" class="btn btn-primary" id="btnGuardarHorario">Guardar Horario</button>
+                <div style="display: none" id="espereG">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -99,7 +103,11 @@
             <tr>
                 <div id="id_horario_a_editar" style="display: none"></div>
                {{ form2 }}
-            <button type="button submit" class="btn btn-primary" >Actualizar Horario</button>
+            <button type="button submit" class="btn btn-primary" id="btnActualizarHorario">Actualizar Horario</button>
+                <div style="display: none" id="espereA">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -113,7 +121,7 @@
 <!-- Modal -->
 <div class="modal fade" id="EliminarHorario" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content ">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Eliminando Horario Seleccionado</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -126,9 +134,16 @@
                 <div id="eliminar" style="display: none">-1</div>
                 <div id="eliminarElemento">Ningun horario seleccionado</div>
             <p></p>
-            <button type="button submit" class="btn btn-danger" >Confirmar</button>
+            <button type="button submit" class="btn btn-danger" id="btnEliminarHorario">Confirmar</button>
             <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                <div style="display: none" id="espereE">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
             </form>
+        </div>
+            <div class="modal-footer">
+
         </div>
         </div>
     </div>

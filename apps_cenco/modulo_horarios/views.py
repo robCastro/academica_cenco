@@ -12,6 +12,10 @@ from apps_cenco.db_app.models import Horario
 
 from apps_cenco.modulo_horarios.forms import CrearHorarioForm, EditarHorarioForm
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 @login_required
 def consultar_horario(request):

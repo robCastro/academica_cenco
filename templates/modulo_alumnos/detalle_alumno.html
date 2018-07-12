@@ -9,17 +9,16 @@
         <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
 
         <script>
-            function reloadform1(){
-                document.getElementById('form1')window.location.reload()
-            }
+
+            {#function reloadform1(){#}
+            {#    document.getElementById('form1').window.location.reload()#}
+            //{
             function reloadform2(){
                 document.getElementById('form2').location.reload()
             }
             function marcarCheckBox(){
                 document.getElementById('cambioGrupo').checked = true;
             }
-
-
 
         </script>
 {% endblock %}
@@ -159,11 +158,13 @@
 
 
                                         <div class="modal-footer">
+
                                             <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
                                                 <i class="icon-remove"></i>Cancelar
                                             </button>
-                                            <button type="submit button" class="btn btn-primary deletebutton" id="eliminar1" name="eliminar1" >Borrar</button>
+                                            <button type="button submit" class="btn btn-primary deletebutton" id="eliminar1" name="eliminar1" >Borrar</button>
                                             <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
+
                                         </div>
 
                                 </div>
@@ -202,7 +203,11 @@
                 {{ form }}
 
             <p></p>
-            <button type="button submit" class="btn btn-primary">Guardar</button>
+            <button type="button submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                <div style="display: none" id="espereG">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
             </form>
         </div>
         <div class="modal-footer">
