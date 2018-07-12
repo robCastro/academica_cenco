@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^misdatos/$', views.ver_alumno_propio, name="ver_alumno_propio"),
     url(r'^insertarAlum/$', views.inscribirAlumno, name="InsertarAlumnoV2"),
     url(r'^registrarEncargado/$',views.registrarEncargado, name="RegistrarEncargado"),
+    url(r'^modificarAlum/(?P<id_alumno>\d+)$', views.modificar_alumno2, name="modificar_alumnoV2"),
 ]

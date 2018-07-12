@@ -436,3 +436,23 @@ def generarUsuario(nom, ape):
         cant = cant + 1
     usuario = str(usu) + str(cant)
     return usuario
+
+def modificar_alumno2(request, id_alumno):
+    try:
+        alumno = Alumno.objects.get(codigo = id_alumno)
+    except Alumno.DoesNotExist:
+        return Http404("Alumno no existe")
+
+    fechaFormatoEspecial =  alumno.fechaNacimiento.strftime("%d/%m/%Y")
+    cantidadtelefonos = Telefono.objects.filter(alumno=alumno).count()
+    hoy = datetime.now()
+    esMenor = hoy.year < alumno.fechaNacimiento.year + 18 or hoy.month < alumno.fechaNacimiento.month or hoy.day < alumno.fechaNacimiento.day
+    context = {
+        "alumno" : alumno,
+        "fechaNac" : fechaFormatoEspecial,
+        "notifTelefono" : cantidadtelefonos == 0,
+        "notifDui" : not esMenor and alumno.dui == "",
+        "notifCorreo" : alumno.correo == "",
+        "esDependiente" : alumno.encargado != None,
+    }
+    return render(request, "modulo_alumnos/modificar_alumno2.html", context)
