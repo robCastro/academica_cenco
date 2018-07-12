@@ -86,7 +86,7 @@
                                 {% endfor %}
                             </td>
                             <td>{{ alumno.correo|default_if_none:"" }}</td>
-                            <td><input type="checkbox" onclick="marcarCheckBox()" name="{{ alumno.codigo }}"></td>
+                            <td><input type="checkbox" onclick="marcarCheckBox()" id="{{ alumno.codigo }}" name="{{ alumno.codigo }}"></td>
                         </tr>
                     {% endfor %}
 
@@ -128,7 +128,7 @@
 
         </table>
 
-        <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
+        <input type="checkbox" name="cambioGrupo" id="cambioGrupo" hidden="">
     </div>
     </form>
 
