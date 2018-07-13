@@ -46,8 +46,8 @@
 {% block content %}
     <table width='100%'>
 
-    <tr id="tr_mod">
-        <td width='20%' rowspan="2" valign="top">
+    <tr id="tr_mod" style="height: 70px;">
+        <td  rowspan="2" valign="top" width="20%">
             <p></p>
             <h6> Notificaciones:</h6>
             <div class='divNotifAlumnos'>
@@ -63,7 +63,7 @@
         <h4 align="center">Listado de alumnos</h4>
 
 
-        <td width='20%' align="left" valign="top" >
+        <td  align="left" valign="top" style="padding-left: 63px">
             <br/>
             Filtrar por grupos:
             <select onchange="filterSelection(this.value)">
@@ -73,22 +73,25 @@
                 {% endfor %}
 
             </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                <a style="alignment: right; right: 10px;" type="button" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
+
 
         </td>
-        <td width='60%' height='100px' align="right" valign="top">
+        <td  height='70px' align="center" valign="top">
 
                 <!-- Button trigger modal -->
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a type="button" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
+
 
         </td>
-        <td width="40%" align="right">&nbsp;&nbsp;</td>
+        <td  align="right">&nbsp;&nbsp;</td>
 
 
     </tr>
     <tr>
         <td width="80%" valign="top">
-        <div style="overflow-x:auto;">
+        <div style="overflow-x:auto; padding-left: 60px;" >
             <table class="table table-hover table-responsive " id="example">
                 <tr bgcolor="#f0f8ff" >
                     <th>Codigo</th>

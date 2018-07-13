@@ -106,7 +106,7 @@ def detalle_alumno(request,id_alumno):
             }
         else:
             form = TelefonoForm()
-            telefonos = Telefono.objects.order_by('alumno')
+            telefonos = Telefono.objects.order_by('codigo')
             alumno = Alumno.objects.get(pk=id_alumno)
             edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
             telAlum = Telefono.objects.filter(alumno=alumno).count()
