@@ -28,32 +28,12 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_alumnos(request):
     if request.user.groups.filter(name="Asistente").exists():
-        alumnos=Alumno.objects.order_by('codigo')
-        telefonos = []
+        alumnos= Alumno.objects.all()
 
         for alumno in alumnos:
-            telefonos.append(alumno.telefono_set.first())
+            alumno.primerTelefono = alumno.telefono_set.first()
 
-        tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
-                                    "order by dias_asignados")
-
-        page=request.GET.get('page',1)
-        paginator=Paginator(alumnos,10)
-        try:
-            users = paginator.page(page)
-        except PageNotAnInteger:
-            users = paginator.page(1)
-        except EmptyPage:
-            users = paginator.page(paginator.num_pages)
-
-        context = {
-            'users':users,
-            'alumnos': alumnos,
-            'telefonos': telefonos,
-            'tipos': tipos
-        }
-
-        return render(request, 'modulo_alumnos/consultar_alumnos.html', context)
+        return render(request, 'modulo_alumnos/consultar_alumnos.html', {'alumnos': alumnos})
     else:
         raise Http404('Error, no tiene permiso para esta página')
 
