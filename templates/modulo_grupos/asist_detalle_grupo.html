@@ -5,14 +5,21 @@
 
 {% block head_content %}
     <script>
+    var allMarked = false;
         function desbloqueoProfesores(){
             document.getElementById('cbxProfesores').disabled = false;
         }
         function desbloqueoGrupos() {
             document.getElementById('cbxGrupos').disabled = false;
+            document.getElementById('chbTodos').disabled = false;
+
+            {% for alumno in alumnos %}
+                document.getElementById('{{ alumno.codigo }}').disabled = false;
+            {% endfor %}
         }
         function marcarCheckBox(){
             document.getElementById('cambioGrupo').checked = true;
+            habilitarGuardar(document.getElementById("cbxGrupos").value)
         }
         function marcarTodos() {
             var estado = document.getElementById('chbTodos').checked;
@@ -20,7 +27,29 @@
                 document.getElementById('{{ alumno.codigo }}').checked = estado;
             {% endfor %}
             document.getElementById('cambioGrupo').checked = estado;
+            allMarked= estado;
+            habilitarGuardar(document.getElementById("cbxGrupos").value)
         }
+
+        function habilitarGuardar(value) {
+            if(allMarked {% for alumno in alumnos %} || document.getElementById('{{ alumno.codigo }}').checked{% endfor %}){
+                    if(value != "{{ grupo.codigo }}"){
+                        document.getElementById('btnGuardar').disabled = false;
+                        $('#errorCambio').children('strong').html("");
+                        $('#errorCambio').children('img').attr("src", "{% static 'img/AllGoodCheck.png' %}");
+                    }
+                    else{
+                        $('#errorCambio').children('strong').html("* No ha seleccionado un grupo diferente.");
+                        $('#errorCambio').children('img').attr("src", "");
+                        document.getElementById('btnGuardar').disabled = true;
+                    }
+                }
+                else{
+                $('#errorCambio').children('strong').html("* Escoja al menos un estudiante para cambiar");
+                $('#errorCambio').children('img').attr("src", "");
+                    document.getElementById('btnGuardar').disabled = true;
+                }
+            }
     </script>
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
 {% endblock %}
@@ -86,7 +115,7 @@
                                 {% endfor %}
                             </td>
                             <td>{{ alumno.correo|default_if_none:"" }}</td>
-                            <td><input type="checkbox" onclick="marcarCheckBox()" name="{{ alumno.codigo }}"></td>
+                            <td><input type="checkbox" onclick="marcarCheckBox()" name="{{ alumno.codigo }}" id="{{ alumno.codigo }}" disabled="disabled"></td>
                         </tr>
                     {% endfor %}
 
@@ -94,13 +123,13 @@
                         <td></td><td></td><td></td><td></td>
                         <td align="right">Marcar Todos</td>
                         <td>
-                            <input type="checkbox" id="chbTodos" onclick="marcarTodos()">
+                            <input type="checkbox" id="chbTodos" onclick="marcarTodos()" disabled="disabled">
                         </td>
                     </tr>
                     <tr>
                         <td></td><td></td><td></td><td></td>
                         <td>
-                            <select class="custom-select" id="cbxGrupos" name="cbxGrupos" disabled="disabled">
+                            <select class="custom-select" id="cbxGrupos" name="cbxGrupos" disabled="disabled" onchange="habilitarGuardar(this.value)">
                                 <option value="{{ grupo.codigo }}">Grupo {{ grupo.codigo }}, {{ grupo.horario }}</option>
                                 {% for iteracion_grupo in grupos %}
                                     <option value="{{ iteracion_grupo.codigo }}">Grupo {{ iteracion_grupo.codigo }}, {{ iteracion_grupo.horario }}</option>
@@ -121,14 +150,16 @@
         </tr>
     </table>
     <div style="padding-top: 3%; padding-left: 32%">
-        <table width="25%">
-            <td width="10%">
-                <input type="submit" value="Guardar" class="btn btn-primary">
+        <table width="100%">
+            <td>
+                <input type="submit" value="Guardar" class="btn btn-primary" disabled="disabled" id="btnGuardar">
+                <div style="display: inline;" id="errorCambio"><strong></strong><img></div>
             </td>
 
         </table>
 
         <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
+
     </div>
     </form>
 
