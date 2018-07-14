@@ -33,13 +33,14 @@ function RemoveClass(element, name) {
   element.className = arr1.join(" ");
 }
 
-$(".deletebutton").on('click', function() {
-    var checked = jQuery('input:checkbox:checked').map(function () {
-        return this.value;
-    }).get();
-    jQuery('input:checkbox:checked').parents("tr").remove();
-
-});
+// $(".deletebutton").on('click', function() {
+//     $('#espereGD').css('display', 'inline');
+//     var checked = jQuery('input:checkbox:checked').map(function () {
+//         return this.value;
+//     }).get();
+//     jQuery('input:checkbox:checked').parents("tr").remove();
+//
+// });
 
 
 
@@ -73,13 +74,12 @@ $(document).on('submit', '#nuevoTelefonoForm', function (a) {
         success:function(response) {
           $('#btnGuardar').attr('disabled', false);
           $('#espereG').css('display', 'none');
-          alert("Número creado con exito");
-          $('#dinamicos').append(response);
+          //alert("Número creado con exito");
+          //$('#dinamicos').append(response);
           filterSelection('all');
           $('#agregarTelefonoModal').modal('hide');
-          habilitarBorrar();
-
-                  }
+          location.reload();
+          }
     })
 })
 

@@ -7,6 +7,7 @@
     <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
     <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
     <script src="{% static 'js/jquery.min.js' %}"></script>
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
@@ -68,6 +69,7 @@
 
         $(document).on('submit', '#cambiarPass', function (a) {
         a.preventDefault();
+        $('#espereG').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/credenciales/asistentes/',
@@ -81,16 +83,40 @@
                 },
 
                 success:function(response) {
-                    alert("Credenciales modificadas con exito");
+                    //alert("Credenciales modificadas con exito");
                     filterSelection('all');
                     $('#myDeleteModal').modal('hide');
-                    setTimeout(function () {
-                        location.reload();
-                    },0);
+                    //location.reload();
 
+                    var m = $('#mensajeEmergente');
+                    m.children('strong').html('Contraseña guardada con éxito');
+                    m.css('display','block');
+                    m.css('opacity',1);
+                    m.removeClass();
+                    m.addClass('alerta exito');
+
+                    $('#espereG').css('display', 'none');
+                    $('#contrasenia').val('');
+                    $('#repContrasenia').val('');
+                  },
+
+                  error:function (response) {
+                    var m = $('#mensajeEmergente');
+                    m.children('strong').html('Error. No se pudo guardar la nueva contraseña.');
+                    m.css('display','block');
+                    m.css('opacity',1);
+                    m.removeClass();
+                    m.addClass('alerta accionPeligrosa');
                   }
 
             })
+        });
+
+       $(document).ready(function() {
+          $('#myDeleteModal').on('hidden.bs.modal', function(e) {
+            $('#contrasenia').val('');
+            $('#repContrasenia').val('');
+          });
         });
 
     </script>
@@ -119,6 +145,11 @@
 {% endblock %}
 
 {% block content %}
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+    <span class="btnCerrar">×</span>
+        <strong></strong>
+    </div>
     <table width='100%'>
 
     <tr id="tr_mod" style="height: 55px;">
@@ -218,9 +249,9 @@
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
                 <h4 class="modal-title" id="myDeleteModalLabel"></h4>
               </div>
-                <div class="modal-body">
+                <div class="modal-body" style="padding: 1rem 0 0">
 
-                        <form method="post" id="cambiarPass">
+                        <form method="post" id="cambiarPass" autocomplete="off">
                             {% csrf_token %}
                             <div id="id_alumno" style="display: none;"></div>
 
@@ -259,6 +290,11 @@
 
                             </table>
 
+                            <div style="display: none;padding-left: 5rem;" id="espereG">
+                                <img src="{% static 'img/ajax-loader.gif' %}">
+                                Procesando. Por Favor Espere.
+                            </div>
+
                             <div class="modal-footer">
                                 <button type="submit button" class="btn btn-primary" id="guardarPass" name="guardarPass" disabled="disabled">Guardar</button>
                                 <button class="btn btn-small pull-left" data-dismiss="modal"><i class="icon-remove"></i>Cancelar</button>
@@ -269,4 +305,5 @@
             </div>
           </div>
         </div>
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
