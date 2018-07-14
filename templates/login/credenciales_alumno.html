@@ -8,6 +8,7 @@
     <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
@@ -38,7 +39,7 @@
 
 
 
-        $(document).ready(function() {
+        {% comment %}$(document).ready(function() {
 
             $('#example tr').click(function () {
                 var href = $(this).find("a").attr("href");
@@ -47,7 +48,7 @@
                 }
             });
 
-        });
+        });{% endcomment %}
 
            $(function() {
             selectFilas();
@@ -124,24 +125,12 @@
         });
     </script>
     <style>
-        .pagination {
-            display: inline-block;
-        }
+    a {
+        color: black;
+        text-underline-mode: none;
+    }
 
-        .pagination a {
-            color: black;
-            float: left;
-            padding: 8px 16px;
-            text-decoration: none;
-            border: 1px solid #ddd;
-        }
-
-        .pagination a.active {
-            background-color: #2C3E50;
-            color: white;
-        }
-        .pagination a:hover:not(.active) {background-color: #ddd;}
-
+    .table-hover tbody tr:hover td, .table-hover tbody tr:hover {background-color: #cce6ff}
 
     </style>
 
@@ -157,7 +146,7 @@
 
     <table width='100%' align="center">
 
-    <tr id="tr_mod" style="height: 70px;">
+    <tr id="tr_mod" style="height: 30px;">
         <td width='20%' rowspan="2" valign="top">
             <p></p>
             <h4> Credenciales</h4>
@@ -185,7 +174,7 @@
 
 
         <td width='20%' align="left" valign="top" >
-            <br/>
+            {% comment %}<br/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Filtrar por grupos:
             <select onchange="filterSelection(this.value)" class="active">
@@ -194,52 +183,56 @@
                     <option value="{{ valor.dias_asignados }}">{{ valor.dias_asignados }}</option>
                 {% endfor %}
 
-            </select>
+            </select>{% endcomment %}
 
         </td>
-        <td width='60%' height='60px' align="right" valign="top">
 
-                <!-- Button trigger modal -->
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-        </td>
         <td width="40%" align="right">&nbsp;&nbsp;</td>
 
 
     </tr>
     <tr>
         <td width="80%" valign="top">
-        <div style="overflow-x:auto; padding-left: 50px" >
-            <table class="table table-hover table-responsive " id="example" width="100%">
-                <tr bgcolor="#f0f8ff">
-                    <th>Codigo</th>
+        <div style="padding-left: 10px;" >
+            <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;">
+            <thead>
+                <tr bgcolor="#f0f8ff" >
+                    <th >Codigo</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
                     <th>Telefono</th>
                     <th>Correo</th>
                     <th>Usuario</th>
+                    <th>D&iacute;as Correspondientes</th>
                 </tr>
-                {% for user in users%}
-
-                    <tr class='alumnoRow {{user.grupo.horario.dias_asignados}} all' size="10px" data-toggle="modal" data-target="#myDeleteModal">
-                        <td scope="row"> <a id="linkFila edit" >{{ user.codigo }}</a></td>
-                        <td class="nombre">{{ user.nombre|default_if_none:""}} </td>
-                        <td>{{ user.apellido|default_if_none:"" }}</td>
-                        <td>
-                            {% for telefono in telefonos  %}
-                                {% if telefono.alumno == user %}
-                                    {{ telefono.numero }}
-                                {% endif %}
-                            {% endfor %}
-                        </td>
+            </thead>
+                </thead>
+                <tbody>
+                {% for user in alumnos%}
+                    <tr data-toggle="modal" data-target="#myDeleteModal">
+                        <td width="20px"><a href="{% url 'detalle_alumno' id_alumno=user.codigo %}">{{ user.codigo }}</a></td>
+                        <td>{{ user.nombre }} </td>
+                        <td>{{ user.apellido }}</td>
+                        <td>{{ user.primerTelefono|default_if_none:""  }}</td>
                         <td>{{ user.correo|default_if_none:"" }}</td>
-                        <td>{{ user.username|default_if_none:""}}</td>
+                        <td>{{ user.username|default_if_none:"" }}</td>
+                        <td>{{user.grupo.horario.dias_asignados}}</td>
                     </tr>
                 {% endfor %}
-
+                </tbody>
+                {% comment %}<tfoot>
+                <tr bgcolor="#f0f8ff" >
+                    <th>Codigo</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Telefono</th>
+                    <th>Correo</th>
+                    <th>Encargado</th>
+                    <th>D&iacute;as Correspondientes</th>
+                </tr>
+                </tfoot>{% endcomment %}
             </table>
-            <div class="pagination">
+            {% comment %}<div class="pagination">
             {% if users.has_other_pages %}
 
                 {% if users.has_previous %}
@@ -261,7 +254,7 @@
                 {% endif %}
 
             {% endif %}
-            </div>
+            </div>{% endcomment %}
         </div>
 
 
@@ -337,5 +330,45 @@
             </div>
           </div>
         </div>
-<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+
+    <script>
+        $(document).ready(function() {
+        var tabla = $('#example').DataTable( {
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+        {% comment %}tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });{% endcomment %}
+
+    });
+    </script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
