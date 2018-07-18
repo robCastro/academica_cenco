@@ -27,6 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'postmaster@sandboxf9fb54b889384a97baf93f8182fae489.mailgun.org'
+EMAIL_HOST_PASSWORD = '6c76c2a44161c4baa83b9c34040c55a3-8889127d-df398e08'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'cenco@cenco.com'
+
 LOGIN_REDIRECT_URL = '/'
 
 # Application definition
