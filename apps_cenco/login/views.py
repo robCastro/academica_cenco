@@ -150,6 +150,9 @@ def principal(request):
         elif has_group(request.user, 'Asistente'):
             return redirect('home_asistente')
 
+        elif has_group(request.user, 'Encargado'):
+            return redirect('encargado_misDatos')
+
         elif has_group(request.user, 'Alumno'):
             return redirect('home_alumno')
 
@@ -165,9 +168,11 @@ def homeAsistente(request):
 def homeAlumno(request):
     return redirect('ver_alumno_propio')
 
+
 def has_group(user, group_name):
     group = Group.objects.get(name=group_name)
     return True if group in user.groups.all() else False
+
 
 
 @login_required

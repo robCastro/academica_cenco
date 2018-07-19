@@ -45,10 +45,4 @@ urlpatterns = [
         auth_views.password_reset_confirm, {'template_name': 'sesiones/password_reset_confirm.html'}, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, {'template_name': 'sesiones/password_reset_complete.html'}, name='password_reset_complete'),
 ]
-#
-# registration/
-# registration/password_reset_subject.txt
-# registration/
-# registration/
-# registration/
-# registration/
+

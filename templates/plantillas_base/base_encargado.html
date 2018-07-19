@@ -1,0 +1,31 @@
+{% extends 'plantillas_base/base.html' %}
+
+{% block sidebar_content %}
+    <li class="sidebar-brand">
+      Navegación
+    </li>
+    <li>
+        <a href="{% url 'encargado_misDatos'%}">Mis Datos</a>
+    </li>
+    <li>
+        <a href="{% url 'encargado_misHijos' %}#">Mis Hijos</a>
+    </li>
+    <li>
+        <a href="#">Calificaciones</a>
+    </li>
+    <li>
+        <a href="#">Progreso</a>
+    </li>
+    <li>
+        <a href="#">Pagos</a>
+    </li>
+{% endblock %}
+
+{% block navbar_content %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">{{ user.get_full_name }}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar Sesión</a>
+    </li>
+{% endblock %}
