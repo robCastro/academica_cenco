@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse, HttpResponseServerError
 
 # Create your views here.
 from apps_cenco.db_local.forms import DetalleFooterForm
@@ -19,7 +19,10 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def editar_configuracion(request):
     if request.user.groups.filter(name="Director").exists():
-        footer = FooterINFO.objects.get(codigo=1)
+        try:
+            footer = FooterINFO.objects.get(codigo=1)
+        except ObjectDoesNotExist:
+            return HttpResponseServerError('Error al consultar la base de datos')
         form_footer = DetalleFooterForm(instance=footer)
         context = {
             'form_footer': form_footer,
