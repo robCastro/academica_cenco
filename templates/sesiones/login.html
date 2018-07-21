@@ -11,6 +11,10 @@
     <table class="blockquote" cellpadding="10px"  align="center">
     {% csrf_token %}
     {{ form }}
+        <tr>
+            <td></td>
+            <td><a href="{% url 'password_reset' %}">He olvidado mi contrase&ntilde;a.</a></td>
+        </tr>
     </table>
       <br><br>
       <p align="center">

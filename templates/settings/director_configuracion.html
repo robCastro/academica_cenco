@@ -1,0 +1,125 @@
+{%  extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Configuraciones{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <style>
+
+     .separador {
+        display: block;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .separador > span {
+        position: relative;
+        display: inline-block;
+    }
+
+    .separador > span:before,
+    .separador > span:after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 9999px;
+        height: 3px;
+        background: #0b18ff;
+    }
+
+    .separador > span:before {
+        right: 100%;
+        margin-right: 15px;
+    }
+
+    .separador > span:after {
+        left: 100%;
+        margin-left: 15px;
+    }
+
+    </style>
+
+    <script>
+
+    $(document).on('submit', '#editarFooterForm', function (a) {
+    a.preventDefault();
+    $('#btnGuardarFooter').attr('disabled', true);
+    $('#espereFooter').css('display', 'inline');
+
+    $.ajax({
+        type: 'POST',
+        url: '/configuracion/editar_footer/',
+        data: {
+            telefono:$('#id_telefono').val(),
+            correo:$('#id_correo').val(),
+            direccion:$('#id_direccion').val(),
+            csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
+        },
+        success:function (response) {
+          $('#btnGuardarFooter').attr('disabled', false);
+          $('#espereFooter').css('display', 'none');
+          var m = $('#mensajeEmergenteFooter');
+          m.children('strong').html(response);
+          m.css('display','block');
+          m.css('opacity',1);
+          m.removeClass();
+          m.addClass('alerta exito');
+          $('#tel_footer').html( $('#id_telefono').val() );
+          $('#mail_footer').html( $('#id_correo').val() );
+          $('#dir_footer').html( $('#id_direccion').val() );
+        },
+
+        error: function (response) {
+          $('#btnGuardarFooter').attr('disabled', false);
+          $('#espereFooter').css('display', 'none');
+          var m = $('#mensajeEmergenteFooter');
+          m.children('strong').html(response.responseText);
+          m.css('display','block');
+          m.css('opacity',1);
+          m.removeClass();
+          m.addClass('alerta accionPeligrosa');
+        }
+    })
+})
+    </script>
+
+{% endblock %}
+
+{% block content %}
+<h3>Configuraci&oacute;n del Sistema</h3>
+    <br><br>
+
+    <div class="separador" style="width: 75%;"><span><h4>Informaci&oacute;n al pie de p&aacute;gina</h4></span></div>
+    {#  Alerta CSS para el footer  #}
+    <div class="divEscondido" id="mensajeEmergenteFooter" style="width: 75%">
+       <span class="btnCerrar">&times;</span>
+         <strong></strong>
+    </div>
+
+    <div style="width: 50%">
+    <form action="" method="POST" id="editarFooterForm">
+        {% csrf_token %}
+    <table cellpadding="10px">
+        {{ form_footer }}
+        <tr>
+            <td colspan="2">
+                <button type="submit" class="btn btn-primary" id="btnGuardarFooter">Guardar</button>
+                <div style="display: none" id="espereFooter">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                      Procesando. Por Favor Espere.
+                </div>
+
+            </td>
+        </tr>
+    </table>
+
+        </form>
+
+    </div>
+
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}
+

@@ -113,19 +113,16 @@
          <div style="width: 150px; display: inline-block"></div>
         <div class="footerDiv">
             <p>CONT&Aacute;CTENOS:</p>
-            <p><strong>Tel:</strong> 0000-0000 </p>
-            <p><strong>Email:</strong> correo_cenco@cenco.com </p>
+            <p><strong>Tel:</strong> <span id="tel_footer">{{ contenido_footer.telefono }} </span></p>
+            <p><strong>Email:</strong><span id="mail_footer"> {{ contenido_footer.correo }} </span></p>
         </div>
         <div class="footerDiv">
             <p>INFORMACI&Oacute;N:</p>
             <p><a href="">Acerca de CENCO</a> </p>
-            <p><strong>Direcci&oacute;n: </strong>departamento cuidad, colonia, numero local etc </p>
-            <p><strong>Direcci&oacute;n: </strong>departamento cuidad, colonia, numero local etc </p>
+            <p><strong>Direcci&oacute;n: </strong><span id="dir_footer">{{ contenido_footer.direccion }}</span> </p>
         </div>
         <div class="footerDiv">
             <img class="imgLogo" align="right" src="{% static 'img/Grupo.png' %}">
-
-
         </div>
             </tr>
         </table>

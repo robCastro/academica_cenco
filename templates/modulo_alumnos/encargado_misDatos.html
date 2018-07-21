@@ -1,0 +1,34 @@
+{% extends 'plantillas_base/base_encargado.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Datos Personales{% endblock %}
+
+{% block content %}
+    <div style="width: 80%; padding: 3%">
+    <h3>Mis Datos</h3>
+    <br>
+    <table class="table table-hover" style="width: 50%" align="center">
+        <tbody>
+           <tr><td><strong>Nombre:</strong></td> <td>{{ encargado.nombre |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Apellido:</strong></td> <td>{{ encargado.apellido |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Direccion:</strong></td> <td>{{ encargado.direccion |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Correo:</strong></td> <td>{{ encargado.correo |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Dui:</strong></td> <td>{{ encargado.dui |default_if_none:"—"}}</td></tr>
+        </tbody>
+    </table>
+    <br><br>
+
+    <table class="table table-sm table-hover" style="width: 35%;" align="center">
+        <thead>
+        <th>Tel&eacute;fono</th>
+        <th>Tipo</th>
+        </thead>
+        <tbody>
+        {% for tel in telefonos %}
+            <tr><td>{{ tel.numero }}</td><td>{{ tel.tipo }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+{% endblock %}
