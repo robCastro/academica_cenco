@@ -1,0 +1,53 @@
+{% extends 'plantillas_base/base_encargado.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Datos de mis hijos{% endblock %}
+
+{% block head_content %}
+    <script src="{% static 'js/formato_consultar_hijos.js' %}"></script>
+    <link href=" {% static 'css/formato_consultar_hijos.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<table style="width: 80%;" cellpadding="20px">
+<tr>
+    <td align="right"><h3>Mis Hijos</h3></td>
+    <td style="width: 75%" align="right">
+    <span>Visualizando datos de </span>
+    <select onchange="filterSelection(this.value)" id="selector">
+{% for estudiante in estudiantes %}
+    {% if forloop.first %}
+    <option value="{{ estudiante.codigo }}" selected>{{ estudiante.nombre }} {{ estudiante.apellido }}</option>
+    {% else %}
+    <option value="{{ estudiante.codigo }}">{{ estudiante.nombre }} {{ estudiante.apellido }}</option>
+    {% endif %}{% endfor %}
+    </select>
+    </td>
+</tr>
+</table>
+    {% for estudiante in estudiantes %}
+    <div class="divSelector {{ estudiante.codigo }}">
+    <table class="table table-hover" style="width: 50%" align="center">
+        <tbody>
+           <tr><td><strong>Nombre:</strong></td> <td>{{ estudiante.nombre |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Apellido:</strong></td> <td>{{ estudiante.apellido |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Direccion:</strong></td> <td>{{ estudiante.direccion |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Correo:</strong></td> <td>{{ estudiante.correo |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Fecha de Nacimiento:</strong></td> <td>{{ estudiante.fechaNacimiento |default_if_none:"—"}}</td></tr>
+           <tr><td><strong>Dui:</strong></td> <td>{{ estudiante.dui |default_if_none:"—"}}</td></tr>
+        <tr><td><strong>Asiste al Grupo:</strong></td> <td>{{ estudiante.grupo |default_if_none:"—"}}</td></tr>
+        </tbody>
+    </table>
+    <br><br>
+    <table class="table table-sm table-hover" style="width: 35%;" align="center">
+        <thead>
+        <th>Tel&eacute;fono</th>
+        <th>Tipo</th>
+        </thead>
+        <tbody>
+            {{ estudiante.telefonos | safe }}
+        </tbody>
+    </table>
+    </div>
+    {% endfor %}
+{% endblock %}
