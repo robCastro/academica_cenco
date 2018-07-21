@@ -420,3 +420,39 @@ def generarUsuario(nom, ape):
         cant = cant + 1
     usuario = str(usu) + str(cant)
     return usuario
+
+@login_required
+def consultar_datos_encargado(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        encargado = Encargado.objects.get(username=request.user)
+        telefonos = Telefono.objects.filter(encargado=encargado)
+        context = {
+            'encargado': encargado,
+            'telefonos': telefonos,
+        }
+        return render(request, 'modulo_alumnos/encargado_misDatos.html', context)
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
+
+@login_required
+def consultar_datos_encargado_hijos(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        enc = Encargado.objects.get(username=request.user)
+        estudiantes = Alumno.objects.filter(encargado=enc)
+        for estudiante in estudiantes:
+            phone_rows = ""
+            try:
+                tels = Telefono.objects.filter(alumno=estudiante)
+                for tel in tels:
+                    phone_rows += "<tr><td>"+tel.numero+"</td><td>"+tel.tipo+"</td></tr>"
+            except ObjectDoesNotExist:
+                phone_rows = ""
+            estudiante.telefonos = phone_rows
+
+        context = {
+            'estudiantes': estudiantes
+        }
+        return render(request, 'modulo_alumnos/encargado_misHijos.html', context)
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)

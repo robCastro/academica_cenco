@@ -12,6 +12,6 @@ urlpatterns = [
     url(r'^encargado/misDatos/$', views.consultar_datos_encargado, name="encargado_misDatos"),
     url(r'^encargado/misHjos/$', views.consultar_datos_encargado_hijos, name="encargado_misHijos"),
 
-    url(r'^registrarEncargado/$',views.registrarEncargado, name="RegistrarEncargado"),
-    url(r'^modificarAlum/(?P<id_alumno>\d+)$', views.modificar_alumno2, name="modificar_alumnoV2"),
+    #url(r'^registrarEncargado/$',views.registrarEncargado, name="RegistrarEncargado"),
+    #url(r'^modificarAlum/(?P<id_alumno>\d+)$', views.modificar_alumno2, name="modificar_alumnoV2"),
 ]
