@@ -5,9 +5,10 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 from django.contrib.auth.decorators import permission_required, login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render,redirect
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
 from apps_cenco.db_app.models import Alumno
@@ -86,7 +87,7 @@ def detalle_alumno(request,id_alumno):
             }
         else:
             form = TelefonoForm()
-            telefonos = Telefono.objects.order_by('codigo')
+            telefonos = Telefono.objects.order_by('alumno')
             alumno = Alumno.objects.get(pk=id_alumno)
             edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
             telAlum = Telefono.objects.filter(alumno=alumno).count()
@@ -146,6 +147,133 @@ def ver_alumno_propio(request):
     return render(request, 'modulo_alumnos/ver_alumno_propio.html',context)
    else:
      raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
+def registro_alumno(request):
+    if request.user.groups.filter(name="Asistente").exists():
+        if request.method == "POST":
+            form = InsertarAlumnoForm(request.POST)
+            form3 =TelefonoForm(request.POST)
+            if form.is_valid() :
+                # gererando el usuario
+                nom=request.POST['nombre']
+                ape = request.POST['apellido']
+                nomb = " ".join(nom.split())
+                nomb = nomb.split()
+                apell = " ".join(ape.split())
+                apell = apell.split()
+                usu = str(nomb[0]) + str(apell[0])
+                usu=usu.lower()
+                # consulta a la base para generar correlativo
+                users = User.objects.filter(username__contains=usu)
+
+                cant = users.__len__()
+                if cant == 0:
+                    cant = 1
+                else:
+                    cant=cant+1
+                usuario=str(usu)+str(cant)
+                correo=request.POST['correo']
+                contra=request.POST['fechaNacimiento']
+                contra=contra.replace("-","")
+                contra = contra.replace("/", "")
+                user=User.objects.create_user(username=usuario,email=correo,password=contra,first_name=nom,last_name=ape)
+                user.save()
+                groupEncargado = Group.objects.get(name='Alumno')
+                groupEncargado.user_set.add(user)
+                form.save()
+                alumno = form.save(commit=False)
+                alumno.username=user
+                alumno.save()
+                id_grupo=request.POST['grupo']
+                grupo = Grupo.objects.get(pk=id_grupo)
+                grupo.alumnosInscritos= grupo.alumnosInscritos+1
+                id_horario= grupo.horario_id
+                horario = Horario.objects.get(pk=id_horario)
+                grupo.horario.cantidad_alumnos=grupo.horario.cantidad_alumnos+1
+                horario.cantidad_alumnos= horario.cantidad_alumnos+1
+                grupo.save()
+                horario.save()
+            # Aqui quizas quepa un else para cuado algo falle. Error 500 talves?
+
+                telefono = Telefono()
+                telefono.numero= request.POST['numero']
+                telefono.alumno_id = alumno.codigo
+                telefono.tipo = request.POST['tipo']
+                telefono.save()
+                return HttpResponse("Usuario: "+usuario+" Contraseña: "+contra)
+
+        else:
+            form = InsertarAlumnoForm()
+            form3 = TelefonoForm()
+        context = {
+            "form": form,
+            "form3": form3,
+        }
+        return render(request, "modulo_alumnos/registrar_alumnos.html", context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
+def registrar_encargado(request):
+    if request.user.groups.filter(name="Asistente").exists():
+        if request.method == 'POST':
+            form2 = CrearEncargadoForm(request.POST)
+            form4 = TelefonoForm(request.POST)
+            if form2.is_valid():
+                nom = request.POST['nombre']
+                ape = request.POST['apellido']
+                nomb = " ".join(nom.split())
+                nomb = nomb.split()
+                apell = " ".join(ape.split())
+                apell = apell.split()
+                usu = str(nomb[0]) + str(apell[0])
+                usu = usu.lower()
+                # consulta a la base para generar correlativo
+                users = User.objects.filter(username__contains=usu)
+
+                cant = users.__len__()
+                if cant == 0:
+                    cant = 1
+                else:
+                    cant = cant + 1
+
+                usuario = str(usu) + str(cant)
+                correo = request.POST['correo']
+                contra = request.POST['fechaNacimiento']
+                contra = contra.replace("-", "")
+                user = User.objects.create_user(username=usuario, email=correo, password=contra,first_name=nom,last_name=ape)
+                user.save()
+                groupEncargado = Group.objects.get(name='Encargado')
+                groupEncargado.user_set.add(user)
+                form2.save()
+                #alumno = form2.save(commit=False)
+
+                encargado = form2.save(commit=False)
+
+                encargado.username = user
+                encargado.save()
+                id=encargado.codigo.__str__()
+                nombre= encargado.nombre+" "+encargado.apellido
+
+                telefono = Telefono()
+                telefono.numero = request.POST['numero']
+                telefono.encargado_id = encargado.codigo
+                telefono.tipo=request.POST['tipo']
+                telefono.save()
+                return JsonResponse({'mensaje': "Usuario: "+usuario+" Contraseña: "+usuario,'Encargado':'<option value="'+id+'">'+nombre+'</option>'})
+            # Seria bueno agregar aqui un Internal Server error. Para cuando no guarde bien.
+
+        else:
+            form = InsertarAlumnoForm()
+            form4 = TelefonoForm()
+            context = {
+                "form": form,
+                "form4": form4,
+            }
+            return render(request, "modulo_alumnos/registrar_alumnos.html", context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
 def inscribirAlumno(request):
@@ -293,22 +421,38 @@ def generarUsuario(nom, ape):
     usuario = str(usu) + str(cant)
     return usuario
 
-def modificar_alumno2(request, id_alumno):
-    try:
-        alumno = Alumno.objects.get(codigo = id_alumno)
-    except Alumno.DoesNotExist:
-        return Http404("Alumno no existe")
+@login_required
+def consultar_datos_encargado(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        encargado = Encargado.objects.get(username=request.user)
+        telefonos = Telefono.objects.filter(encargado=encargado)
+        context = {
+            'encargado': encargado,
+            'telefonos': telefonos,
+        }
+        return render(request, 'modulo_alumnos/encargado_misDatos.html', context)
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
 
-    fechaFormatoEspecial =  alumno.fechaNacimiento.strftime("%d/%m/%Y")
-    cantidadtelefonos = Telefono.objects.filter(alumno=alumno).count()
-    hoy = datetime.now()
-    esMenor = hoy.year < alumno.fechaNacimiento.year + 18 or hoy.month < alumno.fechaNacimiento.month or hoy.day < alumno.fechaNacimiento.day
-    context = {
-        "alumno" : alumno,
-        "fechaNac" : fechaFormatoEspecial,
-        "notifTelefono" : cantidadtelefonos == 0,
-        "notifDui" : not esMenor and alumno.dui == "",
-        "notifCorreo" : alumno.correo == "",
-        "esDependiente" : alumno.encargado != None,
-    }
-    return render(request, "modulo_alumnos/modificar_alumno2.html", context)
+
+@login_required
+def consultar_datos_encargado_hijos(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        enc = Encargado.objects.get(username=request.user)
+        estudiantes = Alumno.objects.filter(encargado=enc)
+        for estudiante in estudiantes:
+            phone_rows = ""
+            try:
+                tels = Telefono.objects.filter(alumno=estudiante)
+                for tel in tels:
+                    phone_rows += "<tr><td>"+tel.numero+"</td><td>"+tel.tipo+"</td></tr>"
+            except ObjectDoesNotExist:
+                phone_rows = ""
+            estudiante.telefonos = phone_rows
+
+        context = {
+            'estudiantes': estudiantes
+        }
+        return render(request, 'modulo_alumnos/encargado_misHijos.html', context)
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)

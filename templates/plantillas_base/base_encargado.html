@@ -2,22 +2,28 @@
 
 {% block sidebar_content %}
     <li class="sidebar-brand">
-        <a href="#">Navegación</a>
+      Navegación
     </li>
     <li>
-        <a href="{% url 'asistenteConsultarAlumnos' %}">Alumnos</a>
+        <a href="{% url 'encargado_misDatos'%}">Mis Datos</a>
     </li>
     <li>
-        <a href="{% url 'asistente_consultar_grupos' %}">Grupos</a>
+        <a href="{% url 'encargado_misHijos' %}#">Mis Hijos</a>
     </li>
     <li>
-        <a href="#">Mis Datos</a>
+        <a href="#">Calificaciones</a>
+    </li>
+    <li>
+        <a href="#">Progreso</a>
+    </li>
+    <li>
+        <a href="#">Pagos</a>
     </li>
 {% endblock %}
 
 {% block navbar_content %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'asistenteCredencialesPropias' %}">{{ user.get_full_name }}</a>
+        <a class="nav-link" href="#">{{ user.get_full_name }}</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar Sesión</a>
