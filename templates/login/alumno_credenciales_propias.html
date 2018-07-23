@@ -4,9 +4,11 @@
 {% block titulo %}Cambiar Credenciales{% endblock %}
 
  {% block content %}
+     <div class="container-fluid" style="display: inline-flex">
+     {{ block.super }}
      <table width="100%" xmlns:height="http://www.w3.org/1999/xhtml">
      <tr>
-         <td width="25%">
+         <td width="8%">
         </td>
          <td width="50%" height='100px' >
              <br>
@@ -29,7 +31,7 @@
                       {{ form.as_table }}
                  </table>
              <br>
-              <table width="40%" align="center">
+                    <table width="40%" align="center">
 
                          <td align="center">
                             <p></p>
@@ -42,4 +44,5 @@
          </td>
      </tr>
      </table>
+     </div>
  {% endblock %}
