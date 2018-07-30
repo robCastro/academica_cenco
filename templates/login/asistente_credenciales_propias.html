@@ -3,6 +3,18 @@
 
 {% block titulo %}Cambiar Credenciales{% endblock %}
 
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+
+    <script>
+    function mostrarEspera() {
+    $('#espereG').css('display', 'inline');
+    $('#btnGuardar').attr('disabled', true);
+    }
+    </script>
+
+{% endblock %}
+
  {% block content %}
      <table width="100%">
      <tr>
@@ -14,8 +26,9 @@
             <br>
              {% for message in messages %}
              {% if 'success' in message.tags %}
-             <div class="alert alert-success" style="background-color: #2C3E50">
-            <a class="close" href="#" data-dismiss="alert">×</a>
+             <div class="alerta exito">
+            <span class="btnCerrar">&times;</span>
+                 <strong></strong>
             {{ message }}
             </div>
              {% endif %}
@@ -30,11 +43,19 @@
                      {{ form.as_table }}
                  </table>
              <br>
-              <table width="40%" align="center">
+              <table width="60%" align="center">
                             <p></p>
+                  <tr>
                   <td align="center">
-                        <button type="button submit" class="btn btn-primary" >Guardar</button>
+                        <button type="button submit" class="btn btn-primary" id="btnGuardar" onclick="mostrarEspera();">Guardar</button>
                   </td>
+                  <td>
+                      <div style="display: none" id="espereG">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
+                  </td>
+                  </tr>
               </table>
              </form>
          </td>
@@ -42,4 +63,5 @@
          </td>
      </tr>
      </table>
+     <script src="{% static 'js/cerrar_alertas.js' %}"></script>
  {% endblock %}
