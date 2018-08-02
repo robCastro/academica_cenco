@@ -5,19 +5,13 @@
         <a href="#">Navegación</a>
     </li>
     <li>
-        <a href="{% url 'asistenteConsultarAlumnos' %}">Alumnos</a>
-    </li>
-    <li>
-        <a href="{% url 'asistente_consultar_grupos' %}">Grupos</a>
-    </li>
-    <li>
         <a href="#">Mis Datos</a>
     </li>
 {% endblock %}
 
 {% block navbar_content %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'asistenteCredencialesPropias' %}">{{ user.get_full_name }}</a>
+        <a class="nav-link" href="Aqui el name de la vista para credenciales de tecnico">{{ user.get_full_name }}</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar Sesión</a>

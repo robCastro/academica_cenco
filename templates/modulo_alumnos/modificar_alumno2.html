@@ -1,0 +1,364 @@
+{% extends 'plantillas_base/base_asistente.html' %}
+{% load staticfiles %}
+
+{% block titulo %} Modificar Alumno {% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <script src="{% static 'js/modificar_alumnos2.js' %}"></script>
+
+    <!-- Necesarios para widgets -->
+    <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
+    <script src="{% static 'js/jquery-1.12.4/jquery-1.12.4.js' %}"></script>
+    <script src="{% static 'js/jquery-1.12.4/jquery-ui.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+    <!-- FIN_ALERTAS -->
+
+    <div style="padding-top: 1%; padding-left: 20%">
+        <h3>Alumno</h3>
+    </div>
+
+    <table width="100%">
+        <tr>
+            <td width='20%' style="padding-top: 5%" rowspan="4" valign="top">
+                <div class='divNotifGrupo' >
+                    <h4>Atención:</h4>
+                    <div style="padding-left: 12%">
+                        <p></p>
+                        {% if notifTelefono %}
+                        <h5>Ingresar Telefono</h5><p></p>
+                        {% endif %}
+                        {% if notifDui %}
+                        <h5>Solicitar Dui</h5><p></p>
+                        {% endif %}
+                        {% if notifCorreo %}
+                        <h5>Solicitar Correo</h5><p></p>
+                        {% endif %}
+                        <h5>Notif. 4</h5><p></p>
+                    </div>
+                </div>
+            </td>
+            <td width="80%" style="padding-top: 2%; padding-left: 9%" valign="top">
+                <input type="text" id="txtCodigoAlumno" value="{{ alumno.codigo }}" hidden="">
+                <table width="100%">
+                    <tr>
+                        <td width="20%">
+                            <label for="txtNombreAlumno"><strong>Nombre*: </strong></label>
+                        </td>
+                        <td width="30%">
+                            <div class="form-group">
+                                <input type="text" required="" id="txtNombreAlumno" value="{{ alumno.nombre }}" class="form-control">
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtApellidoAlumno"><strong>Apellido*: </strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="text" required="" id="txtApellidoAlumno" value="{{ alumno.apellido }}" class="form-control">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtDireccionAlumno"><strong>Direccion*: </strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <textarea class="form-control" required="" id="txtDireccionAlumno" rows="3">{{ alumno.direccion }}</textarea>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtFechaNacAlumno"><strong>Fecha de Nacimiento*: </strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input class="form-control" id="txtFechaNacAlumno" value="{{ fechaNac }}" type="text" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtDuiAlumno"><strong>DUI: </strong></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="text" id="txtDuiAlumno" value="{{ alumno.dui }}" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="txtCorreoAlumno"><strong>Correo: </strong></label>
+                            <!-- Small para mantener alineacion -->
+                            <small id="emailHelp" class="form-text text-muted">.</small>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input class="form-control" id="txtCorreoAlumno" value="{{ alumno.correo }}" aria-describedby="emailHelp" type="email">
+                                <small id="emailHelp" class="form-text text-muted">Ejemplo: alumno@correo.com</small>
+                                <div class="invalid-feedback">Correo no válido</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    {% if esDependiente %}
+
+    <div style="padding-top: 1%; padding-left: 20%">
+        <table width="100%">
+            <tr>
+                <td width="29%">
+                    <h3 id="tituloEnc">Encargado</h3>
+                </td>
+                <td width="30%">
+                    <label for="tituloEnc"><button id="linkCambiar" onclick="cambiarEncargado()" class="btn btn-outline-info btn-sm">Cambiar</button></label>
+                </td>
+                <td width="18%">
+                    <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="hacerIndependiente" type="checkbox">
+                        <label class="custom-control-label" for="hacerIndependiente">Hacer Independiente</label>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="datosEncargado" style="padding-top: 1%; padding-left: 29%">
+    <table width="100%">
+        <tr>
+            <td width="20%">
+                <label for="nomEnc"><strong>Nombre:</strong></label>
+            </td>
+            <td width="30%" >
+                <div class="form-group">
+                    <input type="text" id="nomEnc" readonly="" class="form-control">
+                </div>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <label for="apeEnc"><strong>Apellido:</strong></label>
+            </td>
+            <td>
+                <div class="form-group">
+                    <input type="text" id="apeEnc" readonly="" class="form-control">
+                </div>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <label for="apeEnc"><strong>Direccion:</strong></label>
+            </td>
+            <td>
+                <div class="form-group">
+                    <textarea id="dirEnc" class="form-control" readonly="" rows="3"></textarea>
+                </div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+    </div>
+
+    <div style="padding-top: 1%; padding-left: 23%"  id="tableBusquedaEnc" hidden="">
+        <table width="100%">
+            <tr>
+                <td width="15%">
+                    <label for="buscarEncargado"><strong>Busqueda: </strong></label>
+                </td>
+                <td width="20%">
+                    <div class="form-group">
+                        <input type="text" id="buscarEncargado" class="form-control">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="cambiarEncargado" style="padding-top: 3%" hidden="">
+        <table width="100%" >
+            <tr>
+                <td style="padding-left: 5%">
+                    <h4>Actual:</h4>
+                </td>
+                <td >
+                    <h4>Nuevo:</h4>
+                </td>
+            </tr>
+        </table>
+        <table width="100%">
+            <input type="text" id="codEncargadoNuevo" hidden="">
+            <tr>
+                <td style="padding-left: 6%" width="15%">
+                    <label for="nombreEncActual"><strong>Nombre:</strong></label>
+                </td>
+                <td width="20%">
+                    <div class="form-group">
+                        <input type="text" id="nombreEncActual" readonly="" class="form-control">
+                    </div>
+                </td>
+                <td width="15%"></td>
+                <td width="9%">
+                    <label for="nombreEncNuevo"><strong>Nombre:</strong></label>
+                </td>
+                <td width="20%">
+                    <div class="form-group">
+                        <input type="text" id="nombreEncNuevo" readonly="" class="form-control">
+                    </div>
+                </td>
+                <td width=""></td>
+            </tr>
+            <tr>
+                <td style="padding-left: 6%">
+                    <label for="apellidoEncActual"><strong>Apellido:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" id="apellidoEncActual" readonly="" class="form-control">
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                    <label for="apellidoEncNuevo"><strong>Apellido:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" id="apellidoEncNuevo" readonly="" class="form-control">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="padding-left: 6%">
+                    <label for="direccionEncAct"><strong>Direccion:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <textarea id="direccionEncAct" readonly="" rows="3" class="form-control"></textarea>
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                    <label for="direccionEncNuevo"><strong>Direccion:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <textarea id="direccionEncNuevo" readonly="" rows="3" class="form-control"></textarea>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div style="padding-left: 20%; padding-top: 2%">
+        <form>
+            <table width="100%" >
+                <td width="10%">
+                    <button class="btn btn-primary">Guardar</button>
+                </td>
+                <td width="10%"></td>
+                <td width="10%">
+                    <button class="btn btn-primary">Cancelar</button>
+                </td>
+                <td></td>
+            </table>
+        </form>
+    </div>
+
+    {% else %}
+
+        <div style="padding-left: 43%; padding-top: 1%" >
+            <button id="linkAsignarEnc" onclick="asignarEncargado()" class="btn btn-outline-info btn-sm">Asignar Encargado</button>
+        </div>
+        <div style="padding-top: 1%; padding-left: 20%" id="asignarEncargado" hidden="">
+            <h3 id="tituloEnc">Encargado</h3>
+        </div>
+        <div style="padding-top: 1%; padding-left: 23%"  id="tableBusquedaEnc" hidden="">
+            <table width="100%">
+                <tr>
+                    <td width="15%">
+                        <label for="buscarEncargado"><strong>Busqueda: </strong></label>
+                    </td>
+                    <td width="20%">
+                        <div class="form-group">
+                            <input type="text" id="buscarEncargado" class="form-control">
+                        </div>
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+        <div id="datosEncargado" style="padding-top: 1%; padding-left: 29%" hidden="">
+        <table width="100%">
+            <tr>
+                <td width="20%">
+                    <label for="nomEnc"><strong>Nombre:</strong></label>
+                </td>
+                <td width="30%" >
+                    <div class="form-group">
+                        <input type="text" id="nomEnc" readonly="" class="form-control">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="apeEnc"><strong>Apellido:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" id="apeEnc" readonly="" class="form-control">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="apeEnc"><strong>Direccion:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <textarea id="dirEnc" class="form-control" readonly="" rows="3"></textarea>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+        </div>
+        <div style="padding-left: 20%; padding-top: 2%">
+        <form>
+            <table width="100%" >
+                <td width="10%">
+                    <button class="btn btn-primary">Guardar</button>
+                </td>
+                <td width="10%"></td>
+                <td width="10%">
+                    <button class="btn btn-primary">Cancelar</button>
+                </td>
+                <td></td>
+            </table>
+        </form>
+    </div>
+    {% endif %}
+
+{% endblock %}

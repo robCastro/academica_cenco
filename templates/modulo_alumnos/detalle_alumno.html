@@ -20,6 +20,10 @@
                 document.getElementById('cambioGrupo').checked = true;
             }
 
+            function cargar() {
+                document.getElementById('espereGD').css('display', 'inline');
+            }
+
         </script>
 {% endblock %}
 
@@ -44,10 +48,6 @@
                     <p><h6>Ingresar Telefono del Alumno </h6> </p>
                 {% endif %}
 
-
-
-
-
             </div>
 
         </td>
@@ -56,7 +56,7 @@
         <h4 align="center">Datos del alumno</h4>
 
 
-        <td width='60%' height='40px' align="right" valign="top">
+        <td width='60%' height='40px' align="right" valign="top" style="padding-right: 10rem;">
 
                 <!-- Button trigger modal -->
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -68,37 +68,37 @@
 
     </tr>
     <tr>
-        <td width="80%" valign="top">
+        <td width="80%" valign="top" style="padding-left: 5rem;">
         <div style="overflow-x:auto;">
-            <table>
+            <table cellpadding="3">
 
                     <tr >
                         <td>Nombre: </td>
-                        <td>{{ alumno.nombre }} </td>
+                        <td style="padding-left: 1rem">{{ alumno.nombre }} </td>
                     </tr>
                     <tr>
                         <td>Apellido: </td>
-                        <td>{{ alumno.apellido }}</td>
+                        <td style="padding-left: 1rem">{{ alumno.apellido }}</td>
                     </tr>
                     <tr>
                         <td>Dirección:  </td>
-                        <td>{{ alumno.direccion }}</td>
+                        <td style="padding-left: 1rem">{{ alumno.direccion }}</td>
                     </tr>
                     <tr>
                         <td>Correo:  </td>
-                        <td>{{ alumno.correo|default_if_none:"—"}}</td>
+                        <td style="padding-left: 1rem">{{ alumno.correo|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
                         <td>Fecha de nacimiento:  </td>
-                        <td>{{ alumno.fechaNacimiento}}</td>
+                        <td style="padding-left: 1rem">{{ alumno.fechaNacimiento}}</td>
                     </tr>
                     <tr>
                         <td>DUI:  </td>
-                        <td>{{ alumno.dui|default_if_none:"—"}}</td>
+                        <td style="padding-left: 1rem">{{ alumno.dui|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
                         <td>Encargado:  </td>
-                        <td>{{ alumno.encargado}}</td>
+                        <td style="padding-left: 1rem">{{ alumno.encargado}}</td>
                     </tr>
                     <tr>
                         <td>Telefonos:  </td>
@@ -137,10 +137,10 @@
                             </table>
                         </td>
 
-                        <td>
+                        <td style="padding-left: 2rem">
 
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarTelefonoModal">Agregar Número</button>
-                            <button type="button" class="delete btn btn-primary " data-toggle="modal" data-target="#myDeleteModal" disabled="disabled">Borrar</button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agregarTelefonoModal">Agregar Número</button>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <button type="button" class="delete btn btn-primary " data-toggle="modal" data-target="#myDeleteModal" disabled="disabled" onclick="cargar()">Borrar</button>
                         </td>
 
                         <td>
@@ -156,13 +156,13 @@
                               <div class="modal-body">
                               <p>¿Desea borrar los datos?</p>
 
-
                                         <div class="modal-footer">
 
                                             <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
                                                 <i class="icon-remove"></i>Cancelar
                                             </button>
-                                            <button type="button submit" class="btn btn-primary deletebutton" id="eliminar1" name="eliminar1" >Borrar</button>
+                                            <button type="button submit" class="btn btn-primary deletebutton" id="eliminar1" name="eliminar1" onclick="cargar()">Borrar</button>
+
                                             <input type="checkbox" name="cambioGrupo" id="cambioGrupo" style="visibility: hidden;">
 
                                         </div>
@@ -190,9 +190,9 @@
 
     <div class="modal fade" id="agregarTelefonoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 80%">
             <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Nuevo numero</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Nuevo número</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
             </button>

@@ -396,13 +396,12 @@ def registrarEncargado(request):
                 'apellidoEncargado': encargado.apellido,
                 'direccionEncargado': encargado.direccion
             }
-            # return JsonResponse(json.dumps(respuesta), safe=False)
+            #return JsonResponse(json.dumps(respuesta), safe=False)
             return JsonResponse(respuesta)
         else:
             return Http404('Error, acceso solo mediante POST')
     else:
         raise Http404('Error, no tiene permiso para esta página')
-
 
 def generarUsuario(nom, ape):
     nomb = " ".join(nom.split())
@@ -421,7 +420,6 @@ def generarUsuario(nom, ape):
         cant = cant + 1
     usuario = str(usu) + str(cant)
     return usuario
-
 
 @login_required
 def consultar_datos_encargado(request):

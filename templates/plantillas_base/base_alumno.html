@@ -1,4 +1,5 @@
 {% extends 'plantillas_base/base.html' %}
+{% load staticfiles %}
 
 {% block sidebar_content %}
     <li class="sidebar-brand">
@@ -6,6 +7,9 @@
     </li>
     <li>
         <a href="{% url 'ver_alumno_propio' %}">Mis Datos</a>
+    </li>
+    <li>
+        <a href="#">Constancias</a>
     </li>
 {% endblock %}
 
@@ -16,4 +20,40 @@
     <li class="nav-item">
         <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar Sesión</a>
     </li>
+{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <table width='20%'>
+         <tr>
+            <td width='17%' valign="top" rowspan="20">
+            <br><br>
+            <div class='divNotifGrupo'>
+                <h4>Atención:</h4>
+                    {% if not alumno.correo %}
+                        <p></p>
+                        <p><h6>Proporcionar Correo </h6></p>
+                    {% endif %}
+                    {% if not alumno.dui and edad >= 18 %}
+                        <p></p>
+                        <p><h6>Proporcionar DUI </h6> </p>
+                    {% endif %}
+                    {% if not telAlum %}
+                        <p></p>
+                        <p><h6>Proporcionar Teléfono del Alumno </h6> </p>
+                    {% endif %}
+                    {% if not telEnc %}
+                        <p></p>
+                        <p><h6>Proporcionar Teléfono del Encargado </h6> </p>
+                    {% endif %}
+                    <br><br><br><br><br><br><br><br>
+            </div>
+            </td>
+            <td width='3%' valign="top" rowspan="20">
+            </td>
+         </tr>
+    </table>
 {% endblock %}

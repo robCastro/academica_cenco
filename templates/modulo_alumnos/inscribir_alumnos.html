@@ -9,8 +9,10 @@
     <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
     <script src="{% static 'js/crear_encargado2.js' %}"></script>
 
+    <!-- Necesarios para widgets -->
     <script src="{% static 'js/jquery-1.12.4/jquery-1.12.4.js' %}"></script>
     <script src="{% static 'js/jquery-1.12.4/jquery-ui.js' %}"></script>
+
     <script>
 
 //Variables Globales
@@ -169,6 +171,12 @@
         else{
             document.getElementById('txtCorreoEncargado').className = "form-control";
         }
+        if (!validarTelefono(telefono)){
+            document.getElementById('txtTelefonoEncargado').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtTelefonoEncargado').className = "form-control";
+        }
         document.getElementById('btnGuardarEncargado').disabled = !validaciones(nombre, apellido, direccion, correo, dui, telefono)
     }
 
@@ -186,6 +194,12 @@
         }
         else{
             document.getElementById('txtCorreoAlumno').className = "form-control";
+        }
+        if (!validarTelefono(telefono)){
+            document.getElementById('txtTelefonoAlumno').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtTelefonoAlumno').className = "form-control";
         }
         var esValido = validaciones(nombre, apellido, direccion, correo, dui, telefono) && fechaNac != "" && codEncargado != "";
         document.getElementById('btnGuardarAlumno').disabled = !esValido;
@@ -291,7 +305,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <input type="text" name="txtDuiAlumno" onkeyup="validarAlumno()" id="txtDuiAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                        <input placeholder="Ejemplo: 99999999-9" type="text" name="txtDuiAlumno" onkeyup="validarAlumno()" id="txtDuiAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
                     </div>
                 </td>
                 <td></td>
@@ -318,6 +332,7 @@
                 <td>
                     <div class="form-group">
                         <input type="text" name="txtTelefonoAlumno" onkeyup="validarAlumno()" id="txtTelefonoAlumno" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                        <div class="invalid-feedback">Telefono no válido</div>
                     </div>
                 </td>
                 <td></td>
@@ -513,7 +528,7 @@
                         </td>
                         <td>
                             <div class="form-group">
-                                <input type="text" name="txtDuiEncargado" id="txtDuiEncargado" onkeyup="validarEncargado()" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                                <input type="text" placeholder="Ejemplo:99999999-9" name="txtDuiEncargado" id="txtDuiEncargado" onkeyup="validarEncargado()" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
                             </div>
                         </td>
                         <td></td>
@@ -540,6 +555,7 @@
                         <td>
                             <div class="form-group">
                                 <input type="text" name="txtTelefonoEncargado" onkeyup="validarEncargado()" id="txtTelefonoEncargado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                                <div class="invalid-feedback">Telefono no válido</div>
                             </div>
                         </td>
                         <td></td>

@@ -61,7 +61,7 @@ class TelefonoForm(forms.ModelForm):
 
         widgets ={
 
-            'numero':forms.TextInput(attrs={'class':'form-control','required':True,'pattern':'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'}),
+            'numero':forms.TextInput(attrs={'class':'form-control','required':True,'pattern':'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]','placeholder':'Ejemplo: 99999999'}),
             'tipo'  :forms.Select(attrs={'class':'form-control','required':True}),
         }
 
@@ -90,7 +90,7 @@ class CrearEncargadoForm(forms.ModelForm):
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
             'correo': forms.EmailInput(attrs={'class': 'form-control', 'required': False}),
             'dui': forms.TextInput(attrs={'class': 'form-control', 'required': True,
-                                          'pattern': '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[-]' + '[0-9]'}),
+                                          'pattern': '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[0-9]' + '[-]' + '[0-9]','placeholder':'Ejemplo: 99999999-9'}),
         }
 
 
