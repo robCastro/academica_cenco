@@ -1,0 +1,79 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %} Estados {% endblock %}
+
+{% block head_content %}
+    <script src="http://www.chartjs.org/dist/2.7.2/Chart.bundle.js"></script>
+    <script src="http://www.chartjs.org/samples/latest/utils.js"></script>
+
+    	<style>
+	canvas {
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+
+{% endblock %}
+
+{% block content %}
+    <div>
+
+    </div>
+    <div style="width: 75%">
+		<canvas id="canvas"></canvas>
+	</div>
+    <script>
+    var chartData = {
+			labels: [{% for detalle in detalle_semanal %}'{{ detalle.fecha_detalle_e }}',{% endfor %}],
+			datasets: [{
+				type: 'line',
+				label: 'Estados Semanales',
+				borderColor: window.chartColors.blue,
+				borderWidth: 2,
+				fill: false,
+				data: [{% for detalle in detalle_semanal %}{{ detalle.count }}, {% endfor %} ],
+			}, {
+				type: 'bar',
+				label: 'Estados Semanales',
+				backgroundColor: window.chartColors.orange,
+				data: [{% for detalle in detalle_semanal %}{{ detalle.count }}, {% endfor %} ],
+				borderColor: 'white',
+				borderWidth: 2
+			}]
+
+		};
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myMixedChart = new Chart(ctx, {
+				type: 'bar',
+				data: chartData,
+				options: {
+					responsive: true,
+					title: {
+						display: true,
+						text: 'Reporte de Estados'
+					},
+					tooltips: {
+						mode: 'index',
+						intersect: true
+					},
+					scales: {
+					    yAxes: [{
+					        ticks: {
+					            beginAtZero: true,
+                                callback: function(value) {if (value % 1 === 0) {return value;}}
+					        }
+					    }]
+					}
+				}
+			});
+		};
+
+	</script>
+
+
+
+
+{% endblock %}
