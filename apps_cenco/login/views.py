@@ -88,29 +88,15 @@ def consultar_alumnos(request):
 
 
             alumnos = Alumno.objects.order_by('codigo')
-            telefonos = []
 
             for alumno in alumnos:
-                telefonos.append(alumno.telefono_set.first())
+                alumno.primerTelefono = alumno.telefono_set.first()
 
-            tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
-                                        "order by dias_asignados")
-
-            page = request.GET.get('page', 1)
-            paginator = Paginator(alumnos, 10)
-            try:
-                users = paginator.page(page)
-            except PageNotAnInteger:
-                users = paginator.page(1)
-            except EmptyPage:
-                users = paginator.page(paginator.num_pages)
 
             context = {
 
-                'users': users,
                 'alumnos': alumnos,
-                'telefonos': telefonos,
-                'tipos': tipos
+
             }
 
         return render(request, 'login/credenciales_alumno.html', context)
@@ -150,6 +136,9 @@ def principal(request):
         elif has_group(request.user, 'Asistente'):
             return redirect('home_asistente')
 
+        elif has_group(request.user, 'Encargado'):
+            return redirect('encargado_misDatos')
+
         elif has_group(request.user, 'Alumno'):
             return redirect('home_alumno')
 
@@ -165,9 +154,11 @@ def homeAsistente(request):
 def homeAlumno(request):
     return redirect('ver_alumno_propio')
 
+
 def has_group(user, group_name):
     group = Group.objects.get(name=group_name)
     return True if group in user.groups.all() else False
+
 
 
 @login_required
@@ -219,31 +210,15 @@ def consultar_asistentes(request):
 
         else:
 
-            form = ModCredAsistForm()
+
             asistentes = Empleado.objects.filter(tipo='Asi').order_by('codigo')
-            telefonos = []
 
             for asistente in asistentes:
-                telefonos.append(asistente.telefono_set.first())
+                asistente.primerTelefono = asistente.telefono_set.first()
 
-            tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
-                                        "order by dias_asignados")
-
-            page = request.GET.get('page', 1)
-            paginator = Paginator(asistentes, 10)
-            try:
-                users = paginator.page(page)
-            except PageNotAnInteger:
-                users = paginator.page(1)
-            except EmptyPage:
-                users = paginator.page(paginator.num_pages)
 
             context = {
-                'form': form,
-                'users': users,
-                'asistentes': asistentes,
-                'telefonos': telefonos,
-                'tipos': tipos
+                'asistentes': asistentes
             }
 
             return render(request, 'login/credenciales_asistente.html', context)

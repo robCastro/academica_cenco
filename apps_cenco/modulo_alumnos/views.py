@@ -5,9 +5,10 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 from django.contrib.auth.decorators import permission_required, login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render,redirect
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
 from apps_cenco.db_app.models import Alumno
@@ -28,32 +29,12 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_alumnos(request):
     if request.user.groups.filter(name="Asistente").exists():
-        alumnos=Alumno.objects.order_by('codigo')
-        telefonos = []
+        alumnos= Alumno.objects.all()
 
         for alumno in alumnos:
-            telefonos.append(alumno.telefono_set.first())
+            alumno.primerTelefono = alumno.telefono_set.first()
 
-        tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
-                                    "order by dias_asignados")
-
-        page=request.GET.get('page',1)
-        paginator=Paginator(alumnos,10)
-        try:
-            users = paginator.page(page)
-        except PageNotAnInteger:
-            users = paginator.page(1)
-        except EmptyPage:
-            users = paginator.page(paginator.num_pages)
-
-        context = {
-            'users':users,
-            'alumnos': alumnos,
-            'telefonos': telefonos,
-            'tipos': tipos
-        }
-
-        return render(request, 'modulo_alumnos/consultar_alumnos.html', context)
+        return render(request, 'modulo_alumnos/consultar_alumnos.html', {'alumnos': alumnos})
     else:
         raise Http404('Error, no tiene permiso para esta página')
 
@@ -311,6 +292,43 @@ def generarUsuario(nom, ape):
         cant = cant + 1
     usuario = str(usu) + str(cant)
     return usuario
+
+@login_required
+def consultar_datos_encargado(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        encargado = Encargado.objects.get(username=request.user)
+        telefonos = Telefono.objects.filter(encargado=encargado)
+        context = {
+            'encargado': encargado,
+            'telefonos': telefonos,
+        }
+        return render(request, 'modulo_alumnos/encargado_misDatos.html', context)
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
+
+@login_required
+def consultar_datos_encargado_hijos(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        enc = Encargado.objects.get(username=request.user)
+        estudiantes = Alumno.objects.filter(encargado=enc)
+        for estudiante in estudiantes:
+            phone_rows = ""
+            try:
+                tels = Telefono.objects.filter(alumno=estudiante)
+                for tel in tels:
+                    phone_rows += "<tr><td>"+tel.numero+"</td><td>"+tel.tipo+"</td></tr>"
+            except ObjectDoesNotExist:
+                phone_rows = ""
+            estudiante.telefonos = phone_rows
+
+        context = {
+            'estudiantes': estudiantes
+        }
+        return render(request, 'modulo_alumnos/encargado_misHijos.html', context)
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
 
 def modificar_alumno2(request, id_alumno):
     try:

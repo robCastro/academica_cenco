@@ -27,6 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'postmaster@sandboxf9fb54b889384a97baf93f8182fae489.mailgun.org'
+EMAIL_HOST_PASSWORD = '6c76c2a44161c4baa83b9c34040c55a3-8889127d-df398e08'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'cenco@cenco.com'
+
 LOGIN_REDIRECT_URL = '/'
 
 # Application definition
@@ -39,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps_cenco.db_app.apps.DbAppConfig',
+    'apps_cenco.db_local'
 ]
 
 MIDDLEWARE = [
@@ -65,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps_cenco.db_local.context_processors.agregar_a_context',
             ],
         },
     },
@@ -76,6 +85,8 @@ WSGI_APPLICATION = 'academica_cenco.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+DATABASE_ROUTERS = ['apps_cenco.db_local.router.Router', ]
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -84,6 +95,11 @@ DATABASES = {
         'PASSWORD' : '6ef5882389db25d4431538211ca9ff78d82509bc2cde7f158fdaa14c5d2f1b0e',
         'HOST' : 'ec2-50-16-231-2.compute-1.amazonaws.com',
         'PORT' : '5432',
+    },
+
+    'local_settings': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'locales.sqlite3'),
     }
 }
 

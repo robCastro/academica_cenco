@@ -7,6 +7,8 @@
     <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
     <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
     <script src="{% static 'js/jquery.min.js' %}"></script>
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
@@ -35,7 +37,7 @@
             }
         }
 
-        $(document).ready(function() {
+        {% comment %}$(document).ready(function() {
 
             $('#example tr').click(function () {
                 var href = $(this).find("a").attr("href");
@@ -44,7 +46,7 @@
                 }
             });
 
-        });
+        });{% endcomment %}
 
            $(function() {
             selectFilas();
@@ -68,6 +70,7 @@
 
         $(document).on('submit', '#cambiarPass', function (a) {
         a.preventDefault();
+        $('#espereG').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/credenciales/asistentes/',
@@ -81,47 +84,64 @@
                 },
 
                 success:function(response) {
-                    alert("Credenciales modificadas con exito");
+                    //alert("Credenciales modificadas con exito");
                     filterSelection('all');
                     $('#myDeleteModal').modal('hide');
-                    setTimeout(function () {
-                        location.reload();
-                    },0);
+                    //location.reload();
 
+                    var m = $('#mensajeEmergente');
+                    m.children('strong').html('Contraseña guardada con éxito');
+                    m.css('display','block');
+                    m.css('opacity',1);
+                    m.removeClass();
+                    m.addClass('alerta exito');
+
+                    $('#espereG').css('display', 'none');
+                    $('#contrasenia').val('');
+                    $('#repContrasenia').val('');
+                  },
+
+                  error:function (response) {
+                    var m = $('#mensajeEmergente');
+                    m.children('strong').html('Error. No se pudo guardar la nueva contraseña.');
+                    m.css('display','block');
+                    m.css('opacity',1);
+                    m.removeClass();
+                    m.addClass('alerta accionPeligrosa');
                   }
 
             })
         });
 
+       $(document).ready(function() {
+          $('#myDeleteModal').on('hidden.bs.modal', function(e) {
+            $('#contrasenia').val('');
+            $('#repContrasenia').val('');
+          });
+        });
+
     </script>
     <style>
-        .pagination {
-            display: inline-block;
-        }
+    a {
+        color: black;
+        text-underline-mode: none;
+    }
 
-        .pagination a {
-            color: black;
-            float: left;
-            padding: 8px 16px;
-            text-decoration: none;
-            border: 1px solid #ddd;
-        }
-
-        .pagination a.active {
-            background-color: #2C3E50;
-            color: white;
-        }
-        .pagination a:hover:not(.active) {background-color: #ddd;}
-
+    .table-hover tbody tr:hover td, .table-hover tbody tr:hover {background-color: #cce6ff}
 
     </style>
 
 {% endblock %}
 
 {% block content %}
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+    <span class="btnCerrar">×</span>
+        <strong></strong>
+    </div>
     <table width='100%'>
 
-    <tr id="tr_mod" style="height: 55px;">
+    <tr id="tr_mod" style="height: 30px;">
         <td width='20%' rowspan="2" valign="top">
             <p></p>
             <h4> Credenciales</h4>
@@ -149,58 +169,45 @@
     </tr>
     <tr>
         <td width="80%" valign="top">
-        <div style="overflow-x:auto; padding-left: 50px;">
-            <table class="table table-hover table-responsive " id="example">
+        <div style="padding-left: 10px;">
+            <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;">
+            <thead>
+                <tr bgcolor="#f0f8ff" >
+                    <th >Codigo</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Telefono</th>
+                    <th>Correo</th>
+                    <th>Usuario</th>
+
+                </tr>
+            </thead>
+                </thead>
+                <tbody>
+                {% for user in asistentes%}
+                    <tr data-toggle="modal" data-target="#myDeleteModal">
+                        <td width="20px"><a href="{% url 'detalle_alumno' id_alumno=user.codigo %}">{{ user.codigo }}</a></td>
+                        <td>{{ user.nombre }} </td>
+                        <td>{{ user.apellido }}</td>
+                        <td>{{ user.primerTelefono|default_if_none:""  }}</td>
+                        <td>{{ user.correo|default_if_none:"" }}</td>
+                        <td>{{ user.username|default_if_none:"" }}</td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+                {% comment %}<tfoot>
                 <tr bgcolor="#f0f8ff" >
                     <th>Codigo</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
                     <th>Telefono</th>
                     <th>Correo</th>
-                    <th>Usuario</th>
+                    <th>Encargado</th>
+                    <th>D&iacute;as Correspondientes</th>
                 </tr>
-                {% for user in users%}
-
-                    <tr class='alumnoRow {{user.grupo.horario.dias_asignados}} all' size="10px" data-toggle="modal" data-target="#myDeleteModal">
-                        <td scope="row"> <a id="linkFila edit" >{{ user.codigo }}</a></td>
-                        <td class="nombre">{{ user.nombre|default_if_none:"" }} </td>
-                        <td>{{ user.apellido|default_if_none:"" }}</td>
-                        <td>
-                            {% for telefono in telefonos  %}
-                                {% if telefono.alumno == user %}
-                                    {{ telefono.numero }}
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                        <td>{{ user.correo|default_if_none:"" }}</td>
-                        <td>{{ user.username |default_if_none:""}}</td>
-                    </tr>
-                {% endfor %}
-
+                </tfoot>{% endcomment %}
             </table>
-            <div class="pagination">
-            {% if users.has_other_pages %}
-
-                {% if users.has_previous %}
-                  <a href="?page={{ users.previous_page_number }}">&laquo;</a>
-                {% else %}
-                    <a class="disabled"><span>&laquo;</span></a>
-                {% endif %}
-                {% for i in users.paginator.page_range %}
-                  {% if users.number == i %}
-                    <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
-                  {% else %}
-                    <a href="?page={{ i }}">{{ i }}</a>
-                  {% endif %}
-                {% endfor %}
-                {% if users.has_next %}
-                  <a href="?page={{ users.next_page_number }}">&raquo;</a>
-                {% else %}
-                    <a class="disabled"><span>&raquo;</span></a>
-                {% endif %}
-
-            {% endif %}
-            </div>
         </div>
 
 
@@ -218,9 +225,9 @@
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
                 <h4 class="modal-title" id="myDeleteModalLabel"></h4>
               </div>
-                <div class="modal-body">
+                <div class="modal-body" style="padding: 1rem 0 0">
 
-                        <form method="post" id="cambiarPass">
+                        <form method="post" id="cambiarPass" autocomplete="off">
                             {% csrf_token %}
                             <div id="id_alumno" style="display: none;"></div>
 
@@ -259,6 +266,11 @@
 
                             </table>
 
+                            <div style="display: none;padding-left: 5rem;" id="espereG">
+                                <img src="{% static 'img/ajax-loader.gif' %}">
+                                Procesando. Por Favor Espere.
+                            </div>
+
                             <div class="modal-footer">
                                 <button type="submit button" class="btn btn-primary" id="guardarPass" name="guardarPass" disabled="disabled">Guardar</button>
                                 <button class="btn btn-small pull-left" data-dismiss="modal"><i class="icon-remove"></i>Cancelar</button>
@@ -269,4 +281,46 @@
             </div>
           </div>
         </div>
+
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+
+    <script>
+        $(document).ready(function() {
+        var tabla = $('#example').DataTable( {
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+        {% comment %}tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });{% endcomment %}
+
+    });
+    </script>
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
