@@ -1,5 +1,4 @@
 $(document).on('submit', '#registrarEncargadoForm', function (a) {
-
     a.preventDefault();
     $('#btnGuardarEncargado').attr('disabled', true);
     $('#espereG').css('display', 'inline');
