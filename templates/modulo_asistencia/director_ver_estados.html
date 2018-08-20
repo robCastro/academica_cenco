@@ -19,33 +19,105 @@
 
 {% block content %}
     <div>
+        <select onchange="changePlot(this.value)">
+            <option value="barras" selected>Gr&aacute;fico de Barras</option>
+            <option value="lineas">Gr&aacute;fico de L&iacute;neas</option>
+        </select>
+
+    <br>
+
+        <select onchange="changeInterval(this.value)">
+            <option value="semanal" selected>&uacute;ltima Semana</option>
+            <option value="mensual">&uacute;ltimo Mes</option>
+            <option value="semestral">&uacute;ltimos Seis Meses</option>
+            <option value="anual">&uacute;ltimo A&ntilde;o</option>
+            <option value="personalizado">Personalizado</option>
+        </select>
+
+
 
     </div>
     <div style="width: 75%">
 		<canvas id="canvas"></canvas>
 	</div>
     <script>
-    var chartData = {
-			labels: [{% for detalle in detalle_semanal %}'{{ detalle.fecha_detalle_e }}',{% endfor %}],
-			datasets: [{
+    var maximo = {{ maximo }};
+    function changeInterval(valor){
+        if (valor !== "personalizado"){
+            AJAXcall_simple(valor);
+        }
+        else{
+            AJAXcall_personalized("personalizado");
+        }
+    }
+
+    function AJAXcall_simple(option){
+        $.ajax({
+                type: 'POST',
+                url: '/asistencia/filtrar_estados/',
+                data: {
+                    opcion: option,
+                    csrfmiddlewaretoken:'{{ csrf_token }}',
+                },
+                success: function (response) {
+                  bar_plot_config.data = response.datos_filtro;
+                  line_plot_config.data = response.datos_filtro;
+                  chartData.labels = response.fechas_filtro;
+                  maximo = response.maximo;
+                  cargarGrafico();
+
+                },
+                error: function (response) {
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html('Error inesperado de servidor.');
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta accionPeligrosa');
+                }
+            })
+
+    }
+
+    function AJAXcall_personalized(){
+
+    }
+
+
+    function changePlot(selected){
+        if (selected === "lineas"){
+            chartData.datasets = [ line_plot_config ];
+        }
+        if (selected === "barras"){
+            chartData.datasets = [ bar_plot_config ];
+        }
+        cargarGrafico();
+    }
+
+    var plot_data = [{% for detalle in detalle_semanal %}{{ detalle.count }}, {% endfor %} ];
+
+    var line_plot_config = {
 				type: 'line',
-				label: 'Estados Semanales',
+				label: 'Estudiantes activos',
 				borderColor: window.chartColors.blue,
 				borderWidth: 2,
 				fill: false,
-				data: [{% for detalle in detalle_semanal %}{{ detalle.count }}, {% endfor %} ],
-			}, {
-				type: 'bar',
-				label: 'Estados Semanales',
-				backgroundColor: window.chartColors.orange,
-				data: [{% for detalle in detalle_semanal %}{{ detalle.count }}, {% endfor %} ],
-				borderColor: 'white',
-				borderWidth: 2
-			}]
+				data: plot_data,};
 
-		};
-		window.onload = function() {
-			var ctx = document.getElementById('canvas').getContext('2d');
+    var bar_plot_config = {
+				type: 'bar',
+				label: 'Estudiantes activos',
+				backgroundColor: window.chartColors.orange,
+				data: plot_data,
+				borderColor: 'white',
+				borderWidth: 2};
+
+    var chartData = {
+			labels: [{% for detalle in detalle_semanal %}'{{ detalle.fecha_detalle_e | date:"d M"}}',{% endfor %}],
+			datasets: [ bar_plot_config ]};
+
+    function cargarGrafico(){
+        var ctx = document.getElementById('canvas').getContext('2d');
 			window.myMixedChart = new Chart(ctx, {
 				type: 'bar',
 				data: chartData,
@@ -63,17 +135,18 @@
 					    yAxes: [{
 					        ticks: {
 					            beginAtZero: true,
-                                callback: function(value) {if (value % 1 === 0) {return value;}}
+                                callback: function(value) {if (value % 1 === 0) {return value;}},
+                                max: maximo,
+
 					        }
 					    }]
 					}
 				}
 			});
+    }
+
+		window.onload = function() {
+            cargarGrafico();
 		};
-
 	</script>
-
-
-
-
 {% endblock %}
