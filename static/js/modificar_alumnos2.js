@@ -139,6 +139,7 @@ function cambiarEncargado(){
             mostrandoComparacion = false;
         }
         else {
+            document.getElementById('txtNombreAlumno').value = "Deshacer";
             document.getElementById('linkCambiar').innerText = "Deshacer";
             document.getElementById('tableBusquedaEnc').hidden = false;
             document.getElementById('cambiarEncargado').hidden = false;

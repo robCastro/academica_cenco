@@ -360,7 +360,7 @@ def modificar_alumno2(request, id_alumno):
             "notifCorreo" : alumno.correo == "",
             "notifTelEnc" : notifTelefonoEnc,
             "esDependiente" : alumno.encargado != None,
-            #"cantidadEncargados" : cantidadEncargados,
+            "cantidadEncargados" : cantidadEncargados,
             "encargados" : encargados,
         }
         return render(request, "modulo_alumnos/modificar_alumno2.html", context)

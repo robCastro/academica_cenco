@@ -7,8 +7,10 @@
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
     <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
-        //var cantidadEncargados = {{ cantidadEncargados }};   //para uso dentro de modificar_alumnos2.js
+        var cantidadEncargados = {{ cantidadEncargados }};   //para uso dentro de modificar_alumnos2.js
         var codigosEncargados = [];
         var nombresEncargados = [];
         var apellidosEncargados = [];
@@ -400,5 +402,5 @@
         </form>
     </div>
     {% endif %}
-
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
