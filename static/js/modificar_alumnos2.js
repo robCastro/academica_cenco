@@ -225,7 +225,7 @@ $(document).on('submit', '#guardarAlDep', function (a) {
             $('#btnGuardarAlumDep').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html("Error");
+            m.children('strong').html("Error en ingreso de datos, verificar por favor.");
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
@@ -244,6 +244,11 @@ function asignarEncargado(){
         document.getElementById('asignarEncargado').hidden = true;
         document.getElementById('tableBusquedaEnc').hidden = true;
         document.getElementById('datosEncargado').hidden = true;
+        document.getElementById('codEncargadoNuevo').value = "";
+        document.getElementById('nombreEncNuevo').value = "";
+        document.getElementById('apellidoEncNuevo').value = "";
+        document.getElementById('direccionEncNuevo').value = "";
+        document.getElementById('buscarEncargado').value = "";
 
         mostrandoComparacion = false;
     }
@@ -255,6 +260,50 @@ function asignarEncargado(){
         mostrandoComparacion = true;
     }
 }
+
+$(document).on('submit', '#guardarAlIndep', function (a) {
+    a.preventDefault();
+    $('#btnGuardarAlumDep').attr('disabled', true);
+    $('#espereI').css('display', 'inline');
+
+    $.ajax({
+        type: 'POST',
+        url: '/alumnos/guardarAlIndep/',
+        data: {
+            codigo:$('#txtCodigoAlumno').val(),
+            nombre:$('#txtNombreAlumno').val(),
+            apellido:$('#txtApellidoAlumno').val(),
+            direccion:$('#txtDireccionAlumno').val(),
+            correo:$('#txtCorreoAlumno').val(),
+            fechaNacimiento:$('#txtFechaNacAlumno').val(),
+            dui:$('#txtDuiAlumno').val(),
+            codEncargado:$('#codEncargadoNuevo').val(),
+            csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
+        },
+        success:function (response) {
+            $('#btnGuardarAlumDep').attr('disabled', false);
+            $('#espereI').css('display', 'none');
+            var m = $('#mensajeEmergente');
+            m.children('strong').html("Cambios Realizados!");
+            m.css('display','block');
+            m.css('opacity',1);
+            m.removeClass();
+            m.addClass('alerta exito');
+            desplazoArriba();
+        },
+        error: function (response) {
+            $('#btnGuardarAlumDep').attr('disabled', false);
+            $('#espereI').css('display', 'none');
+            var m = $('#mensajeEmergente');
+            m.children('strong').html("Error en ingreso de datos, verificar por favor.");
+            m.css('display','block');
+            m.css('opacity',1);
+            m.removeClass();
+            m.addClass('alerta accionPeligrosa');
+            desplazoArriba();
+        }
+    })
+});
 
 
 

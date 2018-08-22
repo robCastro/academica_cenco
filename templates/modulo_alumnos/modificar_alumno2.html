@@ -8,7 +8,7 @@
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
     <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
     <script>
-        var cantidadEncargados = {{ cantidadEncargados }};   //para uso dentro de modificar_alumnos2.js
+        //var cantidadEncargados = {{ cantidadEncargados }};   //para uso dentro de modificar_alumnos2.js
         var codigosEncargados = [];
         var nombresEncargados = [];
         var apellidosEncargados = [];
@@ -26,6 +26,7 @@
 }
     </script>
     <script src="{% static 'js/modificar_alumnos2.js' %}"></script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 
     <!-- Necesarios para widgets -->
     <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
@@ -61,7 +62,9 @@
                         {% if notifCorreo %}
                         <h5>Solicitar Correo</h5><p></p>
                         {% endif %}
-                        <h5>Notif. 4</h5><p></p>
+                        {% if notifTelEnc %}
+                        <h5>Solicitar Telefono de Encargado</h5><p></p>
+                        {% endif %}
                     </div>
                 </div>
             </td>
@@ -311,7 +314,7 @@
                     </td>
                     <td width="10%"></td>
                     <td width="10%">
-                        <button class="btn btn-primary">Cancelar</button>
+                        <a href="{% url 'asistenteConsultarAlumnos' %}" class="btn btn-primary">Cancelar</a>
                     </td>
                     <td></td>
                 </tr>
@@ -351,7 +354,8 @@
                 </td>
                 <td width="30%" >
                     <div class="form-group">
-                        <input type="text" id="nomEnc" readonly="" class="form-control">
+                        <input type="text" id="nombreEncNuevo" readonly="" class="form-control">
+                        <input type="text" id="codEncargadoNuevo" hidden="">
                     </div>
                 </td>
                 <td></td>
@@ -362,7 +366,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <input type="text" id="apeEnc" readonly="" class="form-control">
+                        <input type="text" id="apellidoEncNuevo" readonly="" class="form-control">
                     </div>
                 </td>
                 <td></td>
@@ -373,7 +377,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <textarea id="dirEnc" class="form-control" readonly="" rows="3"></textarea>
+                        <textarea id="direccionEncNuevo" class="form-control" readonly="" rows="3"></textarea>
                     </div>
                 </td>
                 <td></td>
@@ -381,7 +385,8 @@
         </table>
         </div>
         <div style="padding-left: 20%; padding-top: 2%">
-        <form>
+        <form method="POST" id="guardarAlIndep">
+            {% csrf_token %}
             <table width="100%" >
                 <td width="10%">
                     <button class="btn btn-primary">Guardar</button>

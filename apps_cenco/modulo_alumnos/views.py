@@ -343,6 +343,10 @@ def modificar_alumno2(request, id_alumno):
 
     cantidadEncargados = Encargado.objects.all().count() #para validar busquedas o cambios de Indep a Dep
     encargados = Encargado.objects.all()
+    if alumno.encargado != None:
+        notifTelefonoEnc = Telefono.objects.all().filter(encargado = alumno.encargado).count() == 0,
+    else:
+        notifTelefonoEnc = False
     context = {
         "alumno" : alumno,
         "encargado" : alumno.encargado,
@@ -350,8 +354,9 @@ def modificar_alumno2(request, id_alumno):
         "notifTelefono" : cantidadtelefonos == 0,
         "notifDui" : not esMenor and alumno.dui == "",
         "notifCorreo" : alumno.correo == "",
+        "notifTelEnc" : notifTelefonoEnc,
         "esDependiente" : alumno.encargado != None,
-        "cantidadEncargados" : cantidadEncargados,
+        #"cantidadEncargados" : cantidadEncargados,
         "encargados" : encargados,
     }
     return render(request, "modulo_alumnos/modificar_alumno2.html", context)
@@ -388,7 +393,7 @@ def guardarModificacionAlumnoDependiente(request):
         if hacerIndep == "true":
             #hacerlo independiente
             print "será Indep"
-            #alumno.encargado = None
+            alumno.encargado = None
         else:
             print "será Dep"
             cambiarEncargado = request.POST.get('cambiarEncargado')
@@ -397,11 +402,13 @@ def guardarModificacionAlumnoDependiente(request):
                 codNuevoEncargado = request.POST.get('codNuevoEncargado')
                 if codNuevoEncargado == "":
                     mensaje = "Error con el nuevo Encargado, refresque pagina y escoja de nuevo por favor.$"
+                    print mensaje
                     return HttpResponse(mensaje, status=500)
                 try:
                     nuevoEncargado = Encargado.objects.get(codigo=codNuevoEncargado)
                 except Encargado.DoesNotExist:
                     mensaje = "Nuevo Encargado no existe, refresque pagina y escoja de nuevo por favor.$"
+                    print mensaje
                     return HttpResponse(mensaje, status=500)
                 alumno.encargado = nuevoEncargado
             else:
@@ -412,3 +419,39 @@ def guardarModificacionAlumnoDependiente(request):
         return HttpResponse(status=200)
     else:
         return Http404
+
+def guardarModificacionAlumnoIndependiente(request):
+    mensaje = ""
+    if request.method == "POST":
+        codigo = request.POST.get('codigo')
+        try:
+            alumno = Alumno.objects.get(codigo=codigo)
+        except Alumno.DoesNotExist:
+            return Http404("Alumno no existe")
+        nombreAl = request.POST.get('nombre')
+        apellidoAl = request.POST.get('apellido')
+        direccionAl = request.POST.get('direccion')
+        fechaNacAl = request.POST.get('fechaNacimiento')
+        fechaNacimientoConFormato = datetime.strptime(fechaNacAl, "%d/%m/%Y").date()
+        duiAl = request.POST.get('dui')
+        correoAl = request.POST.get('correo')
+
+        alumno.nombre = nombreAl
+        alumno.apellido = apellidoAl
+        alumno.direccion = direccionAl
+        alumno.fechaNacimiento = fechaNacimientoConFormato
+        alumno.dui = duiAl
+        alumno.correo = correoAl
+
+        codEncargado = request.POST.get('codEncargado')
+        if codEncargado != "":
+            try:
+                encargado = Encargado.objects.get(codigo = codEncargado)
+            except Encargado.DoesNotExist:
+                mensaje = "Este encargado no existe, favor refrescar e intentar de nuevo.$"
+                print mensaje
+                return HttpResponse(mensaje, status=500)
+            alumno.encargado = encargado
+        alumno.save()
+    print "Guardar Indep"
+    return HttpResponse(status=200)

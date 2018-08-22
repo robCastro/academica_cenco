@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^encargado/misHjos/$', views.consultar_datos_encargado_hijos, name="encargado_misHijos"),
     url(r'^modificarAlum/(?P<id_alumno>\d+)$', views.modificar_alumno2, name="modificar_alumnoV2"),
     url(r'^guardarAlDep/$', views.guardarModificacionAlumnoDependiente, name="guardarAlDep"),
+    url(r'^guardarAlIndep/$', views.guardarModificacionAlumnoIndependiente, name="guardarAlIndep"),
 ]
