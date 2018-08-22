@@ -173,8 +173,7 @@ def inscribirAlumno(request):
                 try:
                     encargado = Encargado.objects.get(codigo=codEncargado)
                 except Encargado.DoesNotExist:
-                    #$ es para hacer split en JS
-                    mensaje = "Error en guardado de alumno, Encargado invalido.$"
+                    mensaje = "Error en guardado de alumno, Encargado invalido."
                     print mensaje
                     return HttpResponse(mensaje, status=500)
 
@@ -182,7 +181,7 @@ def inscribirAlumno(request):
             try:
                 grupo = Grupo.objects.get(codigo=codGrupo)
             except Grupo.DoesNotExist:
-                mensaje = "Error en guardado de alumno, Grupo invalido.$"
+                mensaje = "Error en guardado de alumno, Grupo invalido."
                 print mensaje
                 return HttpResponse(mensaje, status=500)
 
@@ -214,7 +213,7 @@ def inscribirAlumno(request):
             if numero != "":
                 telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)
                 telefono.save()
-            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento + "$"
+            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
             return HttpResponse(mensaje, status=200)
         else:
             grupos = Grupo.objects.all().order_by('-codigo')
@@ -409,13 +408,13 @@ def guardarModificacionAlumnoDependiente(request):
                     print "se cambiara encargado"
                     codNuevoEncargado = request.POST.get('codNuevoEncargado')
                     if codNuevoEncargado == "":
-                        mensaje = "Error con el nuevo Encargado, refresque pagina y escoja de nuevo por favor.$"
+                        mensaje = "Error, no seleccionó un nuevo encargado."
                         print mensaje
                         return HttpResponse(mensaje, status=500)
                     try:
                         nuevoEncargado = Encargado.objects.get(codigo=codNuevoEncargado)
                     except Encargado.DoesNotExist:
-                        mensaje = "Nuevo Encargado no existe, refresque pagina y escoja de nuevo por favor.$"
+                        mensaje = "Nuevo Encargado no existe, refresque pagina y escoja de nuevo por favor."
                         print mensaje
                         return HttpResponse(mensaje, status=500)
                     alumno.encargado = nuevoEncargado
@@ -463,9 +462,9 @@ def guardarModificacionAlumnoIndependiente(request):
                 try:
                     encargado = Encargado.objects.get(codigo = codEncargado)
                 except Encargado.DoesNotExist:
-                    mensaje = "Este encargado no existe, favor refrescar e intentar de nuevo.$"
+                    mensaje = "Este encargado no existe, favor refrescar e intentar de nuevo."
                     print mensaje
-                    return HttpResponse(mensaje, status=500)
+                    return HttpResponse(mensaje, status=500, content_type="text/plain")
                 alumno.encargado = encargado
             alumno.save()
         else:

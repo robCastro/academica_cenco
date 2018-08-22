@@ -139,7 +139,6 @@ function cambiarEncargado(){
             mostrandoComparacion = false;
         }
         else {
-            document.getElementById('txtNombreAlumno').value = "Deshacer";
             document.getElementById('linkCambiar').innerText = "Deshacer";
             document.getElementById('tableBusquedaEnc').hidden = false;
             document.getElementById('cambiarEncargado').hidden = false;
@@ -226,7 +225,7 @@ $(document).on('submit', '#guardarAlDep', function (a) {
             $('#btnGuardarAlumDep').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html("Error en ingreso de datos, verificar por favor.");
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
@@ -296,7 +295,7 @@ $(document).on('submit', '#guardarAlIndep', function (a) {
             $('#btnGuardarAlumDep').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html("Error en ingreso de datos, verificar por favor.");
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
