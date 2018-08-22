@@ -18,7 +18,7 @@ def ver_reporte_estados(request):
     form_fecha = IntervaloFechaForm()
     detalle_semanal = DetalleEstado.objects.raw('select 1 as codigo_detalle_e, count(fecha_detalle_e), fecha_detalle_e '
                                                 'from db_app_detalleestado '
-                                                'where fecha_detalle_e >= (current_date - 100) '
+                                                'where fecha_detalle_e >= (current_date - 8) '
                                                 'and estado_id = 1 and actual_detale_e = true '
                                                 'group by fecha_detalle_e '
                                                 'order by fecha_detalle_e;')
@@ -44,7 +44,7 @@ def filtrar_estado_por_periodo(request):
             elif request.POST.get('opcion') == 'anual':
                 seleccion = '365'
             else:
-                seleccion = '7'
+                seleccion = '8'
 
             datos_por_periodo = DetalleEstado.objects.raw(
                 'select 1 as codigo_detalle_e, count(fecha_detalle_e), fecha_detalle_e ' 
@@ -79,20 +79,24 @@ def filtrar_estado_por_periodo(request):
             datos_por_periodo = DetalleEstado.objects.raw(
                 'select 1 as codigo_detalle_e, count(fecha_detalle_e), fecha_detalle_e' 
                 ' from db_app_detalleestado' 
-                ' where fecha_detalle_e >= ' + fecha1 +
-                ' and fecha_detalle_e <= ' + fecha2 +
+                ' where fecha_detalle_e >= ' + "'" + str(fecha1) + "'" +
+                ' and fecha_detalle_e <= ' + "'" + str(fecha2) + "'" +
                 ' and estado_id = 1 and actual_detale_e = true'
                 ' group by fecha_detalle_e'
                 ' order by fecha_detalle_e;')
 
             maxim = 0
+            raw_data= []
+            raw_dates = []
             for det in datos_por_periodo:
-                if det.count > maxim :
+                raw_data.append(det.count)
+                raw_dates.append(det.fecha_detalle_e.strftime('%d %b'))
+                if det.count > maxim:
                     maxim = det.count
 
             context = {'detalle_semanal': datos_por_periodo, 'maximo': maxim+1}
 
-            return render(request, 'modulo_asistencia/director_ver_estados.html', context)
+            return JsonResponse({'datos_filtro': raw_data, 'fechas_filtro': raw_dates, 'maximo': maxim + 1})
 
     else:
         return HttpResponseForbidden('No tiene acceso a esta url')

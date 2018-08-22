@@ -7,6 +7,9 @@
     <script src="http://www.chartjs.org/dist/2.7.2/Chart.bundle.js"></script>
     <script src="http://www.chartjs.org/samples/latest/utils.js"></script>
 
+    <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+	<script src="{% static 'js/jquery-ui.js' %}"></script>
+
     	<style>
 	canvas {
 		-moz-user-select: none;
@@ -24,8 +27,6 @@
             <option value="lineas">Gr&aacute;fico de L&iacute;neas</option>
         </select>
 
-    <br>
-
         <select onchange="changeInterval(this.value)">
             <option value="semanal" selected>&uacute;ltima Semana</option>
             <option value="mensual">&uacute;ltimo Mes</option>
@@ -33,21 +34,87 @@
             <option value="anual">&uacute;ltimo A&ntilde;o</option>
             <option value="personalizado">Personalizado</option>
         </select>
-
-
+        <br>
+        <br>
+        <div id="fechas_filtro" style="display: none;">
+        <form id="enviarFechasForm" action="" method="POST">
+        {{ form }}
+            {% csrf_token %}
+            <input type="submit" value="Enviar">
+        </form>
+        </div>
 
     </div>
-    <div style="width: 75%">
+    <div style="width: 75%" id="id_grafico">
 		<canvas id="canvas"></canvas>
 	</div>
     <script>
+        $( function() {
+            $( "#id_fechaInicial" ).datepicker({
+                dateFormat: "dd/mm/yy",     //display de la fecha
+                altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+                minDate: "-90Y",
+                yearRange: "-90:+1",
+                monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+                monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+                dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+                changeMonth: true,
+                changeYear: true,
+            });
+        } );
+
+        $( function() {
+            $( "#id_fechaFinal" ).datepicker({
+                dateFormat: "dd/mm/yy",     //display de la fecha
+                altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+                minDate: "-90Y",
+                yearRange: "-90:+1",
+                monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+                monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+                dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+                changeMonth: true,
+                changeYear: true,
+            });
+        } );
+
+    $(document).on('submit', '#enviarFechasForm', function (a) {
+        a.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '/asistencia/filtrar_estados/',
+                data: {
+                    opcion: 'personalizado',
+                    fechaInicial: $('#id_fechaInicial').val(),
+                    fechaFinal: $('#id_fechaFinal').val(),
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (response) {
+                  bar_plot_config.data = response.datos_filtro;
+                  line_plot_config.data = response.datos_filtro;
+                  chartData.labels = response.fechas_filtro;
+                  maximo = response.maximo;
+                  borrarGrafico();
+                  cargarGrafico();
+                },
+                error: function (response) {
+
+                }
+            })
+        });
+
+    function borrarGrafico(){
+        $('#canvas').remove();
+        $('#id_grafico').append('<canvas id="canvas"></canvas>')
+    }
+
     var maximo = {{ maximo }};
     function changeInterval(valor){
         if (valor !== "personalizado"){
             AJAXcall_simple(valor);
+            ocultarFecha();
         }
         else{
-            AJAXcall_personalized("personalizado");
+            mostrarFecha();
         }
     }
 
@@ -64,23 +131,25 @@
                   line_plot_config.data = response.datos_filtro;
                   chartData.labels = response.fechas_filtro;
                   maximo = response.maximo;
+                  borrarGrafico();
                   cargarGrafico();
 
                 },
                 error: function (response) {
-                  var m = $('#mensajeEmergente');
-                  m.children('strong').html('Error inesperado de servidor.');
-                  m.css('display','block');
-                  m.css('opacity',1);
-                  m.removeClass();
-                  m.addClass('alerta accionPeligrosa');
+
                 }
             })
 
     }
 
-    function AJAXcall_personalized(){
+    function mostrarFecha(){
+        $('#fechas_filtro').removeClass();
+        $('#fechas_filtro').css('display', 'block');
+    }
 
+    function ocultarFecha(){
+        $('#fechas_filtro').removeClass();
+        $('#fechas_filtro').css('display', 'none');
     }
 
 
@@ -146,6 +215,10 @@
     }
 
 		window.onload = function() {
+            var fecha1 = document.getElementById('id_fechaInicial');
+            fecha1.onkeydown = function (e) { e.preventDefault(); };
+            var fecha2 = document.getElementById('id_fechaFinal');
+            fecha2.onkeydown = function (e) { e.preventDefault(); };
             cargarGrafico();
 		};
 	</script>
