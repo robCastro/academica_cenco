@@ -34,6 +34,8 @@ urlpatterns = [
     url(r'^alumnos/', include('apps_cenco.modulo_alumnos.urls')),
     url(r'^horarios/', include('apps_cenco.modulo_horarios.urls')),
     url(r'^configuracion/', include('apps_cenco.db_local.urls')),
+    url(r'^empleados/', include('apps_cenco.modulo_empleados.urls')),
+
 
     # for reset passwords
     url(r'^password_reset/$', auth_views.password_reset, {'template_name': 'sesiones/password_reset_form.html',

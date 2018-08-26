@@ -24,7 +24,7 @@
 {% block content %}
     <table width='100%' >
 
-    <tr id="tr_mod">
+    <tr id="tr_mod" style="height: 30px;">
         <td width='20%' rowspan="2" valign="top">
             <p></p>
             <h6> Notificaciones:</h6>
@@ -40,7 +40,7 @@
         <br/>
         <h4 align="center">Listado de alumnos</h4>
 
-        <td width='60%' height='100px' align="right" valign="top">
+        <td width='60%' height='30px' align="right" valign="top" style="padding-bottom: 10px;">
 
                 <!-- Button trigger modal -->
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -62,7 +62,7 @@
                     <th>Encargado</th>
                     <th>D&iacute;as Correspondientes</th>
                 </tr>
-                </thead>
+            </thead>
                 <tbody>
                 {% for user in alumnos%}
                     <tr>
@@ -76,7 +76,7 @@
                     </tr>
                 {% endfor %}
                 </tbody>
-                <tfoot>
+                {% comment %}<tfoot>
                 <tr bgcolor="#f0f8ff" >
                     <th>Codigo</th>
                     <th>Nombres</th>
@@ -86,7 +86,7 @@
                     <th>Encargado</th>
                     <th>D&iacute;as Correspondientes</th>
                 </tr>
-                </tfoot>
+                </tfoot>{% endcomment %}
             </table>
 
     </td>
