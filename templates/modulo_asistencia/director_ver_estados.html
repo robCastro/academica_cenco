@@ -6,6 +6,7 @@
 {% block head_content %}
     <script src="http://www.chartjs.org/dist/2.7.2/Chart.bundle.js"></script>
     <script src="http://www.chartjs.org/samples/latest/utils.js"></script>
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
 	<script src="{% static 'js/jquery-ui.js' %}"></script>
@@ -21,38 +22,76 @@
 {% endblock %}
 
 {% block content %}
-    <div>
-        <select onchange="changePlot(this.value)">
-            <option value="barras" selected>Gr&aacute;fico de Barras</option>
-            <option value="lineas">Gr&aacute;fico de L&iacute;neas</option>
-        </select>
 
-        <select onchange="changeInterval(this.value)">
-            <option value="semanal" selected>&uacute;ltima Semana</option>
-            <option value="mensual">&uacute;ltimo Mes</option>
-            <option value="semestral">&uacute;ltimos Seis Meses</option>
-            <option value="anual">&uacute;ltimo A&ntilde;o</option>
-            <option value="personalizado">Personalizado</option>
-        </select>
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+    <span class="btnCerrar">×</span>
+        <strong></strong>
+    </div>
+
+    <div >
+    <br>
+    <table align="center" width="60%">
+        <th>
+            <span>Tipo de Gr&aacute;fico:</span>
+        </th>
+        <th>
+            <span>Intervalo de Tiempo:</span>
+        </th>
+        <th>
+            <span>Estado de Estudiantes:</span>
+        </th>
+        <tr>
+            <td>
+                <select onchange="changePlot(this.value)">
+                    <option value="barras" selected>Gr&aacute;fico de Barras</option>
+                    <option value="lineas">Gr&aacute;fico de L&iacute;neas</option>
+                </select>
+            </td>
+            <td>
+                <select onchange="changeInterval(this.value)" id="id_periodo">
+                    <option value="semanal" selected>&uacute;ltima Semana</option>
+                    <option value="mensual">&uacute;ltimo Mes</option>
+                    <option value="semestral">&uacute;ltimos Seis Meses</option>
+                    <option value="anual">&uacute;ltimo A&ntilde;o</option>
+                    <option value="personalizado">Personalizado</option>
+                </select>
+            </td>
+            <td>
+                <select onchange="changeType(this.value)" id="id_tipo">
+                    <option value="activos" selected>Activos</option>
+                    <option value="inscritos">Inscritos</option>
+                    <option value="retirados">Retirados</option>
+                    <option value="graduados">Graduados</option>
+                </select>
+            </td>
+            <td>
+                <div style="display: none" id="espereG">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+            </td>
+        </tr>
+    </table>
         <br>
-        <br>
-        <div id="fechas_filtro" style="display: none;">
-        <form id="enviarFechasForm" action="" method="POST">
+        <div id="fechas_filtro" style="display: none; text-align: center; width: 90%"  >
+        <form id="enviarFechasForm" action="" method="POST" autocomplete="off">
         {{ form }}
             {% csrf_token %}
-            <input type="submit" value="Enviar">
+            <input type="submit" value="Consultar" id="btnConsultar">
         </form>
         </div>
 
+
     </div>
-    <div style="width: 75%" id="id_grafico">
+    <div style="width: 85%" id="id_grafico">
 		<canvas id="canvas"></canvas>
 	</div>
     <script>
         $( function() {
             $( "#id_fechaInicial" ).datepicker({
-                dateFormat: "dd/mm/yy",     //display de la fecha
-                altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+                dateFormat: "dd/mm/yy",
+                altFormat: "yy-mm-dd",
                 minDate: "-90Y",
                 yearRange: "-90:+1",
                 monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
@@ -60,8 +99,7 @@
                 dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
                 changeMonth: true,
                 changeYear: true,
-            });
-        } );
+            }); } );
 
         $( function() {
             $( "#id_fechaFinal" ).datepicker({
@@ -74,33 +112,48 @@
                 dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
                 changeMonth: true,
                 changeYear: true,
-            });
-        } );
+            }); } );
 
     $(document).on('submit', '#enviarFechasForm', function (a) {
         a.preventDefault();
+        $('#btnConsultar').attr('disabled', true);
+        $('#espereG').css('display', 'inline');
             $.ajax({
                 type: 'POST',
                 url: '/asistencia/filtrar_estados/',
                 data: {
                     opcion: 'personalizado',
+                    tipo: opt_tipo,
                     fechaInicial: $('#id_fechaInicial').val(),
                     fechaFinal: $('#id_fechaFinal').val(),
                     csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
                 },
                 success: function (response) {
+                  $('#btnConsultar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
                   bar_plot_config.data = response.datos_filtro;
                   line_plot_config.data = response.datos_filtro;
                   chartData.labels = response.fechas_filtro;
                   maximo = response.maximo;
+                  tipo = $('#id_tipo').val();
+                  bar_plot_config.label = 'Estudiantes ' + tipo;
+                  line_plot_config.label = 'Estudiantes ' + tipo;
                   borrarGrafico();
                   cargarGrafico();
+                  var m = $('#mensajeEmergente');
+                  m.css('display', 'none');
                 },
                 error: function (response) {
-
+                  $('#btnConsultar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response.responseText);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta cuidado');
                 }
-            })
-        });
+            }) });
 
     function borrarGrafico(){
         $('#canvas').remove();
@@ -108,6 +161,7 @@
     }
 
     var maximo = {{ maximo }};
+    var opt_tipo = 'activos';
     function changeInterval(valor){
         if (valor !== "personalizado"){
             AJAXcall_simple(valor);
@@ -115,32 +169,43 @@
         }
         else{
             mostrarFecha();
-        }
-    }
+        } }
+
+    function changeType(valor){
+        opt_tipo = valor;
+        var periodo = $('#id_periodo').val();
+        if(periodo !== 'personalizado'){
+            AJAXcall_simple(periodo);
+        } }
 
     function AJAXcall_simple(option){
+        $('#espereG').css('display', 'inline');
         $.ajax({
                 type: 'POST',
                 url: '/asistencia/filtrar_estados/',
                 data: {
                     opcion: option,
+                    tipo: opt_tipo,
                     csrfmiddlewaretoken:'{{ csrf_token }}',
                 },
                 success: function (response) {
+                  $('#espereG').css('display', 'none');
                   bar_plot_config.data = response.datos_filtro;
                   line_plot_config.data = response.datos_filtro;
                   chartData.labels = response.fechas_filtro;
                   maximo = response.maximo;
+                  tipo = $('#id_tipo').val();
+                  bar_plot_config.label = 'Estudiantes ' + tipo;
+                  line_plot_config.label = 'Estudiantes ' + tipo;
                   borrarGrafico();
                   cargarGrafico();
-
+                  var m = $('#mensajeEmergente');
+                  m.css('display', 'none');
                 },
                 error: function (response) {
-
+                    $('#espereG').css('display', 'none');
                 }
-            })
-
-    }
+            }) }
 
     function mostrarFecha(){
         $('#fechas_filtro').removeClass();
@@ -151,7 +216,6 @@
         $('#fechas_filtro').removeClass();
         $('#fechas_filtro').css('display', 'none');
     }
-
 
     function changePlot(selected){
         if (selected === "lineas"){
@@ -222,4 +286,6 @@
             cargarGrafico();
 		};
 	</script>
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
