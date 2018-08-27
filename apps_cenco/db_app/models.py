@@ -12,7 +12,7 @@ class Empleado (models.Model):
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
     correo = models.EmailField(blank=True)
-    fechaNacimiento = models.DateField()
+
     dui = models.CharField(max_length=10)
     isss = models.CharField(max_length=9)
     afp = models.CharField(max_length=12)
@@ -23,6 +23,13 @@ class Empleado (models.Model):
         ('Tec', 'Tecnico')
     )
     tipo = models.CharField(max_length=3, choices=opciones_tipo, default='Pro')
+
+    opciones_estado=(
+        ('activo','activo'),
+        ('inactivo', 'inactivo')
+    )
+
+    estado=models.CharField(max_length=8, choices=opciones_estado, default='activo')
 
     def __unicode__(self):
         return self.nombre + " " + self.apellido
