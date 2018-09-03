@@ -70,10 +70,6 @@ def consultar_alumnos(request):
             contra1=request.POST.get('contrasena1')
             contra2 = request.POST.get('contrasena2')
 
-            print idAlumno,contra1,contra2
-
-
-
             if contra1 and contra2 and contra1 != contra2:
                 raise forms.ValidationError('Las contraseñas no coinciden')
             else:
@@ -126,6 +122,7 @@ def asistenteCredencialesPropias(request):
      return render(request, "login/asistente_credenciales_propias.html", context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
 
 # Esta view gestiona la ruta localhost:8000/
 def principal(request):
