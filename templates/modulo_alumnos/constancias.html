@@ -1,0 +1,48 @@
+{%  extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+
+{% block content %}
+    <div class="container-fluid" style="display: inline-flex">
+    {{ block.super }}
+
+
+    <table style="width: 80%;" cellpadding="30px">
+<tr >
+    <td align="left"><h3>Constancias</h3></td>
+    <td style="width: 75%" align="right">
+    </td>
+</tr>
+
+<td align="center" style="width: 100%">
+        <table class="table table-hover" style="width: 80%">
+        <tbody>
+             <tr>
+    <th>Constancia</th>
+    <th>Descripción</th>
+    <th>Descargas</th>
+  </tr>
+  <tr>
+    <td>Constancia de Estudio</td>
+    <td>Documento que se extiende para confirmar que está estudiando actualmente en CENCO</td>
+    <td align="center" style="width: 15%">  <a href="{% url 'constancia_estudio_pdf' %}" type="submit" target="_blank" ><img src="{% static 'img/descargar.png' %}" style="width: 35%" align="center"/></a> </td>
+  </tr>
+    <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+
+        </tbody>
+    </table>
+
+</td>
+</table>
+
+
+
+
+
+
+    </div>
+{% endblock %}

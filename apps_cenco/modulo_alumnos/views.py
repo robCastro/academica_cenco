@@ -22,6 +22,15 @@ from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from apps_cenco.db_app.models import Alumno,Telefono
 from datetime import datetime
 
+
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from django.views.generic import View
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from django.conf import settings
+
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -456,3 +465,87 @@ def consultar_datos_encargado_hijos(request):
         return render(request, 'modulo_alumnos/encargado_misHijos.html', context)
     else:
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
+@login_required
+def ConstanciaEstudioPDF(request):
+    if request.user.groups.filter(name="Alumno").exists():
+        #def get(self, request, *args, **kwargs):
+            # Indicamos el tipo de contenido a devolver, en este caso un pdf
+            response = HttpResponse(content_type='application/pdf')
+            # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
+            buffer = BytesIO()
+            # Canvas nos permite hacer el reporte con coordenadas X y Y
+            pdf = canvas.Canvas(buffer)
+            # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
+            #self.cabecera(pdf)
+            # Con show page hacemos un corte de página para pasar a la siguiente
+
+        #def cabecera(self, pdf):
+            # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
+            archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+            # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+            pdf.drawImage(archivo_imagen, 40, 750, 120, 90, preserveAspectRatio=True)
+            # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+            pdf.setFont("Helvetica", 16)
+            # Dibujamos una cadena en la ubicación X,Y especificada
+            pdf.drawString(180, 790, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+            pdf.setFont("Helvetica", 14)
+            alum = Alumno.objects.get(username=request.user)
+            nom=alum.nombre+" "+alum.apellido
+            pdf.drawString(75, 745, u"A quien corresponda: ")
+            pdf.drawString(75, 710, u"El que suscribe, Director de esta institución, hace CONSTAR: ")
+            pdf.drawString(75, 695, u"Que ")
+            pdf.drawString(105, 695, nom)
+
+            y=(nom.__len__()*7)+110
+
+            dui = alum.dui
+            if dui.__len__()==10:
+                pdf.drawString(y, 695, u"con dui: ")
+                pdf.drawString(y+54, 695, dui)
+                pdf.drawString(y + 134, 695, u"es estudiante" )
+                pdf.drawString(75, 680, u"de la carrera ")
+                pdf.drawString(75, 665, u"en el horario de: ")
+
+            else:
+                pdf.drawString(y, 695, u"es estudiante de la institución cursando")
+                pdf.drawString(75, 680, u"la carrera ")
+                pdf.drawString(75, 665, u"en el horario de: ")
+
+            pdf.drawString(75, 635, u"Para los fines que al interesado le convengan se extiende la presente")
+
+            ahora = str((datetime.now().date()))
+            dia= "el dia "+ahora
+            pdf.drawString(75, 620, dia)
+
+
+
+
+
+
+
+
+
+
+
+            pdf.showPage()
+            pdf.save()
+            pdf = buffer.getvalue()
+            buffer.close()
+            response.write(pdf)
+            return response
+
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
+
+
+
+
+@login_required
+def constancias(request):
+   if request.user.groups.filter(name="Alumno").exists():
+
+    return render(request, 'modulo_alumnos/constancias.html')
+   else:
+     raise Http404('Error, no tiene permiso para esta página')
