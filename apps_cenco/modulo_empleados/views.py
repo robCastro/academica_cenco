@@ -7,7 +7,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
@@ -23,6 +23,9 @@ from apps_cenco.db_app.models import Empleado
 from datetime import datetime
 
 import sys
+
+from apps_cenco.modulo_empleados.forms import CrearEmpleadoForm
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -43,3 +46,42 @@ def detalle_de_empleado(request,id_empleado):
         empleados = Empleado.objects.filter(estado='activo')
     else:
         raise Http404('Error, no tiene permiso para ver esta página')
+
+@login_required
+def dir_ver_empleado(request, id_empleado):
+    if request.user.groups.filter(name="Director").exists():
+        empleado = get_object_or_404(Empleado, codigo=id_empleado)
+        if empleado:
+            telefonos = Telefono.objects.filter(empleado=empleado)
+        context = {'empleado': empleado, 'telefonos': telefonos}
+        return render(request, 'modulo_empleados/director_verEmpleado.html', context)
+    else:
+        raise Http404('No tiene permiso para esta ruta')
+
+@login_required
+def dir_crear_empleado(request):
+    if request.user.groups.filter(name="Director").exists():
+        if request.method == 'POST':
+            form = CrearEmpleadoForm(request.POST)
+            if form.is_valid():
+                empleado = form.save(commit=False)
+                empleado.estado = 'activo'
+                empleado.save()
+                return HttpResponse('Empleado guardado con exito')
+            else:
+                return HttpResponse('Se reciberon datos incorrectos', status=500)
+        else:
+            form = CrearEmpleadoForm()
+            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form})
+    else:
+        raise Http404('No tiene permiso para esta ruta')
+
+
+@login_required
+def verificar_username_libre(request):
+    if request.method == 'POST':
+        usuario = request.POST.get('nombreUsuario')
+        if User.objects.get(username = usuario):
+            return HttpResponse('Usuario no disponible', status=500)
+        else:
+            return HttpResponse('Usuario disponible')

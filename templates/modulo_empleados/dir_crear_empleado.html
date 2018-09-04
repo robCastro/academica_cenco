@@ -1,0 +1,18 @@
+{% extends 'plantillas_base/base_director.html' %}
+
+{% block head_content %}
+{% endblock %}
+
+{% block content %}
+   <table width="50%">
+    <form>
+    {% csrf_token %}
+    {{ form }}
+    <tr>
+        <td>
+            <input type="submit" value="Enviar">
+        </td>
+    </tr>
+    </form>
+   </table>
+{% endblock %}
