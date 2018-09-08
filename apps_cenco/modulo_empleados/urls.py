@@ -4,6 +4,8 @@ from apps_cenco.modulo_empleados import views
 urlpatterns = [
     url(r'^consultar/$', views.consultar_empleados, name="consultar_empleados"),
     url(r'^(?P<id_empleado>\d+)$', views.detalle_de_empleado, name="detalle_empleado"),
+    url(r'^crear/$', views.dir_crear_empleado, name="crear_empleado"),
+    url(r'^consultar/inactivos/$', views.consultar_empleados_inactivos, name="consultar_empleados_inactivos"),
 
     url(r'^modificar/(?P<id_empleado>\d+)$', views.modificar_empleado, name="modificar_empleado"),
     url(r'^director_datos/$', views.director_datos_propios, name="director_datos_propios"),

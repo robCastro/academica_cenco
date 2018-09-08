@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
 import locale
-locale.setlocale(locale.LC_TIME, 'es_ES')
+#locale.setlocale(locale.LC_TIME, 'es_ES')
 
 import datetime
 
