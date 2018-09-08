@@ -13,20 +13,12 @@ import sys
 from django.contrib.auth.models import Group
 from apps_cenco.db_app.models import Alumno
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
-from django.shortcuts import render
 from django.template import loader
 from django.http import Http404, HttpResponse, JsonResponse,HttpResponseServerError
 from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
-
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
-from apps_cenco.db_app.models import Empleado
 from datetime import datetime
-
-from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
 from django.template.loader import get_template
-
 from apps_cenco.db_app.models import Empleado, Telefono, Grupo
 from django.contrib.auth.models import User
 

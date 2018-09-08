@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps_cenco.db_app.apps.DbAppConfig',
-    'apps_cenco.db_local'
+    'apps_cenco.db_local',
 ]
 
 MIDDLEWARE = [

@@ -209,7 +209,7 @@ def prof_consultar_grupos(request):
         prof=Empleado.objects.get(username=user)
         idProf=prof.codigo
         grup=Grupo.objects.filter(profesor=idProf)
-        grupos = grup.objects.order_by('codigo')
+        grupos = grup.order_by('codigo')
         horarios = Horario.objects.order_by('codigo')
         horarios_exceso = []
         grupos_cant_baja = []
