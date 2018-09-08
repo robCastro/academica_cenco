@@ -27,13 +27,13 @@
     <tr align="left">
 
         <div style="padding-top: 30px; padding-left: 20%">
-            <h4>Empleados</h4>
+            <h4>Empleados Activos</h4>
         </div>
 
         <div style="text-align: right; align-items: right; padding-right: 20%;padding-bottom: 20px;">
-            <a style="padding-right: 10px;">Nuevo empleado</a>
+            <a href="{% url 'crear_empleado' %}" style="padding-right: 10px;">Nuevo empleado</a>
 
-            <a>Ver Inactivos</a>
+            <a href="{% url 'consultar_empleados_inactivos' %}">Ver Inactivos</a>
 
         </div>
     </tr>
@@ -106,12 +106,12 @@
             }
         }});
 
-        {% comment %}tabla.$('tr').click(function() {
+        tabla.$('tr').click(function() {
             var href = $(this).find("a").attr("href");
             if(href) {
                 window.location = href;
             }
-        });{% endcomment %}
+        });
 
     });
     </script>
