@@ -92,7 +92,7 @@ class Alumno (models.Model):
     fechaNacimiento = models.DateField()
     dui = models.CharField(max_length=10, blank=True, null=True)
     encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT, null=True, blank=True)
-    grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT)
+    grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT,null=True,blank=True)
     solvente = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -140,6 +140,8 @@ class Asistencia(models.Model):
 class Estado(models.Model):
     codigo_estado = models.AutoField(primary_key=True)
     tipo_estado = models.CharField(max_length=20, null=False, blank=False)
+    def __unicode__(self):
+        return self.tipo_estado
 
 
 class DetalleEstado(models.Model):
@@ -149,6 +151,8 @@ class DetalleEstado(models.Model):
     # foreign keys
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, null=False, blank=False)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE, null=False, blank=False)
+    def __unicode__(self):
+        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detale_e)
 
 
 class Carrera(models.Model):

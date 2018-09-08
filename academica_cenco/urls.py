@@ -38,6 +38,8 @@ urlpatterns = [
     url(r'^empleados/', include('apps_cenco.modulo_empleados.urls')),
 
 
+    url(r'^empleados/', include('apps_cenco.modulo_empleados.urls')),
+
     # for reset passwords
     url(r'^password_reset/$', auth_views.password_reset, {'template_name': 'sesiones/password_reset_form.html',
                                                           'html_email_template_name': 'sesiones/password_reset_email.html',

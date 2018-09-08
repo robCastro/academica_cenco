@@ -11,7 +11,7 @@ from django.shortcuts import render,redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
-from apps_cenco.db_app.models import Alumno
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -65,6 +65,20 @@ def detalle_alumno(request,id_alumno):
                 'telefonos': telefonos
             }
             return HttpResponseRedirect(url)
+        elif 'desactivar' in request.POST:
+            alumno = Alumno.objects.get(pk=id_alumno)
+            detalleEstado = DetalleEstado.objects.get(alumno=alumno, actual_detale_e=True)
+            detalleEstado.actual_detale_e=False
+            detalleEstado.save()
+            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detale_e=True,alumno=alumno,estado=Estado.objects.get(tipo_estado='retirado'))
+            grupo=Grupo.objects.get(codigo=alumno.grupo.codigo)
+            grupo.alumnosInscritos=grupo.alumnosInscritos-1
+            grupo.save()
+            grupo.horario.cantidad_alumnos=grupo.horario.cantidad_alumnos-1
+            grupo.horario.save()
+            alumno.grupo=None
+            alumno.save()
+            return HttpResponseRedirect(url)
         elif request.method=='POST':
             if request.method == 'POST':
                 alum=Alumno.objects.get(pk=id_alumno)
@@ -100,12 +114,21 @@ def detalle_alumno(request,id_alumno):
             alumno = Alumno.objects.get(pk=id_alumno)
             edad = int((datetime.now().date() - alumno.fechaNacimiento).days / 365.25)
             telAlum = Telefono.objects.filter(alumno=alumno).count()
+
+            #activar y desactivar
+            try:
+                detalleEstado = DetalleEstado.objects.get(alumno=alumno,actual_detale_e=True)
+                estado=detalleEstado.estado.tipo_estado
+            except:
+                estado=None
+
             context={
                 'edad':edad,
                 'alumno':alumno,
                 'form': form,
                 'telefonos': telefonos,
                 'telAlum': telAlum,
+                'estado':estado,
             }
         return render(request, 'modulo_alumnos/detalle_alumno.html', context)
     else:

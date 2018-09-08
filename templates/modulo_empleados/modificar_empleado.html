@@ -1,0 +1,193 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Modificar Empleado{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <script src="{% static 'js/modificar_empleado.js' %}"></script>
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+    <!-- FIN_ALERTAS -->
+
+    <div style="padding-left: 14%; padding-top: 1%">
+        <h3>Modificar Empleado</h3>
+    </div>
+
+    <form method="POST" id="modificarEmpleado" action="{{ empleado.codigo }}">
+        {% csrf_token %}
+    <div style="padding-left: 25%">
+        <table width="100%">
+            <tr>
+                <td width="18%">
+                    <label for="txtNombreEmpleado"><strong>Nombre*:</strong></label>
+                </td>
+                <td width="25%">
+                    <div class="form-group">
+                        <input value="{{empleado.nombre}}" class="form-control" required="" maxlength="40" id="txtNombreEmpleado" name="txtNombreEmpleado" type="text" onkeyup="validarEmpleado()">
+                    </div>
+                </td>
+                <td width="57%"></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtApellidoEmpleado"><strong>Apellido*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{empleado.apellido}}" class="form-control" onkeyup="validarEmpleado()" required="" maxlength="40" id="txtApellidoEmpleado" name="txtApellidoEmpleado" type="text">
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtDireccionEmpleado"><strong>Dirección*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <textarea class="form-control" onkeyup="validarEmpleado()" required="" id="txtDireccionEmpleado" name="txtDireccionEmpleado" rows="3">{{empleado.direccion}}</textarea>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtDuiEmpleado"><strong>DUI*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{empleado.dui}}" type="text" name="txtDuiEmpleado" required="" onkeyup="validarEmpleado()" id="txtDuiEmpleado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                        <div class="invalid-feedback">DUI no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtTelefonoEmpleado"><strong>Telefono*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{ telefono.numero }}"  type="text" onkeyup="validarEmpleado()" required="" name="txtTelefonoEmpleado" id="txtTelefonoEmpleado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="8" minlength="8"/>
+                        <div class="invalid-feedback">Telefono no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="cbxTipoTelefonoEmpleado"><strong>Tipo de Telefono:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxTipoTelefonoEmpleado" name="cbxTipoTelefonoEmpleado" class="custom-select">
+                            <option value="casa" {% if telefono.tipo == "casa" %} selected {% endif %}>Casa</option>
+                            <option value="trabajo" {% if telefono.tipo == "trabajo" %} selected {% endif %}>Trabajo</option>
+                            <option value="movil" {% if telefono.tipo == "movil" %} selected {% endif %}>Móvil</option>
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtNitEmpleado"><strong>NIT*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{empleado.nit}}" type="text" onkeyup="validarEmpleado()" required="" name="txtNitEmpleado" id="txtNitEmpleado" pattern="[0-9][0-9][0-9][0-9][-][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="17" />
+                        <div class="invalid-feedback">NIT no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtIsssEmpleado"><strong>ISSS*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{empleado.isss}}" type="text" onkeyup="validarEmpleado()" required="" name="txtIsssEmpleado" id="txtIsssEmpleado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="9" />
+                        <div class="invalid-feedback">ISSS no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtAfpEmpleado"><strong>AFP*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{empleado.afp}}" type="text" onkeyup="validarEmpleado()" required="" name="txtAfpEmpleado" id="txtAfpEmpleado" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" class="form-control" maxlength="12" />
+                        <div class="invalid-feedback">AFP no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="txtCorreoEmpleado"><strong>Correo:</strong></label>
+                    <!-- Small para mantener alineacion -->
+                    <small id="emailHelp" class="form-text text-muted">.</small>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input value="{{empleado.correo}}" class="form-control" onkeyup="validarEmpleado()" id="txtCorreoEmpleado" name="txtCorreoAlumno" aria-describedby="emailHelp" type="email">
+                        <small id="emailHelp" class="form-text text-muted">Ejemplo: empleado@correo.com</small>
+                        <div class="invalid-feedback">Correo no válido</div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label for="cbxRolEmpleado"><strong>Rol de Contratación:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxRolEmpleado" name="cbxRol" class="custom-select" {% if grupo_pc %} disabled {% endif %}>
+                            <option value="Asi" {% if empleado.tipo == "Asi" %} selected {% endif %}>Asistente</option>
+                            <option value="Pro" {% if empleado.tipo == "Pro" %} selected {% endif %}>Profesor</option>
+                            <option value="Tec" {% if empleado.tipo == "Tec" %} selected {% endif %}>Técnico</option>
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="padding-left: 32%; padding-top: 3%">
+        <table width="100%">
+            <tr>
+                <td width="10%">
+                    <button type="button submit" id="btnGuardarEmpleado" disabled="" class="btn btn-primary" >Guardar</button>
+                </td>
+                <td>
+                    <div style="display: none" id="espereM">
+                        <img src="{% static 'img/ajax-loader.gif' %}">
+                        Procesando. Por Favor Espere.
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+
+    </div>
+    </form>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+
+{% endblock %}
