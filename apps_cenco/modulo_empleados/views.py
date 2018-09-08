@@ -18,6 +18,7 @@ from django.http import Http404, HttpResponse, JsonResponse,HttpResponseServerEr
 from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from datetime import datetime
+from apps_cenco.modulo_empleados.forms import CrearEmpleadoForm
 from django.template.loader import get_template
 from apps_cenco.db_app.models import Empleado, Telefono, Grupo
 from django.contrib.auth.models import User
@@ -29,7 +30,7 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_empleados(request):
     if request.user.groups.filter(name="Director").exists():
-        empleados= Empleado.objects.filter(estado='inactivo')
+        empleados= Empleado.objects.filter(estado='activo')
         for empleado in empleados:
             empleado.primerTelefono = empleado.telefono_set.first()
 
@@ -41,6 +42,35 @@ def consultar_empleados(request):
 def detalle_de_empleado(request,id_empleado):
     if request.user.groups.filter(name="Director").exists():
         empleados = Empleado.objects.filter(estado='activo')
+    else:
+        raise Http404('Error, no tiene permiso para ver esta página')
+
+
+@login_required
+def dir_crear_empleado(request):
+    if request.user.groups.filter(name="Director").exists():
+        if request.method == 'POST':
+            form = CrearEmpleadoForm(request.POST)
+            if form.is_valid():
+                empleado = form.save(commit=False)
+                empleado.estado = 'activo'
+                empleado.save()
+                return HttpResponse('Empleado guardado con exito')
+            else:
+                return HttpResponse('Se reciberon datos incorrectos', status=500)
+        else:
+            form = CrearEmpleadoForm()
+            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form})
+    else:
+        raise Http404('No tiene permiso para esta ruta')
+
+@login_required
+def consultar_empleados_inactivos(request):
+    if request.user.groups.filter(name="Director").exists():
+        empleados = Empleado.objects.filter(estado='inactivo')
+        for empleado in empleados:
+            empleado.primerTelefono = empleado.telefono_set.first()
+        return render(request, 'modulo_empleados/director_listaEmpleadosInactivos.html', {'empleados': empleados})
     else:
         raise Http404('Error, no tiene permiso para ver esta página')
 
