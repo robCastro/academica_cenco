@@ -196,3 +196,37 @@ def asist_detalle_grupo(request, id_grupo):
         return render(request, 'modulo_grupos/asist_detalle_grupo.html', context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def prof_consultar_grupos(request):
+    user = User.objects.get(username=request.user)
+    prof = Empleado.objects.get(username=user)
+    if user.groups.filter(name="Empleado").exists() and prof.tipo=="Pro":
+        form = CrearGrupoForm()
+        limite_por_horario = 15*2
+        min_alum_inscritos = 5
+        prof=Empleado.objects.get(username=user)
+        idProf=prof.codigo
+        grup=Grupo.objects.filter(profesor=idProf)
+        grupos = grup.objects.order_by('codigo')
+        horarios = Horario.objects.order_by('codigo')
+        horarios_exceso = []
+        grupos_cant_baja = []
+        tipos = Horario.objects.raw("select distinct dias_asignados, 1 as codigo from db_app_horario " +
+                                    "order by dias_asignados")
+        for horario in horarios:
+            if horario.cantidad_alumnos > limite_por_horario:
+                horarios_exceso.append(horario)
+
+        for grupo in grupos:
+            if grupo.alumnosInscritos < min_alum_inscritos:
+                grupos_cant_baja.append(grupo)
+
+        variables = {'grupos': grupos, 'horarios': horarios, 'horarios_exceso': horarios_exceso,
+                     'grupos_cant_baja': grupos_cant_baja, 'lim_horario': limite_por_horario,
+                     'min_alumnos': min_alum_inscritos, 'form': form, 'tipos': tipos}
+
+        return render(request, 'modulo_grupos/prof_consultar_grupos.html', variables)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')

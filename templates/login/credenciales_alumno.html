@@ -1,16 +1,17 @@
 {%  extends 'plantillas_base/base_director.html' %}
 {% load staticfiles %}
-{% block titulo %}credenciales de alumnos{% endblock %}
+{% block titulo %}Credenciales de Alumnos{% endblock %}
 
 #Espacio para los archivos de cabecera o head_content
 {% block head_content %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
     <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <script>
         function contraseniasIguales() {
             var contrasenia = document.getElementById('contrasenia');
@@ -39,7 +40,7 @@
 
 
 
-        {% comment %}$(document).ready(function() {
+        $(document).ready(function() {
 
             $('#example tr').click(function () {
                 var href = $(this).find("a").attr("href");
@@ -48,7 +49,7 @@
                 }
             });
 
-        });{% endcomment %}
+        });
 
            $(function() {
             selectFilas();
@@ -103,7 +104,7 @@
                     $('#contrasenia').val('');
                     $('#repContrasenia').val('');
                   },
-                  
+
                   error:function (response) {
                     var m = $('#mensajeEmergente');
                     m.children('strong').html('No se pudo guardar la nueva contraseña');
@@ -173,19 +174,7 @@
             Listado de alumnos</h4>
 
 
-        <td width='20%' align="left" valign="top" >
-            {% comment %}<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Filtrar por grupos:
-            <select onchange="filterSelection(this.value)" class="active">
-                <option value="all" selected>Todos</option>
-                {% for valor in tipos %}
-                    <option value="{{ valor.dias_asignados }}">{{ valor.dias_asignados }}</option>
-                {% endfor %}
-
-            </select>{% endcomment %}
-
-        </td>
+        <td width='20%' align="left" valign="top" ></td>
 
         <td width="40%" align="right">&nbsp;&nbsp;</td>
 
@@ -210,7 +199,7 @@
                 <tbody>
                 {% for user in alumnos%}
                     <tr data-toggle="modal" data-target="#myDeleteModal">
-                        <td width="20px"><a href="{% url 'detalle_alumno' id_alumno=user.codigo %}">{{ user.codigo }}</a></td>
+                        <td width="20px"><a href="#">{{ user.codigo }}</a></td>
                         <td>{{ user.nombre }} </td>
                         <td>{{ user.apellido }}</td>
                         <td>{{ user.primerTelefono|default_if_none:""  }}</td>

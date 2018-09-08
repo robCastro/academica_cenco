@@ -1,0 +1,277 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Mis Datos{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/director_datosPropios.js' %}"></script>
+    <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/resaltar_fila.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+     <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+    <!-- FIN_ALERTAS -->
+
+    <div style="padding-left: 16%; padding-top: 1%">
+        <br>
+        <h3>Mis datos</h3>
+        <br>
+    </div>
+
+    <div style="padding-left:27%">
+        <table id="example" class="table table-hover container table-light" style="width:54%" align="left">
+            <thead></thead>
+            <tbody>
+                    <tr data-toggle="modal" data-target="#cambiarNombreModal" id="row1">
+                        <td width="25%" class="font-weight-bold">Nombre</td>
+                        <td>{{ user.get_full_name }}</td>
+                        <td><a href="#"><font color=#4488ca>Editar</font></a></td>
+                    </tr>
+                    <tr data-toggle="modal" data-target="#cambiarUsuarioModal" id="row2">
+                        <td class="font-weight-bold">Usuario</td>
+                        <td>{{ user.username }}</td>
+                        <td><a href="#" ><font color=#4488ca>Editar</font> </a></td>
+                    </tr>
+                    <tr data-toggle="modal" data-target="#cambiarCorreoModal" id="row3">
+                        <td class="font-weight-bold">Correo</td>
+                        <td>{{ user.email }}</td>
+                        <td><a href="#" ><font color=#4488ca>Editar</font> </a></td>
+                    </tr>
+                    <tr data-toggle="modal" data-target="#cambiarContraseniaModal" id="row4">
+                        <td class="font-weight-bold">Contraseña</td>
+                        <td>—</td>
+                        <td><a href="#" ><font color=#4488ca>Editar</font> </a></td>
+                    </tr>
+                </tbody>
+            <tfoot></tfoot>
+            </table>
+
+    </div>
+
+<!-- Modal -->
+<div class="modal fade" id="cambiarNombreModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Cambiar Nombre</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="cambiarNombreForm" method="POST">
+            {% csrf_token %}
+            <table align="center">
+                <tr>
+                    <td>
+                        <b>Nombre:</b>
+                    </td>
+                    <td>
+                        <input  value="{{ user.first_name }}" type="text" required="" class="form-control" id="nombreModal1" name="nombreModal1" autocomplete="off" maxlength="30">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Apellido:</b>
+                    </td>
+                    <td>
+                        <input value="{{ user.last_name }}" type="text" class="form-control" required="" id="apellidoModal1" name="apellidoModal1" autocomplete="off" maxlength="30">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Contraseña:</b>
+                    </td>
+                    <td>
+                        <input type="password" class="form-control" id="contraseniaModal1" autocomplete="off" required="" name="contraseniaModal1" maxlength="128">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr><td><p></p></td></tr>
+            </table>
+            <p></p>
+            <button type="button submit" class="btn btn-primary" id="btnGuardarModal1">Guardar</button>
+                <div style="display: none" id="espere">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Modal -->
+<div class="modal fade" id="cambiarUsuarioModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Cambiar Usuario</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="cambiarUsuarioForm" method="POST">
+            {% csrf_token %}
+            <table align="center">
+                <tr>
+                    <td>
+                        <b>Usuario:</b>
+                    </td>
+                    <td>
+                        <input value="{{ user.username }}" type="text" class="form-control" required="" id="usuarioModal2" name="usuarioModal2" autocomplete="off" maxlength="150">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Contraseña:</b>
+                    </td>
+                    <td>
+                        <input type="password" class="form-control" id="contraseniaModal2" autocomplete="off" required="" name="contraseniaModal2" maxlength="128">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr><td><p></p></td></tr>
+            </table>
+            <p></p>
+            <button type="button submit" class="btn btn-primary" id="btnGuardarModal2">Guardar</button>
+                <div style="display: none" id="espereM2">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+        <!-- Modal -->
+<div class="modal fade" id="cambiarCorreoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Cambiar Correo</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="cambiarCorreoForm" method="POST">
+            {% csrf_token %}
+            <table align="center">
+                <tr>
+                    <td>
+                        <b>Correo:</b>
+                    </td>
+                    <td>
+                        <input value="{{ user.email }}" type="text" class="form-control" required="" id="correoModal3" name="correoModal3" autocomplete="off" maxlength="254" onkeyup="validarCorreo();">
+                        <div class="invalid-feedback">Correo no válido</div>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Contraseña:</b>
+                    </td>
+                    <td>
+                        <input type="password" class="form-control" id="contraseniaModal3" autocomplete="off" required="" name="contraseniaModal3" maxlength="128">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr><td><p></p></td></tr>
+            </table>
+            <p></p>
+            <button type="button submit" class="btn btn-primary" id="btnGuardarModal3">Guardar</button>
+                <div style="display: none" id="espereM3">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+    <div class="modal fade" id="cambiarContraseniaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Cambiar Contraseña</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="cambiarContraseniaForm" method="POST">
+            {% csrf_token %}
+            <table align="center">
+                <tr>
+                    <td>
+                        <b>Contraseña Actual:</b>
+                    </td>
+                    <td>
+                        <input type="password" class="form-control" id="contraseniaModal4" autocomplete="off" required="" name="contraseniaModal4" maxlength="128">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Contraseña Nueva:</b>
+                    </td>
+                    <td>
+                        <input type="password" class="form-control" id="contraseniaNueva" autocomplete="off" required="" name="contraseniaNueva" maxlength="128" onkeyup="contraseniasIguales();">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Repetir Nueva:</b>
+                    </td>
+                    <td>
+                        <input type="password" class="form-control" id="contraseniaRepetir" autocomplete="off" required="" name="contraseniaRepetir" maxlength="128" onkeyup="contraseniasIguales();">
+                        <div class="invalid-feedback">Contraseñas no coinciden</div>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr><td><p></p></td></tr>
+            </table>
+            <p></p>
+            <button type="button submit" class="btn btn-primary" id="btnGuardarModal4">Guardar</button>
+                <div style="display: none" id="espereM4">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}

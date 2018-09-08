@@ -2,40 +2,60 @@
 {% load staticfiles %}
 
 {% block titulo %}Cambiar Credenciales{% endblock %}
+{% block head_content %}
+    {{ block.super }}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+
+    <script>
+    function mostrarEspera() {
+    $('#espereG').css('display', 'inline');
+    $('#btnGuardar').attr('disabled', true);
+    }
+    </script>
+
+{% endblock %}
 
  {% block content %}
+
      <div class="container-fluid" style="display: inline-flex">
      {{ block.super }}
      <table width="100%" xmlns:height="http://www.w3.org/1999/xhtml">
-     <tr>
+         <tr>
          <td width="8%">
         </td>
          <td width="50%" height='100px' >
-             <br>
-            <br>
+             <br><br>
              {% for message in messages %}
              {% if 'success' in message.tags %}
-             <div class="alert alert-success" style="background-color: #2C3E50">
-            <a class="close" href="#" data-dismiss="alert">×</a>
+             <div class="alerta exito">
+            <span class="btnCerrar">&times;</span>
+                 <strong></strong>
             {{ message }}
             </div>
              {% endif %}
          {% endfor %}
-             <br>
+            <br>
             <h4>Mi Usuario:</h4>
              <br>
             <br>
-            <form action="" method="post">
+            <form action="" method="post" id="formContraseniaAlumno">
                 {% csrf_token %}
                  <table width="65%" align="center" height="135px">
                       {{ form.as_table }}
                  </table>
              <br>
-                    <table width="40%" align="center">
+                    <table width="60%" align="center">
 
                          <td align="center">
                             <p></p>
-                        <button type="button submit" class="btn btn-primary" >Guardar</button>
+                        <button type="button submit" class="btn btn-primary" id="btnGuardar" onclick="mostrarEspera();">Guardar</button>
+
+                        </td>
+                        <td>
+                            <div style="display: none" id="espereG">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
                         </td>
                     </table>
              </form>
@@ -45,4 +65,6 @@
      </tr>
      </table>
      </div>
+
+     <script src="{% static 'js/cerrar_alertas.js' %}"></script>
  {% endblock %}

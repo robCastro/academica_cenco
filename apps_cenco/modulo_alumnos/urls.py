@@ -1,6 +1,7 @@
 from django.conf.urls import url
 from apps_cenco.modulo_alumnos import views
 
+
 urlpatterns = [
     url(r'^insertar/$', views.registro_alumno, name="InsertarAlumno"),
     url(r'^consultar/$', views.consultar_alumnos, name="asistenteConsultarAlumnos"),
@@ -12,5 +13,7 @@ urlpatterns = [
     url(r'^registrarEncargado/$', views.registrarEncargado, name="RegistrarEncargado"),
     url(r'^encargado/misDatos/$', views.consultar_datos_encargado, name="encargado_misDatos"),
     url(r'^encargado/misHjos/$', views.consultar_datos_encargado_hijos, name="encargado_misHijos"),
+    url(r'^constanciapdf/$',views.ConstanciaEstudioPDF, name="constancia_estudio_pdf"),
+    url(r'^constancias/$', views.constancias, name="Constancias"),
 
 ]

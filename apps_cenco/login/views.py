@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django import forms
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, redirect,reverse
 from django.contrib.auth.models import Group
 from django.contrib import messages
 
@@ -70,10 +70,6 @@ def consultar_alumnos(request):
             contra1=request.POST.get('contrasena1')
             contra2 = request.POST.get('contrasena2')
 
-            print idAlumno,contra1,contra2
-
-
-
             if contra1 and contra2 and contra1 != contra2:
                 raise forms.ValidationError('Las contraseñas no coinciden')
             else:
@@ -126,6 +122,7 @@ def asistenteCredencialesPropias(request):
      return render(request, "login/asistente_credenciales_propias.html", context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
 
 # Esta view gestiona la ruta localhost:8000/
 def principal(request):
