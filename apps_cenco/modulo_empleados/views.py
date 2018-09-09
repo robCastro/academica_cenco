@@ -24,7 +24,7 @@ from datetime import datetime
 
 import sys
 
-from apps_cenco.modulo_empleados.forms import CrearEmpleadoForm
+from apps_cenco.modulo_empleados.forms import CrearEmpleadoForm, CrearTelefonoForm
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -51,6 +51,7 @@ def detalle_de_empleado(request,id_empleado):
 def dir_ver_empleado(request, id_empleado):
     if request.user.groups.filter(name="Director").exists():
         empleado = get_object_or_404(Empleado, codigo=id_empleado)
+        telefonos = ''
         if empleado:
             telefonos = Telefono.objects.filter(empleado=empleado)
         context = {'empleado': empleado, 'telefonos': telefonos}
@@ -58,23 +59,47 @@ def dir_ver_empleado(request, id_empleado):
     else:
         raise Http404('No tiene permiso para esta ruta')
 
+
 @login_required
 def dir_crear_empleado(request):
     if request.user.groups.filter(name="Director").exists():
         if request.method == 'POST':
             form = CrearEmpleadoForm(request.POST)
-            if form.is_valid():
+            formTelefono = CrearTelefonoForm(request.POST)
+            if form.is_valid() and formTelefono.is_valid():
                 empleado = form.save(commit=False)
-                empleado.estado = 'activo'
-                empleado.save()
-                return HttpResponse('Empleado guardado con exito')
+                print (request.POST)
+                usuario = request.POST.get('username')
+                if validar_username(usuario):
+                    password = User.objects.make_random_password(
+                        length=6,
+                        allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+                    newusername = User.objects.create_user(username=usuario, email=empleado.correo, password=password)
+                    empleado.username = newusername
+                    empleado.estado = 'activo'
+                    telefono = formTelefono.save(commit=False)
+                    telefono.empleado = empleado
+                    empleado.save()
+                    telefono.save()
+                    return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
+                else:
+                    return HttpResponse('El nombre de usuario no esta disponible', status=500)
             else:
                 return HttpResponse('Se reciberon datos incorrectos', status=500)
         else:
             form = CrearEmpleadoForm()
-            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form})
+            formTelefono = CrearTelefonoForm()
+            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form, 'formT': formTelefono})
     else:
         raise Http404('No tiene permiso para esta ruta')
+
+
+def validar_username(username):
+    try:
+        User.objects.get(username=username)
+        return False
+    except ObjectDoesNotExist:
+        return True
 
 
 @login_required

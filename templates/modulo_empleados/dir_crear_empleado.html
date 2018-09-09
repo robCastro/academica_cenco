@@ -1,16 +1,25 @@
 {% extends 'plantillas_base/base_director.html' %}
 
+{% block titulo %}Registro Empleado{% endblock %}
+
 {% block head_content %}
 {% endblock %}
 
 {% block content %}
    <table width="50%">
-    <form>
+   <h3>Registrar Empleado</h3><br>
+    <form method="POST">
     {% csrf_token %}
+        <tr><td><h4>Datos personales</h4></td></tr>
+        <tr><th><label for="id_username">Nombre de usuario:</label></th>
+            <td><input type="text" name="username" id="id_username" required class="form-control" maxlength="40" />
+            </td></tr>
     {{ form }}
+       <tr><td><br><br> <h4>Tel&eacute;fono de contacto</h4></td></tr>
+    {{ formT }}
     <tr>
         <td>
-            <input type="submit" value="Enviar">
+            <button type="submit" class="btn-primary" style="font-size: 20px">Registrar Nuevo Empleado</button>
         </td>
     </tr>
     </form>
