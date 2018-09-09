@@ -7,7 +7,28 @@
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
     <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        var cantidadEncargados = {{ cantidadEncargados }};   //para uso dentro de modificar_alumnos2.js
+        var codigosEncargados = [];
+        var nombresEncargados = [];
+        var apellidosEncargados = [];
+        var displayEncargados = [];
+        var direccionEncargados = [];
+
+        function llenadoEncargados(){
+        {% for encargado in encargados %}
+            codigosEncargados.push('{{ encargado.codigo }}');
+            nombresEncargados.push('{{ encargado.nombre }}');
+            apellidosEncargados.push('{{ encargado.apellido }}');
+            displayEncargados.push('{{ encargado.codigo }} | {{ encargado }}');
+            direccionEncargados.push('{{ encargado.direccion }}');
+        {% endfor %}
+}
+    </script>
     <script src="{% static 'js/modificar_alumnos2.js' %}"></script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 
     <!-- Necesarios para widgets -->
     <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
@@ -43,7 +64,9 @@
                         {% if notifCorreo %}
                         <h5>Solicitar Correo</h5><p></p>
                         {% endif %}
-                        <h5>Notif. 4</h5><p></p>
+                        {% if notifTelEnc %}
+                        <h5>Solicitar Telefono de Encargado</h5><p></p>
+                        {% endif %}
                     </div>
                 </div>
             </td>
@@ -56,7 +79,7 @@
                         </td>
                         <td width="30%">
                             <div class="form-group">
-                                <input type="text" required="" id="txtNombreAlumno" value="{{ alumno.nombre }}" class="form-control">
+                                <input type="text" required="" onkeyup="validarAlumno()" name="txtNombreAlumno" id="txtNombreAlumno" value="{{ alumno.nombre }}" class="form-control">
                             </div>
                         </td>
                         <td></td>
@@ -67,7 +90,7 @@
                         </td>
                         <td>
                             <div class="form-group">
-                                <input type="text" required="" id="txtApellidoAlumno" value="{{ alumno.apellido }}" class="form-control">
+                                <input type="text" required="" onkeyup="validarAlumno()" name="txtApellidoAlumno" id="txtApellidoAlumno" value="{{ alumno.apellido }}" class="form-control">
                             </div>
                         </td>
                     </tr>
@@ -77,7 +100,7 @@
                         </td>
                         <td>
                             <div class="form-group">
-                                <textarea class="form-control" required="" id="txtDireccionAlumno" rows="3">{{ alumno.direccion }}</textarea>
+                                <textarea class="form-control" required="" onkeyup="validarAlumno()" name="txtDireccionAlumno" id="txtDireccionAlumno" rows="3">{{ alumno.direccion }}</textarea>
                             </div>
                         </td>
                     </tr>
@@ -87,7 +110,7 @@
                         </td>
                         <td>
                             <div class="form-group">
-                                <input class="form-control" id="txtFechaNacAlumno" value="{{ fechaNac }}" type="text" />
+                                <input class="form-control" name="txtFechaNacAlumno" id="txtFechaNacAlumno" onkeyup="validarAlumno()" value="{{ fechaNac }}" type="text" />
                             </div>
                         </td>
                     </tr>
@@ -97,7 +120,7 @@
                         </td>
                         <td>
                             <div class="form-group">
-                                <input type="text" id="txtDuiAlumno" value="{{ alumno.dui }}" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
+                                <input type="text" name="txtDuiAlumno" id="txtDuiAlumno" onkeyup="validarAlumno()" value="{{ alumno.dui }}" pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]" class="form-control" maxlength="10" />
                             </div>
                         </td>
                     </tr>
@@ -109,7 +132,7 @@
                         </td>
                         <td>
                             <div class="form-group">
-                                <input class="form-control" id="txtCorreoAlumno" value="{{ alumno.correo }}" aria-describedby="emailHelp" type="email">
+                                <input class="form-control" name="txtCorreoAlumno" id="txtCorreoAlumno" onkeyup="validarAlumno()" value="{{ alumno.correo }}" aria-describedby="emailHelp" type="email">
                                 <small id="emailHelp" class="form-text text-muted">Ejemplo: alumno@correo.com</small>
                                 <div class="invalid-feedback">Correo no válido</div>
                             </div>
@@ -128,11 +151,20 @@
                     <h3 id="tituloEnc">Encargado</h3>
                 </td>
                 <td width="30%">
-                    <label for="tituloEnc"><button id="linkCambiar" onclick="cambiarEncargado()" class="btn btn-outline-info btn-sm">Cambiar</button></label>
+                    <!--<form method="POST" id="frmCambiarEncargado">
+                        {% csrf_token %}-->
+                        <label for="tituloEnc"><button id="linkCambiar" onclick="cambiarEncargado()" class="btn btn-outline-info btn-sm">Cambiar</button></label>
+                        <input type="checkbox" id="chbCambiarEncargado" name="chbCambiarEncargado" hidden="">
+                        <div style="display: none" id="espereG">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Consultando Encargados. Por Favor Espere.
+                        </div>
+                        <!--<input type="checkbox" id="yaConsultados" hidden=""> --> <!-- Usado para saber si ya se consulto una vez los Encargados -->
+                    <!--</form>-->
                 </td>
                 <td width="18%">
                     <div class="custom-control custom-checkbox">
-                        <input class="custom-control-input" id="hacerIndependiente" type="checkbox">
+                        <input onclick="hacerIndependiente()" class="custom-control-input" id="hacerIndependiente" type="checkbox">
                         <label class="custom-control-label" for="hacerIndependiente">Hacer Independiente</label>
                     </div>
                 </td>
@@ -149,7 +181,7 @@
             </td>
             <td width="30%" >
                 <div class="form-group">
-                    <input type="text" id="nomEnc" readonly="" class="form-control">
+                    <input type="text" id="nomEnc" readonly="" value="{{ encargado.nombre }}" class="form-control">
                 </div>
             </td>
             <td></td>
@@ -160,7 +192,7 @@
             </td>
             <td>
                 <div class="form-group">
-                    <input type="text" id="apeEnc" readonly="" class="form-control">
+                    <input type="text" id="apeEnc" readonly="" value="{{ encargado.apellido }}" class="form-control">
                 </div>
             </td>
             <td></td>
@@ -171,7 +203,7 @@
             </td>
             <td>
                 <div class="form-group">
-                    <textarea id="dirEnc" class="form-control" readonly="" rows="3"></textarea>
+                    <textarea id="dirEnc" class="form-control" readonly="" rows="3">{{ encargado.direccion }}</textarea>
                 </div>
             </td>
             <td></td>
@@ -207,14 +239,14 @@
             </tr>
         </table>
         <table width="100%">
-            <input type="text" id="codEncargadoNuevo" hidden="">
+            <input type="text" id="codEncargadoNuevo" name="codEncargadoNuevo" hidden="">
             <tr>
                 <td style="padding-left: 6%" width="15%">
                     <label for="nombreEncActual"><strong>Nombre:</strong></label>
                 </td>
                 <td width="20%">
                     <div class="form-group">
-                        <input type="text" id="nombreEncActual" readonly="" class="form-control">
+                        <input type="text" id="nombreEncActual" readonly="" value="{{ encargado.nombre }}" class="form-control">
                     </div>
                 </td>
                 <td width="15%"></td>
@@ -234,7 +266,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <input type="text" id="apellidoEncActual" readonly="" class="form-control">
+                        <input type="text" id="apellidoEncActual" readonly="" value="{{ encargado.apellido }}" class="form-control">
                     </div>
                 </td>
                 <td></td>
@@ -254,7 +286,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <textarea id="direccionEncAct" readonly="" rows="3" class="form-control"></textarea>
+                        <textarea id="direccionEncAct" readonly="" rows="3" class="form-control">{{ encargado.direccion }}</textarea>
                     </div>
                 </td>
                 <td></td>
@@ -271,17 +303,25 @@
         </table>
     </div>
     <div style="padding-left: 20%; padding-top: 2%">
-        <form>
+        <form method="POST" id="guardarAlDep">
+            {% csrf_token %}
             <table width="100%" >
-                <td width="10%">
-                    <button class="btn btn-primary">Guardar</button>
-                </td>
-                <td width="10%"></td>
-                <td width="10%">
-                    <button class="btn btn-primary">Cancelar</button>
-                </td>
-                <td></td>
+                <tr>
+                    <td width="10%">
+                        <button type="button submit" id="btnGuardarAlumDep" class="btn btn-primary">Guardar</button>
+                        <div style="display: none" id="espereI">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
+                    </td>
+                    <td width="10%"></td>
+                    <td width="10%">
+                        <a href="{% url 'asistenteConsultarAlumnos' %}" class="btn btn-primary">Cancelar</a>
+                    </td>
+                    <td></td>
+                </tr>
             </table>
+            <p id="msjIndependiente" class="text-info" hidden="">Alumno se guardará como Independiente</p>
         </form>
     </div>
 
@@ -316,7 +356,8 @@
                 </td>
                 <td width="30%" >
                     <div class="form-group">
-                        <input type="text" id="nomEnc" readonly="" class="form-control">
+                        <input type="text" id="nombreEncNuevo" readonly="" class="form-control">
+                        <input type="text" id="codEncargadoNuevo" hidden="">
                     </div>
                 </td>
                 <td></td>
@@ -327,7 +368,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <input type="text" id="apeEnc" readonly="" class="form-control">
+                        <input type="text" id="apellidoEncNuevo" readonly="" class="form-control">
                     </div>
                 </td>
                 <td></td>
@@ -338,7 +379,7 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <textarea id="dirEnc" class="form-control" readonly="" rows="3"></textarea>
+                        <textarea id="direccionEncNuevo" class="form-control" readonly="" rows="3"></textarea>
                     </div>
                 </td>
                 <td></td>
@@ -346,7 +387,8 @@
         </table>
         </div>
         <div style="padding-left: 20%; padding-top: 2%">
-        <form>
+        <form method="POST" id="guardarAlIndep">
+            {% csrf_token %}
             <table width="100%" >
                 <td width="10%">
                     <button class="btn btn-primary">Guardar</button>
@@ -360,5 +402,5 @@
         </form>
     </div>
     {% endif %}
-
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}

@@ -181,133 +181,6 @@ def ver_alumno_propio(request):
      raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
-def registro_alumno(request):
-    if request.user.groups.filter(name="Asistente").exists():
-        if request.method == "POST":
-            form = InsertarAlumnoForm(request.POST)
-            form3 =TelefonoForm(request.POST)
-            if form.is_valid() :
-                # gererando el usuario
-                nom=request.POST['nombre']
-                ape = request.POST['apellido']
-                nomb = " ".join(nom.split())
-                nomb = nomb.split()
-                apell = " ".join(ape.split())
-                apell = apell.split()
-                usu = str(nomb[0]) + str(apell[0])
-                usu=usu.lower()
-                # consulta a la base para generar correlativo
-                users = User.objects.filter(username__contains=usu)
-
-                cant = users.__len__()
-                if cant == 0:
-                    cant = 1
-                else:
-                    cant=cant+1
-                usuario=str(usu)+str(cant)
-                correo=request.POST['correo']
-                contra=request.POST['fechaNacimiento']
-                contra=contra.replace("-","")
-                contra = contra.replace("/", "")
-                user=User.objects.create_user(username=usuario,email=correo,password=contra,first_name=nom,last_name=ape)
-                user.save()
-                groupEncargado = Group.objects.get(name='Alumno')
-                groupEncargado.user_set.add(user)
-                form.save()
-                alumno = form.save(commit=False)
-                alumno.username=user
-                alumno.save()
-                id_grupo=request.POST['grupo']
-                grupo = Grupo.objects.get(pk=id_grupo)
-                grupo.alumnosInscritos= grupo.alumnosInscritos+1
-                id_horario= grupo.horario_id
-                horario = Horario.objects.get(pk=id_horario)
-                grupo.horario.cantidad_alumnos=grupo.horario.cantidad_alumnos+1
-                horario.cantidad_alumnos= horario.cantidad_alumnos+1
-                grupo.save()
-                horario.save()
-            # Aqui quizas quepa un else para cuado algo falle. Error 500 talves?
-
-                telefono = Telefono()
-                telefono.numero= request.POST['numero']
-                telefono.alumno_id = alumno.codigo
-                telefono.tipo = request.POST['tipo']
-                telefono.save()
-                return HttpResponse("Usuario: "+usuario+" Contraseña: "+contra)
-
-        else:
-            form = InsertarAlumnoForm()
-            form3 = TelefonoForm()
-        context = {
-            "form": form,
-            "form3": form3,
-        }
-        return render(request, "modulo_alumnos/registrar_alumnos.html", context)
-    else:
-        raise Http404('Error, no tiene permiso para esta página')
-
-@login_required
-def registrar_encargado(request):
-    if request.user.groups.filter(name="Asistente").exists():
-        if request.method == 'POST':
-            form2 = CrearEncargadoForm(request.POST)
-            form4 = TelefonoForm(request.POST)
-            if form2.is_valid():
-                nom = request.POST['nombre']
-                ape = request.POST['apellido']
-                nomb = " ".join(nom.split())
-                nomb = nomb.split()
-                apell = " ".join(ape.split())
-                apell = apell.split()
-                usu = str(nomb[0]) + str(apell[0])
-                usu = usu.lower()
-                # consulta a la base para generar correlativo
-                users = User.objects.filter(username__contains=usu)
-
-                cant = users.__len__()
-                if cant == 0:
-                    cant = 1
-                else:
-                    cant = cant + 1
-
-                usuario = str(usu) + str(cant)
-                correo = request.POST['correo']
-                contra = request.POST['fechaNacimiento']
-                contra = contra.replace("-", "")
-                user = User.objects.create_user(username=usuario, email=correo, password=contra,first_name=nom,last_name=ape)
-                user.save()
-                groupEncargado = Group.objects.get(name='Encargado')
-                groupEncargado.user_set.add(user)
-                form2.save()
-                #alumno = form2.save(commit=False)
-
-                encargado = form2.save(commit=False)
-
-                encargado.username = user
-                encargado.save()
-                id=encargado.codigo.__str__()
-                nombre= encargado.nombre+" "+encargado.apellido
-
-                telefono = Telefono()
-                telefono.numero = request.POST['numero']
-                telefono.encargado_id = encargado.codigo
-                telefono.tipo=request.POST['tipo']
-                telefono.save()
-                return JsonResponse({'mensaje': "Usuario: "+usuario+" Contraseña: "+usuario,'Encargado':'<option value="'+id+'">'+nombre+'</option>'})
-            # Seria bueno agregar aqui un Internal Server error. Para cuando no guarde bien.
-
-        else:
-            form = InsertarAlumnoForm()
-            form4 = TelefonoForm()
-            context = {
-                "form": form,
-                "form4": form4,
-            }
-            return render(request, "modulo_alumnos/registrar_alumnos.html", context)
-    else:
-        raise Http404('Error, no tiene permiso para esta página')
-
-@login_required
 def inscribirAlumno(request):
     import sys
     reload(sys)
@@ -341,7 +214,7 @@ def inscribirAlumno(request):
             try:
                 grupo = Grupo.objects.get(codigo=codGrupo)
             except Grupo.DoesNotExist:
-                mensaje = "Error en guardado de alumno, Grupo invalido.$"
+                mensaje = "Error en guardado de alumno, Grupo invalido."
                 print mensaje
                 return HttpResponse(mensaje, status=500)
 
@@ -373,7 +246,7 @@ def inscribirAlumno(request):
             if numero != "":
                 telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)
                 telefono.save()
-            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento + "$"
+            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
             return HttpResponse(mensaje, status=200)
         else:
             grupos = Grupo.objects.all().order_by('-codigo')
@@ -428,10 +301,9 @@ def registrarEncargado(request):
                 'apellidoEncargado': encargado.apellido,
                 'direccionEncargado': encargado.direccion
             }
-            #return JsonResponse(json.dumps(respuesta), safe=False)
             return JsonResponse(respuesta)
         else:
-            return Http404('Error, acceso solo mediante POST')
+            raise Http404('Error, acceso solo mediante POST')
     else:
         raise Http404('Error, no tiene permiso para esta página')
 
@@ -489,6 +361,151 @@ def consultar_datos_encargado_hijos(request):
     else:
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
 
+@login_required
+def modificar_alumno2(request, id_alumno):
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    if request.user.groups.filter(name="Asistente").exists():
+        try:
+            alumno = Alumno.objects.get(codigo = id_alumno)
+        except Alumno.DoesNotExist:
+            raise Http404("Alumno no existe")
+
+        fechaFormatoEspecial =  alumno.fechaNacimiento.strftime("%d/%m/%Y")
+        cantidadtelefonos = Telefono.objects.filter(alumno=alumno).count()
+        hoy = datetime.now()
+        esMenor = hoy.year < alumno.fechaNacimiento.year + 18 or hoy.month < alumno.fechaNacimiento.month or hoy.day < alumno.fechaNacimiento.day
+
+        cantidadEncargados = Encargado.objects.all().count() #para validar busquedas o cambios de Indep a Dep
+        encargados = Encargado.objects.all()
+        if alumno.encargado != None:
+            notifTelefonoEnc = Telefono.objects.all().filter(encargado = alumno.encargado).count() == 0,
+        else:
+            notifTelefonoEnc = False
+        context = {
+            "alumno" : alumno,
+            "encargado" : alumno.encargado,
+            "fechaNac" : fechaFormatoEspecial,
+            "notifTelefono" : cantidadtelefonos == 0,
+            "notifDui" : not esMenor and alumno.dui == "",
+            "notifCorreo" : alumno.correo == "",
+            "notifTelEnc" : notifTelefonoEnc,
+            "esDependiente" : alumno.encargado != None,
+            "cantidadEncargados" : cantidadEncargados,
+            "encargados" : encargados,
+        }
+        return render(request, "modulo_alumnos/modificar_alumno2.html", context)
+    else:
+        raise Http404("No tiene permisos para esta pagina")
+
+@login_required
+def guardarModificacionAlumnoDependiente(request):
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    if request.user.groups.filter(name="Asistente").exists():
+        if request.method == "POST":
+            #guardando datos generales de alumno
+            codigo = request.POST.get('codigo')
+            try:
+                alumno = Alumno.objects.get(codigo=codigo)
+            except Alumno.DoesNotExist:
+                raise Http404("Alumno no existe")
+            nombreAl = request.POST.get('nombre')
+            apellidoAl = request.POST.get('apellido')
+            direccionAl = request.POST.get('direccion')
+            fechaNacAl = request.POST.get('fechaNacimiento')
+            fechaNacimientoConFormato = datetime.strptime(fechaNacAl, "%d/%m/%Y").date()
+            duiAl = request.POST.get('dui')
+            correoAl = request.POST.get('correo')
+
+            alumno.nombre = nombreAl
+            alumno.apellido = apellidoAl
+            alumno.direccion = direccionAl
+            alumno.fechaNacimiento = fechaNacimientoConFormato
+            alumno.dui = duiAl
+            alumno.correo = correoAl
+
+            #verificando si el alumno será independiente
+
+            hacerIndep = request.POST.get('hacerIndep')
+            if hacerIndep == "true":
+                #hacerlo independiente
+                print "será Indep"
+                alumno.encargado = None
+            else:
+                print "será Dep"
+                cambiarEncargado = request.POST.get('cambiarEncargado')
+                if cambiarEncargado == "true":
+                    print "se cambiara encargado"
+                    codNuevoEncargado = request.POST.get('codNuevoEncargado')
+                    if codNuevoEncargado == "":
+                        mensaje = "Error, no seleccionó un nuevo encargado."
+                        print mensaje
+                        return HttpResponse(mensaje, status=500)
+                    try:
+                        nuevoEncargado = Encargado.objects.get(codigo=codNuevoEncargado)
+                    except Encargado.DoesNotExist:
+                        mensaje = "Nuevo Encargado no existe, refresque pagina y escoja de nuevo por favor."
+                        print mensaje
+                        return HttpResponse(mensaje, status=500)
+                    alumno.encargado = nuevoEncargado
+                else:
+                    print "NO se cambiara encargado"
+
+            alumno.save()
+
+            return HttpResponse(status=200)
+        else:
+            raise Http404
+    else:
+        raise Http404("No tiene permisos para esta pagina")
+
+@login_required
+def guardarModificacionAlumnoIndependiente(request):
+    mensaje = ""
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    if request.user.groups.filter(name="Asistente").exists():
+        if request.method == "POST":
+            codigo = request.POST.get('codigo')
+            try:
+                alumno = Alumno.objects.get(codigo=codigo)
+            except Alumno.DoesNotExist:
+                raise Http404("Alumno no existe")
+            nombreAl = request.POST.get('nombre')
+            apellidoAl = request.POST.get('apellido')
+            direccionAl = request.POST.get('direccion')
+            fechaNacAl = request.POST.get('fechaNacimiento')
+            fechaNacimientoConFormato = datetime.strptime(fechaNacAl, "%d/%m/%Y").date()
+            duiAl = request.POST.get('dui')
+            correoAl = request.POST.get('correo')
+
+            alumno.nombre = nombreAl
+            alumno.apellido = apellidoAl
+            alumno.direccion = direccionAl
+            alumno.fechaNacimiento = fechaNacimientoConFormato
+            alumno.dui = duiAl
+            alumno.correo = correoAl
+
+            codEncargado = request.POST.get('codEncargado')
+            if codEncargado != "":
+                try:
+                    encargado = Encargado.objects.get(codigo = codEncargado)
+                except Encargado.DoesNotExist:
+                    mensaje = "Este encargado no existe, favor refrescar e intentar de nuevo."
+                    print mensaje
+                    return HttpResponse(mensaje, status=500, content_type="text/plain")
+                alumno.encargado = encargado
+            alumno.save()
+        else:
+            raise Http404("Pagina solo para metodos POST")
+        print "Guardar Indep"
+        return HttpResponse(status=200)
+    else:
+        raise Http404("No tiene permisos para esta pagina")
 @login_required
 def ConstanciaEstudioPDF(request):
     if request.user.groups.filter(name="Alumno").exists():
