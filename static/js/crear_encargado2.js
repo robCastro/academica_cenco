@@ -96,7 +96,7 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             $('#btnGuardarAlumno').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html(response.responseText);
+            m.children('strong').html("Cambios Realizados!");
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
