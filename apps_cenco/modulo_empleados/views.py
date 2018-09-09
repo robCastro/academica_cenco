@@ -66,6 +66,7 @@ def dir_crear_empleado(request):
         if request.method == 'POST':
             form = CrearEmpleadoForm(request.POST)
             formTelefono = CrearTelefonoForm(request.POST)
+            print (request.POST)
             if form.is_valid() and formTelefono.is_valid():
                 empleado = form.save(commit=False)
                 print (request.POST)
@@ -85,6 +86,7 @@ def dir_crear_empleado(request):
                 else:
                     return HttpResponse('El nombre de usuario no esta disponible', status=500)
             else:
+                print (form.errors, formTelefono.errors)
                 return HttpResponse('Se reciberon datos incorrectos', status=500)
         else:
             form = CrearEmpleadoForm()

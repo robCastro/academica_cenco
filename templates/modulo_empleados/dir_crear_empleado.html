@@ -1,27 +1,92 @@
 {% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
 
 {% block titulo %}Registro Empleado{% endblock %}
 
 {% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <script>
+    $(document).on('submit', '#GuardarForm', function (a) {
+        a.preventDefault();
+        $('#btnGuardar').attr('disabled', true);
+        $('#espereE').css('display', 'inline');
+            $.ajax({
+                type: 'POST',
+                url: '/empleados/crear/',
+                data: {
+                    username: $('#id_username').val(),
+                    nombre: $('#id_nombre').val(),
+                    apellido: $('#id_apellido').val(),
+                    direccion: $('#id_direccion').val(),
+                    correo: $('#id_correo').val(),
+                    dui: $('#id_dui').val(),
+                    isss: $('#id_isss').val(),
+                    afp: $('#id_afp').val(),
+                    nit: $('#id_nit').val(),
+                    tipo: $('#id_tipo').val(),
+                    tipo_telefono: $('#id_tipo_telefono').val(),
+                    numero: $('#id_numero').val(),
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (response) {
+                  $('#btnGuardar').attr('disabled', false);
+                  $('#espereE').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta exito');
+                },
+                error: function (response) {
+                  $('#btnGuardar').attr('disabled', false);
+                  $('#espereE').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response.responseText);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta accionPeligrosa');
+                }
+            })
+        });
+
+
+    </script>
+
 {% endblock %}
 
 {% block content %}
+
+        <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+
    <table width="50%">
    <h3>Registrar Empleado</h3><br>
-    <form method="POST">
+    <form method="POST" id="GuardarForm">
     {% csrf_token %}
         <tr><td><h4>Datos personales</h4></td></tr>
         <tr><th><label for="id_username">Nombre de usuario:</label></th>
-            <td><input type="text" name="username" id="id_username" required class="form-control" maxlength="40" />
+            <td><input type="text" name="username" id="id_username" required class="form-control" maxlength="40"
+                        pattern="[a-zA-Z0-9_]{4,30}", title="Ejemplo: Su_Nombre123"/>
             </td></tr>
     {{ form }}
        <tr><td><br><br> <h4>Tel&eacute;fono de contacto</h4></td></tr>
     {{ formT }}
     <tr>
         <td>
-            <button type="submit" class="btn-primary" style="font-size: 20px">Registrar Nuevo Empleado</button>
+            <button id="btnGuardar" type="submit" class="btn-primary" style="font-size: 20px">Registrar Nuevo Empleado</button>
+            <div style="display: none" id="espereE">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+            </div>
         </td>
     </tr>
     </form>
    </table>
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
