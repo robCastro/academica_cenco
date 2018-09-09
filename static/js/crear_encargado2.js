@@ -1,5 +1,4 @@
 $(document).on('submit', '#registrarEncargadoForm', function (a) {
-
     a.preventDefault();
     $('#btnGuardarEncargado').attr('disabled', true);
     $('#espereG').css('display', 'inline');
@@ -97,7 +96,7 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             $('#btnGuardarAlumno').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html(response.split("$")[0]);
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
@@ -109,7 +108,7 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             $('#btnGuardarAlumno').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html(response.split("$")[0]);
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
