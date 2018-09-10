@@ -115,24 +115,6 @@ def verificar_username_libre(request):
             return HttpResponse('Usuario disponible')
 
 @login_required
-def dir_crear_empleado(request):
-    if request.user.groups.filter(name="Director").exists():
-        if request.method == 'POST':
-            form = CrearEmpleadoForm(request.POST)
-            if form.is_valid():
-                empleado = form.save(commit=False)
-                empleado.estado = 'activo'
-                empleado.save()
-                return HttpResponse('Empleado guardado con exito')
-            else:
-                return HttpResponse('Se reciberon datos incorrectos', status=500)
-        else:
-            form = CrearEmpleadoForm()
-            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form})
-    else:
-        raise Http404('No tiene permiso para esta ruta')
-
-@login_required
 def consultar_empleados_inactivos(request):
     if request.user.groups.filter(name="Director").exists():
         empleados = Empleado.objects.filter(estado='inactivo')
