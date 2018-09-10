@@ -1,10 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'plantillas_base/base_director.html' %}
 
-</body>
-</html>
+{% block titulo %}Informaci&oacute;n de Empleado{% endblock %}
+
+{% block head_content %}
+{% endblock %}
+
+{% block content %}
+
+    <h3>Informaci&oacute;n de Empleado</h3>
+<table class="table" style="width: 50%">
+<tr><td><strong>Nombre:</strong> </td><td>{{ empleado.nombre }}</td></tr>
+<tr><td><strong>Apellido:</strong> </td><td>{{ empleado.apellido }}</td></tr>
+<tr><td><strong>Direcci&oacute;n:</strong> </td><td>{{ empleado.direccion }}</td></tr>
+<tr><td><strong>Correo:</strong> </td><td>{{ empleado.correo }}</td></tr>
+<tr><td><strong>DUI:</strong> </td><td>{{ empleado.dui }}</td></tr>
+<tr><td><strong>ISSS:</strong> </td><td>{{ empleado.isss }}</td></tr>
+<tr><td><strong>AFP:</strong> </td><td>{{ empleado.afp }}</td></tr>
+<tr><td><strong>NIT:</strong> </td><td>{{ empleado.nit }}</td></tr>
+<tr><td><strong>Cargo que ocupa:</strong> </td><td>{% if empleado.tipo == 'Asi' %}Asistente{% elif empleado.tipo == 'Pro' %}Profesor{% elif empleado.tipo == 'Tec' %}T&eacute;cnico{% endif %}</td></tr>
+<tr><td><strong>Estado:</strong> </td><td>{{ empleado.estado }}</td></tr>
+</table>
+
+<table class="table" style="width: 50%">
+<th>Tel&eacute;fonos</th>
+{% for tel in telefonos %}
+    <tr><td>{{ tel.numero }}</td></tr>
+{% endfor %}
+</table>
+
+<br><br>
+
+{% endblock %}
