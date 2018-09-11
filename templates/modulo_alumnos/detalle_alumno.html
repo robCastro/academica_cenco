@@ -87,7 +87,7 @@
                     </tr>
                     <tr>
                         <td>Dirección:  </td>
-                        <td style="padding-left: 1rem">{{ alumno.direccion }}</td>
+                        <td style="padding-left: 1rem">{{ alumno.direccion|default_if_none:"—" }}</td>
                     </tr>
                     <tr>
                         <td>Correo:  </td>
@@ -103,7 +103,7 @@
                     </tr>
                     <tr>
                         <td>Encargado:  </td>
-                        <td style="padding-left: 1rem">{{ alumno.encargado}}</td>
+                        <td style="padding-left: 1rem">{{ alumno.encargado|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
                         <td>Telefonos:  </td>
