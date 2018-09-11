@@ -57,7 +57,7 @@
                 <tbody>
                 {% for user in empleados%}
                     <tr>
-                        <td><a href="{% url 'detalle_empleado' id_empleado=user.codigo %}">{{ user.nombre }}</a></td>
+                        <td><a href="{% url 'DirVerEmpleado' id_empleado=user.codigo %}">{{ user.nombre }}</a></td>
                         <td>{{ user.apellido }} </td>
                         <td>{{ user.primerTelefono|default_if_none:"" }}</td>
                         <td>{{ user.primerTelefono.tipo|default_if_none:""  }}</td>
