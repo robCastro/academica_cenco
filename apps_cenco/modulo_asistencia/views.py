@@ -11,7 +11,7 @@ import locale
 import datetime
 
 # Create your views here.
-from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno
+from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion
 from apps_cenco.modulo_asistencia.forms import IntervaloFechaForm
 
 
@@ -114,3 +114,7 @@ def prof_detalle_grupo(request, id_grupo):
         return render(request, 'modulo_asistencia/profesor_detalle_grupo.html', context)
     except ObjectDoesNotExist:
         raise Http404("No se encuentra la ruta especificada o no es el usuario correcto")
+
+
+
+
