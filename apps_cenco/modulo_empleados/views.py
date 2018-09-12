@@ -74,8 +74,8 @@ def dir_crear_empleado(request):
                     empleado.username = newusername
                     empleado.estado = 'activo'
                     telefono = formTelefono.save(commit=False)
-                    telefono.empleado = empleado
                     empleado.save()
+                    telefono.empleado = empleado
                     telefono.save()
                     return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
                 else:
