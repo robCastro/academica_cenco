@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 
 from datetime import datetime
+import time
 
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -11,7 +12,7 @@ from django.shortcuts import render,redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
-from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -231,13 +232,15 @@ def inscribirAlumno(request):
 
             if codEncargado != "-1":      #cod -1 es para alumnos independientes
                 alumno = Alumno.objects.create(username=usuario,nombre=nombre, apellido=apellido, direccion=direccion,
-                                           fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,encargado=encargado,
-                                           grupo=grupo)
+                                           fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,encargado=encargado)
             else:
                 alumno = Alumno.objects.create(username=usuario, nombre=nombre, apellido=apellido, direccion=direccion,
-                                               fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,
-                                               grupo=grupo)
+                                               fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui)
             alumno.save()
+
+            #inscripcion
+            inscripcion = Inscripcion.objects.create(fecha_inscripcion=datetime.now(), actual_inscripcion=True, alumno = alumno, grupo = grupo)
+            inscripcion.save()
             grupo.horario.cantidad_alumnos = grupo.horario.cantidad_alumnos + 1
             grupo.horario.save()
             grupo.alumnosInscritos = grupo.alumnosInscritos + 1
@@ -249,8 +252,8 @@ def inscribirAlumno(request):
             mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
             return HttpResponse(mensaje, status=200)
         else:
-            grupos = Grupo.objects.all().order_by('-codigo')
-            cantidadGrupos = Grupo.objects.all().count()
+            grupos = Grupo.objects.all().order_by('-codigo').filter(activo_grupo = True)
+            cantidadGrupos = Grupo.objects.all().filter(activo_grupo = True).count()
             encargados = Encargado.objects.all().order_by('nombre')
             context = {
                 'grupos' : grupos,

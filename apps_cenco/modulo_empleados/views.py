@@ -36,7 +36,6 @@ def consultar_empleados(request):
         empleados= Empleado.objects.filter(estado='activo')
         for empleado in empleados:
             empleado.primerTelefono = empleado.telefono_set.first()
-
         return render(request, 'modulo_empleados/director_listaEmpleadosActivos.html', {'empleados': empleados})
     else:
         raise Http404('Error, no tiene permiso para ver esta página')
