@@ -51,7 +51,7 @@
     <tr>
         <td colspan="2" id="dinamicos" valign="top">
             {% for grupo in grupos %}
-            <a href="{% url 'asist_detalle_grupo' id_grupo=grupo.codigo %}">
+            <a href="{% url 'prof_detalle_grupo' id_grupo=grupo.codigo %}">
             <div class='divGrupo {{ grupo.horario.dias_asignados }} all'>
                 <img class= 'imgGrupo' src="{% static 'img/Grupo.png' %}">
                 <h3>Grupo {{ grupo.codigo }}</h3>

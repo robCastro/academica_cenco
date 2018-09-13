@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
 import locale
 #locale.setlocale(locale.LC_TIME, 'es_ES')
 
@@ -106,14 +107,15 @@ def filtrar_estado_por_periodo(request):
 
 @login_required
 def prof_detalle_grupo(request, id_grupo):
-    try:
-        empleado = Empleado.objects.get(username=request.user)
-        grupo = Grupo.objects.get(codigo=id_grupo, empleado=empleado)
+    user = User.objects.get(username=request.user)
+    prof = Empleado.objects.get(username=user)
+    if user.groups.filter(name="Empleado").exists() and prof.tipo == "Pro":
+        grupo = Grupo.objects.get(codigo=id_grupo, profesor=prof)
         alumnos = Alumno.objects.filter(grupo=grupo)
         context = {'grupo': grupo, 'alumnos': alumnos}
         return render(request, 'modulo_asistencia/profesor_detalle_grupo.html', context)
-    except ObjectDoesNotExist:
-        raise Http404("No se encuentra la ruta especificada o no es el usuario correcto")
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
 
 
 
