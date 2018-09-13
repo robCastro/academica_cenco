@@ -12,7 +12,6 @@ class Empleado (models.Model):
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
     correo = models.EmailField(blank=True)
-
     dui = models.CharField(max_length=10)
     isss = models.CharField(max_length=9)
     afp = models.CharField(max_length=12)
@@ -195,8 +194,8 @@ class Expediente(models.Model):
     fecha_proximo_pago_exp = models.DateField()
     pagado_hasta = models.DateField()
     # foreign keys
-    alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
-    carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT, null=False, blank=False)
+    alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=True)
+    carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT, null=True)
 
 
 class Cursa(models.Model):
@@ -212,7 +211,7 @@ class Evaluacion(models.Model):
     nombre_eval = models.CharField(max_length=100, null=False, blank=False)
     ponderacion = models.DecimalField(max_digits=6, decimal_places=4)
     # foreign keys
-    cursa = models.ForeignKey(Cursa, on_delete=models.PROTECT, null=False, blank=False)
+    cursa = models.ForeignKey(Cursa, on_delete=models.PROTECT, null=True)
 
 
 class Colegiatura(models.Model):
