@@ -33,7 +33,7 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_empleados(request):
     if request.user.groups.filter(name="Director").exists():
-        empleados= Empleado.objects.filter(estado='inactivo')
+        empleados= Empleado.objects.filter(estado='activo')
         for empleado in empleados:
             empleado.primerTelefono = empleado.telefono_set.first()
 
@@ -41,12 +41,6 @@ def consultar_empleados(request):
     else:
         raise Http404('Error, no tiene permiso para ver esta página')
 
-@login_required
-def detalle_de_empleado(request,id_empleado):
-    if request.user.groups.filter(name="Director").exists():
-        empleados = Empleado.objects.filter(estado='activo')
-    else:
-        raise Http404('Error, no tiene permiso para ver esta página')
 
 @login_required
 def dir_ver_empleado(request, id_empleado):
@@ -80,8 +74,8 @@ def dir_crear_empleado(request):
                     empleado.username = newusername
                     empleado.estado = 'activo'
                     telefono = formTelefono.save(commit=False)
-                    telefono.empleado = empleado
                     empleado.save()
+                    telefono.empleado = empleado
                     telefono.save()
                     return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
                 else:
