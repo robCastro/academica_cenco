@@ -200,18 +200,13 @@ class Expediente(models.Model):
 
 class Cursa(models.Model):
     codigo_cursa = models.AutoField(primary_key=True)
-    Nota_final = models.DecimalField(max_digits=6, decimal_places=4)
+    evaluacion1 = models.DecimalField(max_digits=6, decimal_places=4)
+    evaluacion2 = models.DecimalField(max_digits=6, decimal_places=4)
+    evaluacion3 = models.DecimalField(max_digits=6, decimal_places=4)
+    nota_final = models.DecimalField(max_digits=6, decimal_places=4)
     # foreign keys
     materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
     alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
-
-
-class Evaluacion(models.Model):
-    codigo_evaluacion = models.AutoField(primary_key=True)
-    nombre_eval = models.CharField(max_length=100, null=False, blank=False)
-    ponderacion = models.DecimalField(max_digits=6, decimal_places=4)
-    # foreign keys
-    cursa = models.ForeignKey(Cursa, on_delete=models.PROTECT, null=True)
 
 
 class Colegiatura(models.Model):
