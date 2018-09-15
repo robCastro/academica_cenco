@@ -6,6 +6,15 @@
         $("html, body").animate({ scrollTop: 0 }, "slow");
     }
     //validaciones
+    function validarNom(nom) {
+        if(nom == ""){
+            return false;
+        }
+        else{
+            var regex = /(^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$)|(^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+ ?[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$)/;
+            return regex.test(nom);
+        }
+    }
     function isEmail(email) {
         if(email == ""){
             return true;
@@ -57,7 +66,7 @@
     }
     function validaciones(nombre, apellido, direccion, correo, dui, telefono,nit,isss,afp){
         var estado = false;
-        estado = (nombre != "" && apellido != "" && direccion != "" && validarDUI(dui) && validarTelefono(telefono) && isEmail(correo) && validarNIT(nit) && validarISSS(isss) && validarAFP(afp))
+        estado = (validarNom(nombre) && validarNom(apellido) && direccion != "" && validarDUI(dui) && validarTelefono(telefono) && isEmail(correo) && validarNIT(nit) && validarISSS(isss) && validarAFP(afp))
         return estado;
     }
     function validarEmpleado() {
@@ -70,6 +79,18 @@
         var isss = document.getElementById('txtIsssEmpleado').value;
         var afp = document.getElementById('txtAfpEmpleado').value;
         var correo = document.getElementById('txtCorreoEmpleado').value;
+        if (!validarNom(nombre)){
+            document.getElementById('txtNombreEmpleado').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtNombreEmpleado').className = "form-control";
+        }
+        if (!validarNom(apellido)){
+            document.getElementById('txtApellidoEmpleado').className = "form-control is-invalid";
+        }
+        else{
+            document.getElementById('txtApellidoEmpleado').className = "form-control";
+        }
         if (!isEmail(correo)){
             document.getElementById('txtCorreoEmpleado').className = "form-control is-invalid";
         }
