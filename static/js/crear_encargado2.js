@@ -103,7 +103,6 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             m.addClass('alerta exito');
             desplazoArriba();
             limpiarPantalla();
-            document.getElementById('txtNombreAlumno').value = response.responseText;
         },
         error: function (response) {
             $('#btnGuardarAlumno').attr('disabled', false);
