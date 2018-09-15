@@ -21,7 +21,7 @@ def ver_reporte_estados(request):
     detalle_semanal = DetalleEstado.objects.raw('select 1 as codigo_detalle_e, count(fecha_detalle_e), fecha_detalle_e '
                                                 'from db_app_detalleestado '
                                                 'where fecha_detalle_e >= (current_date - 8) '
-                                                'and estado_id = 1 and actual_detale_e = true '
+                                                'and estado_id = 1 and actual_detalle_e = true '
                                                 'group by fecha_detalle_e '
                                                 'order by fecha_detalle_e;')
     maxim = 0
@@ -60,7 +60,7 @@ def filtrar_estado_por_periodo(request):
                 'select 1 as codigo_detalle_e, count(fecha_detalle_e), fecha_detalle_e ' 
                 ' from db_app_detalleestado ' 
                 ' where fecha_detalle_e >= (current_date - ' + seleccion + ') '
-                'and estado_id = ' + tipo + ' and actual_detale_e = true '
+                'and estado_id = ' + tipo + ' and actual_detalle_e = true '
                 'group by fecha_detalle_e '
                 'order by fecha_detalle_e;')
             maxim = 0
@@ -89,7 +89,7 @@ def filtrar_estado_por_periodo(request):
                 ' from db_app_detalleestado' 
                 ' where fecha_detalle_e >= ' + "'" + str(fecha1) + "'" +
                 ' and fecha_detalle_e <= ' + "'" + str(fecha2) + "'" +
-                ' and estado_id = ' + tipo + ' and actual_detale_e = true'
+                ' and estado_id = ' + tipo + ' and actual_detalle_e = true'
                 ' group by fecha_detalle_e'
                 ' order by fecha_detalle_e;')
             maxim = 0

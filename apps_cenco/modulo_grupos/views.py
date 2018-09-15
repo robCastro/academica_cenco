@@ -11,9 +11,10 @@ from django.shortcuts import render, render_to_response, redirect
 from django.http import Http404, HttpResponse
 from django.template import loader
 from django.views.generic.detail import  DetailView
+from datetime import datetime
 import itertools
 
-from apps_cenco.db_app.models import Empleado, Alumno, Grupo, Telefono, Horario
+from apps_cenco.db_app.models import Empleado, Alumno, Grupo, Telefono, Horario, Inscripcion
 
 import sys
 reload(sys)
@@ -41,7 +42,7 @@ def consultar_grupos(request):
             form = CrearGrupoForm()
             limite_por_horario = 15*2
             min_alum_inscritos = 5
-            grupos = Grupo.objects.order_by('codigo')
+            grupos = Grupo.objects.order_by('codigo').filter(activo_grupo = True)
             horarios = Horario.objects.order_by('codigo')
             horarios_exceso = []
             grupos_cant_baja = []
@@ -67,6 +68,7 @@ def consultar_grupos(request):
 def detalle_grupo(request, id_grupo):
     user = User.objects.get(username=request.user)
     if user.groups.filter(name="Director").exists():
+        msj = ""
         try:
             grupo = Grupo.objects.get(pk=id_grupo)
         except Grupo.DoesNotExist:
@@ -76,13 +78,23 @@ def detalle_grupo(request, id_grupo):
             if codProfesor != grupo.profesor.codigo and codProfesor != None:
                 nuevoProfesor = Empleado.objects.get(pk = codProfesor)
                 grupo.profesor = nuevoProfesor
+                msj += "Profesor cambiado. "
             if request.POST.get('cambioGrupo'):
-                alumnos = grupo.alumno_set.all()
+                #alumnos = grupo.alumno_set.all()
+                inscripciones = grupo.inscripcion_set.filter(actual_inscripcion = True)
+                alumnos = []
+                for inscripcion in inscripciones:
+                    alumnos.append(inscripcion.alumno)
                 codGrupo = request.POST.get('cbxGrupos')
                 nuevoGrupo = Grupo.objects.get(pk=codGrupo)
                 for alumno in alumnos:
                     if request.POST.get(str(alumno.codigo)): #extrayendo los checkbox de alumnos
-                        alumno.grupo = nuevoGrupo
+                        #alumno.grupo = nuevoGrupo
+                        viejaInscripcion = Inscripcion.objects.filter(alumno = alumno, actual_inscripcion = True).first()
+                        viejaInscripcion.actual_inscripcion = False
+                        nuevaInscripcion = Inscripcion.objects.create(alumno = alumno, grupo = nuevoGrupo, actual_inscripcion=True, fecha_inscripcion = datetime.now())
+                        viejaInscripcion.save()
+                        nuevaInscripcion.save()
                         grupo.alumnosInscritos = grupo.alumnosInscritos - 1
                         nuevoGrupo.alumnosInscritos = nuevoGrupo.alumnosInscritos + 1
                         if grupo.horario != nuevoGrupo.horario:
@@ -92,19 +104,25 @@ def detalle_grupo(request, id_grupo):
                 grupo.horario.save()
                 nuevoGrupo.horario.save()
                 nuevoGrupo.save()
+                msj += "Alumnos movidos. "
             grupo.save()
-        alumnos = grupo.alumno_set.all().order_by('codigo')
+        inscripciones = grupo.inscripcion_set.all().filter(actual_inscripcion=True)
+        alumnos = []
+        for inscripcion in inscripciones:
+            alumnos.append(inscripcion.alumno)
         telefonos = []
         for alumno in alumnos:
             telefonos.append(alumno.telefono_set.first())
         profesores = Empleado.objects.all().filter(tipo='Pro').exclude(codigo = grupo.profesor.codigo)
-        grupos = Grupo.objects.exclude(codigo = grupo.codigo).order_by('codigo')
+        grupos = Grupo.objects.exclude(codigo = grupo.codigo).filter(activo_grupo=True).order_by('codigo')
         context = {
             'grupo' : grupo,
             'alumnos' : alumnos,
             'telefonos' : telefonos,
             'profesores' : profesores,
-            'grupos' : grupos
+            'grupos' : grupos,
+            'usar_msj': msj != "",
+            'msj' : msj
         }
         return render(request, 'modulo_grupos/detalle_grupo2.html', context)
     else:
@@ -118,8 +136,9 @@ def eliminarGrupo(request, id_grupo):
             grupo = Grupo.objects.get(pk=id_grupo)
         except Grupo.DoesNotExist:
             raise Http404('Grupo no Existe')
-        if grupo.alumno_set.all().count() == 0:
-            grupo.delete()
+        if grupo.inscripcion_set.filter(actual_inscripcion = True).count() == 0:
+            grupo.activo_grupo = False
+            grupo.save()
         return redirect('consultar_grupos')
     else:
         raise Http404('Error, no tiene permiso para esta página')
@@ -131,7 +150,7 @@ def asist_consultar_grupos(request):
         form = CrearGrupoForm()
         limite_por_horario = 15*2
         min_alum_inscritos = 5
-        grupos = Grupo.objects.order_by('codigo')
+        grupos = Grupo.objects.order_by('codigo').filter(activo_grupo = True)
         horarios = Horario.objects.order_by('codigo')
         horarios_exceso = []
         grupos_cant_baja = []
