@@ -207,7 +207,10 @@ def inscribirAlumno(request):
                 except Encargado.DoesNotExist:
                     mensaje = "Error en guardado de alumno, Encargado invalido."
                     print mensaje
-                    return HttpResponse(mensaje, status=500)
+                    respuesta = {
+                        'mensaje' : mensaje
+                    }
+                    return JsonResponse(respuesta, status=500)
 
             #validando existencia de grupo
             try:
@@ -215,8 +218,10 @@ def inscribirAlumno(request):
             except Grupo.DoesNotExist:
                 mensaje = "Error en guardado de alumno, Grupo invalido."
                 print mensaje
-                return HttpResponse(mensaje, status=500)
-
+                respuesta = {
+                    'mensaje': mensaje
+                }
+                return JsonResponse(respuesta, status=500)
             # generando usuario
             strUsuario = generarUsuario(nombre, apellido)
             if correo == "":
@@ -252,8 +257,11 @@ def inscribirAlumno(request):
             if numero != "":
                 telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)
                 telefono.save()
-            mensaje = "Alumno Inscrito"
-            return HttpResponse(mensaje, status=200, content_type="text/plain")
+            mensaje = "Alumno Inscrito, Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
+            respuesta = {
+                'mensaje': mensaje
+            }
+            return JsonResponse(respuesta, status=200)
         else:
             grupos = Grupo.objects.all().order_by('-codigo').filter(activo_grupo = True)
             cantidadGrupos = Grupo.objects.all().filter(activo_grupo = True).count()
