@@ -510,8 +510,10 @@ def guardarModificacionAlumnoIndependiente(request):
 def ConstanciaEstudioPDF(request):
     if request.user.groups.filter(name="Alumno").exists():
         #def get(self, request, *args, **kwargs):
+            filename = "Constancia de estudio.pdf"
             # Indicamos el tipo de contenido a devolver, en este caso un pdf
             response = HttpResponse(content_type='application/pdf')
+            #response['Content-Disposition'] = 'attachment; filename="%s"' % filename  #hace que se descargue con solo dar click al icono sin generar vista previa
             # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
             buffer = BytesIO()
             # Canvas nos permite hacer el reporte con coordenadas X y Y
