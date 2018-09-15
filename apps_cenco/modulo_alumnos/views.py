@@ -200,14 +200,12 @@ def inscribirAlumno(request):
             numero = request.POST.get('numero')
             tipo = request.POST.get('tipo')
             fechaNacimientoConFormato = datetime.strptime(fechaNacimiento, "%d/%m/%Y").date()
-            print codEncargado
             #validando existencia de encargado
             if codEncargado != "-1":              #codigo -1 es para alumnos independientes
                 try:
                     encargado = Encargado.objects.get(codigo=codEncargado)
                 except Encargado.DoesNotExist:
-                    #$ es para hacer split en JS
-                    mensaje = "Error en guardado de alumno, Encargado invalido.$"
+                    mensaje = "Error en guardado de alumno, Encargado invalido."
                     print mensaje
                     return HttpResponse(mensaje, status=500)
 
@@ -241,6 +239,11 @@ def inscribirAlumno(request):
             #inscripcion
             inscripcion = Inscripcion.objects.create(fecha_inscripcion=datetime.now(), actual_inscripcion=True, alumno = alumno, grupo = grupo)
             inscripcion.save()
+            #estado
+            estado = Estado.objects.filter(tipo_estado="Inscrito").first()
+            detalle_estado = DetalleEstado.objects.create(fecha_detalle_e = datetime.now(), actual_detalle_e=True, estado = estado, alumno = alumno)
+            detalle_estado.save()
+
             grupo.horario.cantidad_alumnos = grupo.horario.cantidad_alumnos + 1
             grupo.horario.save()
             grupo.alumnosInscritos = grupo.alumnosInscritos + 1
@@ -249,8 +252,8 @@ def inscribirAlumno(request):
             if numero != "":
                 telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)
                 telefono.save()
-            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
-            return HttpResponse(mensaje, status=200)
+            mensaje = "Alumno Inscrito"
+            return HttpResponse(mensaje, status=200, content_type="text/plain")
         else:
             grupos = Grupo.objects.all().order_by('-codigo').filter(activo_grupo = True)
             cantidadGrupos = Grupo.objects.all().filter(activo_grupo = True).count()
@@ -445,7 +448,6 @@ def guardarModificacionAlumnoDependiente(request):
                     codNuevoEncargado = request.POST.get('codNuevoEncargado')
                     if codNuevoEncargado == "":
                         mensaje = "Error, no seleccionó un nuevo encargado."
-                        print mensaje
                         return HttpResponse(mensaje, status=500)
                     try:
                         nuevoEncargado = Encargado.objects.get(codigo=codNuevoEncargado)

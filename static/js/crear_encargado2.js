@@ -96,13 +96,14 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             $('#btnGuardarAlumno').attr('disabled', false);
             $('#espereI').css('display', 'none');
             var m = $('#mensajeEmergente');
-            m.children('strong').html("Cambios Realizados!");
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
             m.addClass('alerta exito');
             desplazoArriba();
             limpiarPantalla();
+            document.getElementById('txtNombreAlumno').value = response.responseText;
         },
         error: function (response) {
             $('#btnGuardarAlumno').attr('disabled', false);
