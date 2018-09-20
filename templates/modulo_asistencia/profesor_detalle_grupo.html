@@ -8,8 +8,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
     <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
-    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
-    <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
+    <link href=" {% static 'css/detalle_grupo_prof.css' %} " rel="stylesheet">
 
 
 
@@ -24,11 +23,13 @@
 {% endblock %}
 
 {% block content %}
-<table width='100%' >
+<table width='100 %' >
 
-        <div align='center' style="padding-top: 60px">
-             <h4 align="center ">Grupo {{ grupo.codigo }}, {{ grupo.horario }}</h4>
+        <div align='center' style="padding-top: 100px "  >
+             <h4 align="center" >Grupo {{ grupo.codigo }}, {{ grupo.horario }}</h4>
         </div>
+        <p></p>
+        <p></p>
         <tr>
             <td width='20%' rowspan="2" valign="top" style="padding-top: 20px">
             <h4>Métricas:</h4>
@@ -42,16 +43,62 @@
                 </div>
             </td>
 
-            <td align="left" >
+            <td valign="top" >
 
-                    <td align="center" >
-                    <a href="#" style="padding-right: 10px;">Ingresar Asistencia</a>
+
+                    <td align="left" valign="top" style="padding: 35px;">
+                    <a style="color: #f9f9f9" type="button" class="btn btn-primary" data-toggle="modal" data-target="#" >Ingresar Asistencia</a>
+
+                    <a href="{%url 'listado_asistencia_pdf' id_grupo=grupo.codigo%}" target="_blank" style="margin-left: 500px; color:#f9f9f9" type="button" class="btn btn-primary" >Generar Listado</a>
                     </td>
-                    <td>
-                    <a href="#">Generar Listado</a>
-                    </td>
+
+
+
+
+
+                <tr align="center">
+                        <td width="5%"></td>
+                        <td width="80%">
+                            <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;">
+                                <thead>
+                                    <tr bgcolor="#f0f8ff" >
+
+                                        <th>Codigo</th>
+                                        <th>Nombre</th>
+                                        <th>Apellido</th>
+                                        <th>Telefono</th>
+                                        <th>Correo</th>
+
+                                    </tr>
+                                </thead>
+                                    </thead>
+                                    <tbody>
+                                    {% for alumno in alumnos%}
+                                        <tr>
+                                            <td>{{alumno.codigo }}</td>
+                                            <td>{{alumno.nombre }}</td>
+                                            <td>{{alumno.apellido }} </td>
+                                            <td>{{alumno.primerTelefono|default_if_none:"" }}</td>
+                                            <td>{{alumno.correo|default_if_none:"" }}</td>
+
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                            </table>
+
+                        </td>
+
+                </tr>
+
             </td>
+
+
+
         </tr>
+
+
+
+
 
 
 

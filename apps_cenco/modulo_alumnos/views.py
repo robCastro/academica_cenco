@@ -31,6 +31,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 
 import sys
 reload(sys)
@@ -511,14 +517,12 @@ def guardarModificacionAlumnoIndependiente(request):
         return HttpResponse(status=200)
     else:
         raise Http404("No tiene permisos para esta pagina")
+
 @login_required
 def ConstanciaEstudioPDF(request):
     if request.user.groups.filter(name="Alumno").exists():
-        #def get(self, request, *args, **kwargs):
-            filename = "Constancia de estudio.pdf"
             # Indicamos el tipo de contenido a devolver, en este caso un pdf
             response = HttpResponse(content_type='application/pdf')
-            #response['Content-Disposition'] = 'attachment; filename="%s"' % filename  #hace que se descargue con solo dar click al icono sin generar vista previa
             # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
             buffer = BytesIO()
             # Canvas nos permite hacer el reporte con coordenadas X y Y
@@ -584,6 +588,13 @@ def ConstanciaEstudioPDF(request):
 
     else:
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
+
+
+
+
+
+
 
 
 
