@@ -61,7 +61,7 @@ class Grupo(models.Model):
     codigo = models.AutoField(primary_key=True)
     fechaInicio = models.DateField()
     alumnosInscritos = models.IntegerField(default=0)
-    activo_grupo = models.BooleanField(default=True)
+    # activo_grupo = models.BooleanField(default=True)
     # foreign keys
     horario = models.ForeignKey(Horario, on_delete=models.PROTECT)
     profesor = models.ForeignKey(Empleado, on_delete=models.PROTECT, blank=False)
@@ -95,7 +95,12 @@ class Alumno (models.Model):
     solvente = models.BooleanField(default=False)
     # foreign keys
     encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT, null=True, blank=True)
+    opciones_estado = (
+        ('activo', 'activo'),
+        ('inactivo', 'inactivo')
+    )
 
+    estado = models.CharField(max_length=8, choices=opciones_estado, default='activo')
     def __unicode__(self):
         return self.nombre + " " + self.apellido
 

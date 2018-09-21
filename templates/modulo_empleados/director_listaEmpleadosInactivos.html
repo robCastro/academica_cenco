@@ -12,11 +12,49 @@
 
 
     <style>
+    #example td, #example th{
+        padding: 5px 5px 5px 5px;
+        margin: 5px 5px 5px 5px;
+    }
+
     a {
         color: black;
         text-underline-mode: none;
     }
 
+    input{
+        border-radius: 5px;
+        border:1px solid #949494 !important;;
+        padding: 3px;
+        padding-left: 10px;
+
+    }
+
+    input:focus{
+        border-radius: 5px;
+        border:2px solid #2C3E50 !important;;
+    }
+
+    select {
+       {#-webkit-appearance: button;#}
+       -webkit-border-radius: 2px;
+       -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+       -webkit-padding-end: 10px;
+       -webkit-padding-start: 2px;
+       -webkit-user-select: none;
+       background-position: 97% center;
+       background-repeat: no-repeat;
+       border: 1px solid #828282;
+       color: #000000;
+       overflow: hidden;
+       padding: 2px 10px;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+        height: 30px;
+        margin-right: 5px;
+        margin-left: 5px;
+
+    }
     </style>
 
 {% endblock %}
@@ -26,22 +64,23 @@
 
     <tr align="left">
 
-        <div style="padding-top: 30px; padding-left: 20%">
-            <h4>Empleados Inactivos</h4>
-        </div>
 
-        <div style="text-align: right; align-items: right; padding-right: 20%;padding-bottom: 20px;">
-            <a href="{% url 'crear_empleado' %}" style="padding-right: 10px;">Nuevo empleado</a>
-
-            <a href="{% url 'consultar_empleados' %}">Ver Activos</a>
-
-        </div>
     </tr>
 
     <tr>
-    <td width="15%"></td>
-    <td width="70%">
-        <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;">
+    <td width="10px"></td>
+    <td width="900px">
+    <div style="padding-top: 30px;">
+            <h4>Empleados Inactivos</h4>
+        </div>
+
+        <div style="text-align: right; align-items: right; padding-bottom: 20px;">
+            <a href="{% url 'crear_empleado' %}"><button style="margin-right: 10px" type="button" class="btn btn-primary">Nuevo empleado</button></a>
+
+            <a href="{% url 'consultar_empleados' %}"><button type="button" class="btn btn-primary">Ver Activos</button></a>
+
+        </div>
+        <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;" cellpadding="0" cellspacing="0">
             <thead>
                 <tr bgcolor="#f0f8ff" >
 
@@ -68,7 +107,7 @@
                 </tbody>
         </table>
     </td>
-    <td width="15%"></td>
+    <td width="10px"></td>
     </tr>
 
 
