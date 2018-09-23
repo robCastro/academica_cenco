@@ -1,0 +1,244 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Metricas de Estados{% endblock %}
+
+{% block head_content %}
+    <script src="{% static 'js/chartJS/Chart.bundle.js' %}"></script>
+    <script src="{% static 'js/chartJS/utils.js' %}"></script>
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+	<script src="{% static 'js/jquery-ui.js' %}"></script>
+
+    <style>
+        canvas {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+	</style>
+
+{% endblock %}
+
+{% block content %}
+    <!-- ALERTAS -->
+    <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">×</span>
+        <strong></strong>
+    </div>
+
+    <div style="padding-left: 25%; padding-top: 4%" id="titulo">
+        <h2>Reporte de Estados</h2>
+    </div>
+    <table width="100%">
+        <tr>
+            <td width="20%" style="padding-left: 1%; padding-top: 2%" valign="top">
+                <h4>Reportes</h4>
+                <div class='divNotifGrupo'>
+                    <div style="padding-left: 10%">
+                        <h5>Reporte de Estados</h5>
+                        <h5>Reporte 2</h5>
+                        <h5>Reporte 3</h5>
+                        <h5>Reporte 4</h5>
+                    </div>
+                </div>
+            </td>
+            <td width="80%" style="padding-top: 2%" valign="top">
+                <form id="frmConsultar">
+                {% csrf_token %}
+                <table width="100%">
+                    <tr>
+                        <td width="20%">Tipo de Gráfico</td>
+                        <td width="10%"></td>
+                        <td width="20%">Intervalo</td>
+                        <td width="10%"></td>
+                        <td width="20%">Estado</td>
+                        <td width="10%"></td>
+                        <td>
+                            <div style="display: none" id="espereG">
+                                <img src="{% static 'img/ajax-loader.gif' %}">
+                                Procesando. Por Favor Espere.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select onchange="cambiarTipoGrafico()" class="custom-select" id="tipoGrafico">
+                                <option value="line">Gráfico de Lineas</option>
+                                <option value="bar">Gráfico de Barras</option>
+                            </select>
+                        </td>
+                        <td></td>
+                        <td>
+                            <select class="custom-select" id="intervalo">
+                                <option value="trimestre">Último Trimestre</option>
+                                <option value="semestre">Último Semestre</option>
+                                <option value="anio">Último Año</option>
+                                <option value="todo">Todo</option>
+                                <option value="personalizado">Personalizado</option>
+                            </select>
+                        </td>
+                        <td></td>
+                        <td>
+                            <select class="custom-select" id="estados">
+                                <optgroup label="Activo">
+                                    <option value="activo">Activos</option>
+                                    <option value="retenido">Retenidos</option>
+                                    <option value="presentado">Presentados</option>
+                                    <option value="reingreso">Reingresos</option>
+                                </optgroup>
+                                <optgroup label="Inactivo">
+                                    <option value="retirado">Inactivos</option>
+                                    <option value="retirado">Retirados</option>
+                                    <option value="noPresentado">No Presentados</option>
+                                </optgroup>
+                                <option value="inscrito">Inscritos</option>
+                                <option value="graduado">Graduados</option>
+                            </select>
+                        </td>
+                        <td></td>
+                        <td><button class="btn btn-primary">Consultar</button></td>
+                    </tr>
+                </table>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <div style="width: 100%" id="id_grafico">
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div style="padding-top: 3%">
+                    <table width="100%" id="resumenEstados">
+                        <tr>
+                            <td>
+                                Promedio: {{ promedio }}
+                            </td>
+                            <td>
+                                Maximo: {{ maximo }}
+                            </td>
+                            <td>
+                                Minimo: {{ minimo }}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        var tipo = 'line';
+        var fechas = [
+            {% for fecha in fechas %}
+                '{{ fecha|date:"M y" }}',
+            {% endfor %}
+        ];
+        var cantidades = [
+            {% for cantidad in cantidades %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var color = '{{ color }}';
+        var etiqueta = '{{ etiqueta }}';
+
+        function cargarGrafico(){
+            var ctx = document.getElementById('canvas').getContext('2d');
+            window.myLine = new Chart(ctx, {
+                type: tipo,
+                data: {
+                    labels: fechas,
+                    datasets: [{
+                        label: etiqueta,
+                        backgroundColor: color,
+                        borderColor: color,
+                        borderWidth: 2,
+                        data: cantidades,
+                        fill: false,
+                    },
+                    {
+                        label: "Legend 2",
+                        backgroundColor: color,
+                        borderColor: color,
+                        borderWidth: 2,
+                        data: [1, 8, 3, 2 ,1],
+                        fill: false,
+                    },
+                        {
+                        label: "Legend 3",
+                        backgroundColor: color,
+                        borderColor: color,
+                        borderWidth: 2,
+                        data: [3, 2, 2, 7, 7],
+                        fill: false,
+                    },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    legend: {
+				        position: 'left',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Estado ' + etiqueta
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Fechas'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Cantidad de Alumnos'
+                            },
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value) {if (value % 1 === 0) {return value;}},
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+			cargarGrafico();
+			var grafico = window.myLine;
+			for (i = 1; i<= 2; i++){
+			    var meta = grafico.getDatasetMeta(i);
+			    meta.hidden = meta.hidden === null? !grafico.data.datasets[i].hidden : null;
+			    console.log("Contador = " + i);
+            }
+            grafico.update();
+		};
+
+        function borrarGrafico(){
+            $('#canvas').remove();
+            $('#id_grafico').append('<canvas id="canvas"></canvas>')
+        }
+
+        function cambiarTipoGrafico(){
+            tipo = document.getElementById('tipoGrafico').value;
+            console.log("Tipo es: " + tipo);
+            borrarGrafico();
+            cargarGrafico();
+        }
+    </script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}
