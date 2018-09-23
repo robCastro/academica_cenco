@@ -57,9 +57,9 @@
 
         <td width='60%' height='40px' align="right" valign="top" style="padding-right: 10rem;">
 
-            {% if estado == 'activo' %}
+            {% if estado == 'Activo' %}
                 <a type="button" class="btn btn-primary" href="#" data-toggle="modal" data-target="#desactivarAlumnoModal">Desactivar</a>
-            {% elif estado == 'retirado' or estado == 'graduado' %}
+            {% elif estado == 'Inactivo' or estado == 'Graduado' %}
                 <a type="button" class="btn btn-primary" href="#">Activar</a>
             {% endif %}
 

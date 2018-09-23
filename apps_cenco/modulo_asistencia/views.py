@@ -6,15 +6,16 @@ import calendar
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Avg, Min, Max
 import locale, os
-if os.name != 'nt':
-    locale.setlocale(locale.LC_TIME, 'es_ES')
+#if os.name != 'nt':
+#    locale.setlocale(locale.LC_TIME, 'es_ES')
 
 import datetime
 
 # Create your views here.
-from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion, Asistencia
+from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion, Asistencia, Estado, MetricaEstado
 from apps_cenco.modulo_asistencia.forms import IntervaloFechaForm, FechaAsistenciaForm
 
 @login_required
@@ -29,7 +30,7 @@ def ver_reporte_estados(request):
             "(select 1 as codigo_detalle_e, count(fecha_detalle_e) as count, fecha_detalle_e "
             "from db_app_detalleestado "
             "where fecha_detalle_e >= (current_date - 7) "
-            "and estado_id = 1 and actual_detale_e = true "
+            "and estado_id = 1"
             "group by fecha_detalle_e "
             "order by fecha_detalle_e) s on p.fechas = s.fecha_detalle_e")
         maxim = 0
@@ -88,7 +89,7 @@ def filtrar_estado_por_periodo(request):
                         '(select  1 as codigo_detalle_e, count(fecha_detalle_e) as cuenta, '
                         'extract(month from fecha_detalle_e) as mes from db_app_detalleestado '
                         'where extract(year from fecha_detalle_e) = extract(year from current_date) - 1 '
-                        'and estado_id = 1 and actual_detale_e = true group by extract(month from fecha_detalle_e) '
+                        'and estado_id = 1 group by extract(month from fecha_detalle_e) '
                         'order by extract(month from fecha_detalle_e)) s on p.correlativo = s.mes) '
                         'union '
                         '(select 1 as codigo_detalle_e, (extract(year from current_date)) as codigo, coalesce(s.mes, p.correlativo) as mes, '
@@ -98,7 +99,7 @@ def filtrar_estado_por_periodo(request):
                         '(select  1 as codigo_detalle_e, count(fecha_detalle_e) as cuenta, '
                         'extract(month from fecha_detalle_e) as mes from db_app_detalleestado '
                         'where extract(year from fecha_detalle_e) = extract(year from current_date) '
-                        'and estado_id = '+tipo+' and actual_detale_e = true group by extract(month from fecha_detalle_e) '
+                        'and estado_id = '+tipo+' group by extract(month from fecha_detalle_e) '
                         'order by extract(month from fecha_detalle_e)) s on p.correlativo = s.mes) '
                         'order by anio, mes;')
                     maxim = 0
@@ -117,7 +118,7 @@ def filtrar_estado_por_periodo(request):
                         "(select 1 as codigo_detalle_e, count(fecha_detalle_e) as count, fecha_detalle_e "
                         "from db_app_detalleestado "
                         "where fecha_detalle_e >= (current_date - "+seleccion+") "
-                        "and estado_id = "+tipo+" and actual_detale_e = true "
+                        "and estado_id = "+tipo+
                         "group by fecha_detalle_e "
                         "order by fecha_detalle_e) s on p.fechas = s.fecha_detalle_e")
 
@@ -154,7 +155,7 @@ def filtrar_estado_por_periodo(request):
                     " left outer join "
                     "(select 1 as codigo_detalle_e, count(fecha_detalle_e) as count, fecha_detalle_e "
                     "from db_app_detalleestado "
-                    "where estado_id = " + tipo + " and actual_detale_e = true "
+                    "where estado_id = " + tipo + 
                     "group by fecha_detalle_e "
                     "order by fecha_detalle_e) s on p.fechas = s.fecha_detalle_e")
 
@@ -184,7 +185,43 @@ def prof_detalle_grupo(request, id_grupo):
     except ObjectDoesNotExist:
         raise Http404("No se encuentra la ruta especificada o no es el usuario correcto")
 
-
+@login_required
+def ver_metricas_estado(request):
+    if request.user.groups.filter(name="Director").exists():
+        insertarFechasMetricasEstado()
+        fechaHoy = datetime.datetime.today()
+        if request.method == 'GET':         #Para GET siempre será trimestre
+            if fechaHoy.month == 1:
+                fechaMin = datetime.datetime(fechaHoy.year - 1, 11, 1)
+            elif fechaHoy.month == 2:
+                fechaMin = datetime.datetime(fechaHoy.year - 1, 12, 1)
+            else:
+                fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month - 2, 1)
+            fechaMin = datetime.datetime(2018, 1, 1)
+            estadoActivo = Estado.objects.filter(tipo_estado="Inscrito").first()
+            metricasActivos = MetricaEstado.objects.filter(fecha_metrica__range=(fechaMin, fechaHoy)).filter(
+                estado=estadoActivo).order_by('fecha_metrica')
+            promedio = metricasActivos.aggregate(Avg('cantidad')).get('cantidad__avg')
+            minimo = metricasActivos.aggregate(Min('cantidad')).get('cantidad__min')
+            maximo = metricasActivos.aggregate(Max('cantidad')).get('cantidad__max')
+            fechas = []
+            cantidades = []
+            color = '#008000'
+            for metricaActivo in metricasActivos:
+                fechas.append(metricaActivo.fecha_metrica)
+                cantidades.append(metricaActivo.cantidad)
+            context = {
+                'fechas' : fechas,
+                'cantidades' : cantidades,
+                'promedio' : promedio,
+                'minimo' : minimo,
+                'maximo' : maximo,
+                'color' : color,
+                'etiqueta' : 'Activos',
+            }
+            return render(request, 'modulo_asistencia/director_ver_metrica_estados.html', context)
+    else:
+        return HttpResponseForbidden('No tiene acceso a esta url')
 
 
 #Encargada de manejar metodo GET, valida si se puede o no ingresar asistencias en este momento
@@ -203,6 +240,7 @@ def asistencia_a_clases(request, id_grupo):
             tomarAsistencia = False
             break;
     if tomarAsistencia:
+        insertarFechasMetricasEstado()
         inscripciones = grupo.inscripcion_set.filter(actual_inscripcion = True)
         codAlumnos = []
         for inscripcion in inscripciones:
@@ -227,69 +265,156 @@ def asistencia_a_clases(request, id_grupo):
 @login_required
 def guardarAsistencia(request, id_grupo):
     if request.method == "POST":
-        print "usando post"
         try:
             grupo = Grupo.objects.get(pk = id_grupo)
         except Grupo.DoesNotExist:
             return Http404('Grupo no existe')
         inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
+        fecha_hoy = datetime.datetime.now()
+        fecha_aux = datetime.datetime(fecha_hoy.year, fecha_hoy.month, 1)
+
+        estado_activo = Estado.objects.filter(tipo_estado='Activo').first()
+        estado_inactivo = Estado.objects.filter(tipo_estado='Inactivo').first()
+        estado_presentados = Estado.objects.filter(tipo_estado='Presentados').first()
+        estado_no_presentados = Estado.objects.filter(tipo_estado='No Presentados').first()
+        estado_retenidos = Estado.objects.filter(tipo_estado='Retenidos').first()
+        estado_retirados = Estado.objects.filter(tipo_estado='Retirados').first()
+
+        metrica_estado_activo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo).first()
+        metrica_estado_inactivo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_inactivo).first()
+        metrica_estado_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_presentados).first()
+        metrica_estado_no_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_no_presentados).first()
+        metrica_estado_retenidos = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retenidos).first()
+        metrica_estado_retirados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retirados).first()
+
         for inscripcion in inscripciones:
             if request.POST.get(str(inscripcion.alumno.codigo)):
-                asistencia = Asistencia.objects.create(fecha_asistencia=datetime.datetime.now(), asistio=True, inscripcion = inscripcion)
+                asistencia = Asistencia.objects.create(fecha_asistencia=fecha_hoy, asistio=True, inscripcion = inscripcion)
                 asistencia.save()
-                #detalle_estado = inscripcion.alumno.detalleestado_set.filter(actual_detalle_e=True).first()
-                #estado_actual = detalle_estado.estado.tipo_estado
-                print "datos para detalle: " + str(inscripcion.alumno.codigo)
                 detalle_estado = DetalleEstado.objects.filter(alumno=inscripcion.alumno, actual_detalle_e=True).first()
-                print "Detalle de estado es: "
-                print detalle_estado
                 estado_actual = detalle_estado.estado.tipo_estado
-                estado_activo = Estado.objects.filter(tipo_estado='Activo').first()
                 if estado_actual == 'Inscrito':
-                    nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=datetime.datetime.now(), actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
+                    nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
                     detalle_estado.actual_detalle_e = False;
                     detalle_estado.save()
                     nuevo_detalle_estado.save()
+                    metrica_estado_presentados.cantidad = metrica_estado_presentados.cantidad + 1
+                    metrica_estado_presentados.save()
+                    metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
+                    metrica_estado_activo.save()
                 elif estado_actual == 'Activo':
                     fecha_detalle = detalle_estado.fecha_detalle_e
-                    fecha_hoy = datetime.datetime.now()
                     if fecha_detalle.year < fecha_hoy.year or fecha_detalle.month < fecha_hoy.month:
-                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=datetime.datetime.now(), actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
+                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
                         detalle_estado.actual_detalle_e = False
                         detalle_estado.save()
                         nuevo_detalle_estado.save()
+                        metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
+                        metrica_estado_retenidos.save()
+                        metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
+                        metrica_estado_activo.save()
             else:
-                asistencia = Asistencia.objects.create(fecha_asistencia=datetime.datetime.now(), asistio=False, inscripcion=inscripcion)
+                asistencia = Asistencia.objects.create(fecha_asistencia=fecha_hoy, asistio=False, inscripcion=inscripcion)
                 asistencia.save()
                 detalle_estado = DetalleEstado.objects.filter(alumno=inscripcion.alumno, actual_detalle_e=True).first()
                 estado_actual = detalle_estado.estado.tipo_estado
-                estado_inactivo = Estado.objects.filter(tipo_estado='Inactivo').first()
-                print datetime.datetime.now().date() - inscripcion.fecha_inscripcion
                 if estado_actual == 'Inscrito':
-                    if datetime.datetime.now().date() - inscripcion.fecha_inscripcion >= datetime.timedelta(days=20):
+                    if fecha_hoy.date() - inscripcion.fecha_inscripcion >= datetime.timedelta(days=20):
                         inscripcion.actual_inscripcion = False
                         inscripcion.save()
                         detalle_estado.actual_detalle_e = False
                         detalle_estado.save()
-                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=datetime.datetime.now(), actual_detalle_e=True, estado=estado_inactivo, alumno=inscripcion.alumno)
+                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_inactivo, alumno=inscripcion.alumno)
                         nuevo_detalle_estado.save()
+
+                        # if fecha_hoy.day >= 21:
+                        #     metrica_estado_no_presentados.cantidad = metrica_estado_no_presentados.cantidad + 1
+                        #     metrica_estado_no_presentados.save()
+                        #     metrica_estado_inactivo.cantidad = metrica_estado_inactivo.cantidad + 1
+                        #     metrica_estado_inactivo.save()
+                        # else:                       #Caso especial
+                        fecha_caso_especial = datetime.datetime(inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1)
+                        metrica_estado_no_presentados_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_caso_especial, estado=estado_no_presentados).first()
+                        metrica_estado_no_presentados_especial.cantidad = metrica_estado_no_presentados_especial.cantidad + 1
+                        metrica_estado_no_presentados_especial.save()
+                        metrica_estado_inactivo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_caso_especial, estado=estado_inactivo).first()
+                        metrica_estado_inactivo_especial.cantidad = metrica_estado_inactivo_especial.cantidad + 1
+                        metrica_estado_inactivo_especial.save()
+
                         inscripcion.grupo.horario.cantidad_alumnos = inscripcion.grupo.horario.cantidad_alumnos - 1
                         inscripcion.grupo.horario.save()
                         inscripcion.grupo.alumnosInscritos = inscripcion.grupo.alumnosInscritos - 1
                         inscripcion.grupo.save()
-
                 elif estado_actual == 'Activo':
-                    if datetime.datetime.now().date() - inscripcion.asistencia_set.order_by('fecha_asistencia').last().fecha_asistencia >= datetime.timedelta(days=25):
+                    if fecha_hoy.date() - inscripcion.asistencia_set.filter(asistio=True).order_by('fecha_asistencia').last().fecha_asistencia >= datetime.timedelta(days=25):
                         inscripcion.actual_inscripcion = False
                         inscripcion.save()
                         detalle_estado.actual_detalle_e = False
                         detalle_estado.save()
-                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=datetime.datetime.now(),actual_detalle_e=True,estado=estado_inactivo)
+                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy,actual_detalle_e=True,estado=estado_inactivo, alumno=inscripcion.alumno)
                         nuevo_detalle_estado.save()
+
+                        # if fecha_hoy.day >= 26:
+                        #     metrica_estado_retirados.cantidad = metrica_estado_retirados.cantidad + 1
+                        #     metrica_estado_retirados.save()
+                        #     metrica_estado_inactivo.cantidad = metrica_estado_inactivo.cantidad + 1
+                        #     metrica_estado_inactivo.save()
+                        #     metrica_estado_activo.cantidad = metrica_estado_activo.cantidad - 1
+                        #     metrica_estado_activo.save()
+                        # else:
+                        fecha_caso_especial = Asistencia.objects.filter(inscripcion=inscripcion, asistio=True).order_by('fecha_asistencia').last().fecha_asistencia
+                        fecha_auxiliar = datetime.datetime(fecha_caso_especial.year, fecha_caso_especial.month, 1)
+                        metrica_estado_retirados_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_retirados).first()
+                        metrica_estado_inactivo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_inactivo).first()
+                        metrica_estado_activo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_activo).first()
+                        metrica_estado_retirados_especial.cantidad = metrica_estado_retirados_especial.cantidad + 1
+                        metrica_estado_retirados_especial.save()
+                        metrica_estado_inactivo_especial.cantidad = metrica_estado_inactivo_especial.cantidad + 1
+                        metrica_estado_inactivo_especial.save()
+                        metrica_estado_activo_especial.cantidad = metrica_estado_activo_especial.cantidad - 1
+                        metrica_estado_activo_especial.save()
+
                         inscripcion.grupo.horario.cantidad_alumnos = inscripcion.grupo.horario.cantidad_alumnos - 1
                         inscripcion.grupo.horario.save()
                         inscripcion.grupo.alumnosInscritos = inscripcion.grupo.alumnosInscritos - 1
                         inscripcion.grupo.save()
     else:
-        return Http404('Utilizar solo como POST')
+        return redirect('asistencia_grupo', id_grupo)
     return asistencia_a_clases(request, id_grupo)
+
+def insertarFechasMetricasEstado():
+    #fecha_hoy = datetime.datetime.now()
+    fecha_hoy = datetime.datetime.now()
+    if MetricaEstado.objects.count() != 0:
+        fecha_vieja = MetricaEstado.objects.all().order_by('fecha_metrica').last().fecha_metrica
+        mes = fecha_vieja.month + 1
+        anio = fecha_vieja.year
+        while (anio < fecha_hoy.year or mes <= fecha_hoy.month):
+            if mes == 13:
+                mes = 1
+                anio = anio + 1
+            fecha_intermedia = datetime.datetime(anio, mes, 1)
+            estados = Estado.objects.all()
+            for estado in estados:
+                metrica_estado = MetricaEstado.objects.create(fecha_metrica=fecha_intermedia, cantidad = 0, estado=estado)
+                metrica_estado.save()
+            mes = mes + 1
+    else :
+        fecha_intermedia = datetime.datetime(fecha_hoy.year, fecha_hoy.month, 1)
+        estados = Estado.objects.all()
+        for estado in estados:
+            metrica_estado = MetricaEstado.objects.create(fecha_metrica=fecha_intermedia, cantidad=0, estado=estado)
+            metrica_estado.save()
+
+# def fechas():
+#     fecha_hoy = datetime.datetime(2018, 12, 1)      #Simulando fecha actual
+#     fecha_vieja = datetime.datetime(2018, 12, 1)    #Simulando ultima fecha sacada de BD
+#     mes = fecha_vieja.month + 1
+#     anio = fecha_vieja.year
+#     while (anio < fecha_hoy.year or mes <= fecha_hoy.month):
+#         if mes == 13:
+#             mes = 1
+#             anio = anio + 1
+#         fecha_intermedia = datetime.datetime(anio, mes, 1)
+#         print str(fecha_intermedia)                 # En cada print recorrer estados y crear un registro en cero
+#         mes = mes + 1

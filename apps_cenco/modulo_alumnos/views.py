@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from datetime import datetime
 import time
 
+from apps_cenco.modulo_asistencia.views import insertarFechasMetricasEstado
+
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -12,7 +14,7 @@ from django.shortcuts import render,redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
-from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -68,17 +70,19 @@ def detalle_alumno(request,id_alumno):
             return HttpResponseRedirect(url)
         elif 'desactivar' in request.POST:
             alumno = Alumno.objects.get(pk=id_alumno)
-            detalleEstado = DetalleEstado.objects.get(alumno=alumno, actual_detale_e=True)
-            detalleEstado.actual_detale_e=False
+            detalleEstado = DetalleEstado.objects.get(alumno=alumno, actual_detalle_e=True)
+            detalleEstado.actual_detalle_e=False
             detalleEstado.save()
-            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detale_e=True,alumno=alumno,estado=Estado.objects.get(tipo_estado='retirado'))
-            grupo=Grupo.objects.get(codigo=alumno.grupo.codigo)
+            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detalle_e=True,alumno=alumno,estado=Estado.objects.get(tipo_estado='Inactivo'))
+            inscripcion = Inscripcion.objects.filter(alumno=alumno, actual_inscripcion=True).first()
+            inscripcion.actual_inscripcion = False
+            inscripcion.save()
+            #grupo=Grupo.objects.get(codigo=alumno.grupo.codigo)
+            grupo = inscripcion.grupo
             grupo.alumnosInscritos=grupo.alumnosInscritos-1
             grupo.save()
             grupo.horario.cantidad_alumnos=grupo.horario.cantidad_alumnos-1
             grupo.horario.save()
-            alumno.grupo=None
-            alumno.save()
             return HttpResponseRedirect(url)
         elif request.method=='POST':
             if request.method == 'POST':
@@ -118,11 +122,11 @@ def detalle_alumno(request,id_alumno):
 
             #activar y desactivar
             try:
-                detalleEstado = DetalleEstado.objects.get(alumno=alumno,actual_detale_e=True)
+                detalleEstado = DetalleEstado.objects.get(alumno=alumno,actual_detalle_e=True)
                 estado=detalleEstado.estado.tipo_estado
             except:
                 estado=None
-
+            print estado
             context={
                 'edad':edad,
                 'alumno':alumno,
@@ -187,6 +191,9 @@ def inscribirAlumno(request):
     reload(sys)
     sys.setdefaultencoding('utf-8')
     if request.user.groups.filter(name="Asistente").exists():
+
+        insertarFechasMetricasEstado()
+
         if request.method == 'POST':
             mensaje = ""
             nombre = request.POST.get('nombre')
@@ -244,15 +251,25 @@ def inscribirAlumno(request):
             #inscripcion
             inscripcion = Inscripcion.objects.create(fecha_inscripcion=datetime.now(), actual_inscripcion=True, alumno = alumno, grupo = grupo)
             inscripcion.save()
+
             #estado
             estado = Estado.objects.filter(tipo_estado="Inscrito").first()
             detalle_estado = DetalleEstado.objects.create(fecha_detalle_e = datetime.now(), actual_detalle_e=True, estado = estado, alumno = alumno)
             detalle_estado.save()
 
+            #Metrica Estado
+            fechaHoy = datetime.now()
+            fechaAux = datetime(fechaHoy.year, fechaHoy.month, 1)
+            metrica_estado_inscrito = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estado).first()
+            metrica_estado_inscrito.cantidad = metrica_estado_inscrito.cantidad + 1
+            metrica_estado_inscrito.save()
+
+            #Cantidades en grupos y horarios
             grupo.horario.cantidad_alumnos = grupo.horario.cantidad_alumnos + 1
             grupo.horario.save()
             grupo.alumnosInscritos = grupo.alumnosInscritos + 1
             grupo.save()
+
             #Guardando telefono
             if numero != "":
                 telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)

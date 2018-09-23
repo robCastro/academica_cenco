@@ -226,3 +226,10 @@ class DetallePago(models.Model):
     cantidad_semanas = models.IntegerField(blank=False)
     # foreign keys
     colegiatura = models.ForeignKey(Colegiatura, on_delete=models.PROTECT, null=False, blank=False)
+
+class MetricaEstado(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    fecha_metrica = models.DateField()
+    cantidad = models.IntegerField(default=0)
+    # foreign keys
+    estado = models.ForeignKey(Estado, on_delete=models.PROTECT, null=False, blank=False)
