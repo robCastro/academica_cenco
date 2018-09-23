@@ -72,7 +72,7 @@
                         <td>{{ user.apellido }}</td>
                         <td>{{ user.primerTelefono|default_if_none:""  }}</td>
                         <td>{{ user.correo|default_if_none:"" }}</td>
-                        <td><a href="" ><font color=#4488ca>{{ user.encargado.nombre}}</font> </a></td>
+                        <td><a href="" ><font color=#4488ca>{{ user.encargado.nombre|default_if_none:"" }}</font> </a></td>
                         <td>{{user.grupo.horario.dias_asignados}}</td>
                     </tr>
                 {% endfor %}
