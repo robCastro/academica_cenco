@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^asist_consultar/$', views.asist_consultar_grupos, name="asistente_consultar_grupos"),
     url(r'^asist_consultar/(?P<id_grupo>\d+)$', views.asist_detalle_grupo, name="asist_detalle_grupo"),
     url(r'^prof_consultar/$', views.prof_consultar_grupos, name="profesor_consultar_grupos"),
+
 ]

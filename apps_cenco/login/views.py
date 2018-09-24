@@ -137,8 +137,10 @@ def principal(request):
             return redirect('encargado_misDatos')
 
         elif has_group(request.user, 'Alumno'):
-            print "Es Alumno"
-            return redirect('home_alumno')
+            return redirect('homeAlumno')
+
+        elif has_group(request.user, 'Profesor'):
+            return redirect('profesor_consultar_grupos')
 
         # return redirect('credenciales_director')
     else:

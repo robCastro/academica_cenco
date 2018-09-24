@@ -10,4 +10,6 @@ urlpatterns = [
     url(r'^filtrar_estados/$', views.filtrar_estado_por_periodo),
     url(r'^ingresar_asistencia/(?P<id_grupo>\d+)$', views.asistencia_a_clases, name="asistencia_grupo"), #para mostrar pantalla
     url(r'^guardar_asistencia/(?P<id_grupo>\d+)$', views.guardarAsistencia, name="guardar_asistencia_grupo"), #para guardar datos
+    url(r'^prof_consultar/(?P<id_grupo>\d+)$', views.prof_detalle_grupo, name="prof_detalle_grupo"),
+    url(r'^listado_asistencia/(?P<id_grupo>\d+)$',views.prof_listado_grupo, name="listado_asistencia_pdf"),
 ]

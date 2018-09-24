@@ -221,14 +221,14 @@ def asist_detalle_grupo(request, id_grupo):
 def prof_consultar_grupos(request):
     user = User.objects.get(username=request.user)
     prof = Empleado.objects.get(username=user)
-    if user.groups.filter(name="Empleado").exists() and prof.tipo=="Pro":
+    if user.groups.filter(name="Profesor").exists():
         form = CrearGrupoForm()
         limite_por_horario = 15*2
         min_alum_inscritos = 5
         prof=Empleado.objects.get(username=user)
         idProf=prof.codigo
-        grup=Grupo.objects.filter(profesor=idProf)
-        grupos = grup.order_by('codigo')
+        grupo=Grupo.objects.filter(profesor=idProf, activo_grupo=True)
+        grupos = grupo.order_by('codigo')
         horarios = Horario.objects.order_by('codigo')
         horarios_exceso = []
         grupos_cant_baja = []
@@ -238,9 +238,9 @@ def prof_consultar_grupos(request):
             if horario.cantidad_alumnos > limite_por_horario:
                 horarios_exceso.append(horario)
 
-        for grupo in grupos:
-            if grupo.alumnosInscritos < min_alum_inscritos:
-                grupos_cant_baja.append(grupo)
+        for grup in grupos:
+            if grup.alumnosInscritos < min_alum_inscritos:
+                grupos_cant_baja.append(grup)
 
         variables = {'grupos': grupos, 'horarios': horarios, 'horarios_exceso': horarios_exceso,
                      'grupos_cant_baja': grupos_cant_baja, 'lim_horario': limite_por_horario,

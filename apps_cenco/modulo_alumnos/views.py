@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from datetime import datetime
 import time
@@ -33,6 +33,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 
 import sys
 reload(sys)
@@ -536,16 +542,16 @@ def guardarModificacionAlumnoIndependiente(request):
         return HttpResponse(status=200)
     else:
         raise Http404("No tiene permisos para esta pagina")
+
 @login_required
 def ConstanciaEstudioPDF(request):
     if request.user.groups.filter(name="Alumno").exists():
-        #def get(self, request, *args, **kwargs):
             # Indicamos el tipo de contenido a devolver, en este caso un pdf
             response = HttpResponse(content_type='application/pdf')
             # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
             buffer = BytesIO()
             # Canvas nos permite hacer el reporte con coordenadas X y Y
-            pdf = canvas.Canvas(buffer)
+            pdf = canvas.Canvas(buffer,pagesize=letter)
             # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
             #self.cabecera(pdf)
             # Con show page hacemos un corte de página para pasar a la siguiente
@@ -554,39 +560,47 @@ def ConstanciaEstudioPDF(request):
             # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
             archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
             # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
-            pdf.drawImage(archivo_imagen, 40, 750, 120, 90, preserveAspectRatio=True)
+            pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
             # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
             pdf.setFont("Helvetica", 16)
             # Dibujamos una cadena en la ubicación X,Y especificada
-            pdf.drawString(180, 790, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+            pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
             pdf.setFont("Helvetica", 14)
             alum = Alumno.objects.get(username=request.user)
-            nom=alum.nombre+" "+alum.apellido
-            pdf.drawString(75, 745, u"A quien corresponda: ")
-            pdf.drawString(75, 710, u"El que suscribe, Director de esta institución, hace CONSTAR: ")
-            pdf.drawString(75, 695, u"Que ")
-            pdf.drawString(105, 695, nom)
+            nom=alum.nombre+" "+alum.apellido+","
 
-            y=(nom.__len__()*7)+110
+            ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
+            dia = "Apopa, " + ahora
+            pdf.drawString(425, 695, dia)
+            x=-175
+            pdf.drawString(75, 745+x, u"A quien corresponda: ")
+            pdf.drawString(75, 685+x, u"El que suscribe, Director de esta institución, hace CONSTAR que:")
+            pdf.drawString(75, 670+x, nom)
+
+            y=(nom.__len__()*7)+71
 
             dui = alum.dui
             if dui.__len__()==10:
-                pdf.drawString(y, 695, u"con dui: ")
-                pdf.drawString(y+54, 695, dui)
-                pdf.drawString(y + 134, 695, u"es estudiante" )
-                pdf.drawString(75, 680, u"de la carrera ")
-                pdf.drawString(75, 665, u"en el horario de: ")
+                pdf.drawString(y, 670+x, u" con DUI: ")
+                pdf.drawString(y+62, 670+x, dui)
+                pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:" )
+                pdf.drawString(75, 595 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
 
             else:
-                pdf.drawString(y, 695, u"es estudiante de la institución cursando")
-                pdf.drawString(75, 680, u"la carrera ")
-                pdf.drawString(75, 665, u"en el horario de: ")
+                pdf.drawString(y, 670+x, u"es estudiante activo/a de esta institución en el horario:")
+                pdf.drawString(75,600 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
 
-            pdf.drawString(75, 635, u"Para los fines que al interesado le convengan se extiende la presente")
+            s=120
+            pdf.drawString(200, 100+s, u"_________________________")
+            grupo = Group.objects.filter(name="Director").first()
+            director= grupo.user_set.first()
+            dir= director.first_name+" "+director.last_name
+            pdf.drawString(250,80+s,dir)
+            pdf.drawString(240, 60+s, u"Director de CENCO")
+            pdf.setFont("Helvetica", 10)
+            pdf.drawString(65, -70+s, u"*Valida solo con firma y sello del director por un periodo no mayor a un mes")
 
-            ahora = str((datetime.now().date()))
-            dia= "el dia "+ahora
-            pdf.drawString(75, 620, dia)
+
 
 
 
@@ -607,6 +621,13 @@ def ConstanciaEstudioPDF(request):
 
     else:
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
+
+
+
+
+
+
+
 
 
 

@@ -8,9 +8,20 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Avg, Min, Max
+from django.contrib.auth.models import User
 import locale, os
 #if os.name != 'nt':
 #    locale.setlocale(locale.LC_TIME, 'es_ES')
+
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from django.views.generic import View
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from django.conf import settings
+from reportlab.lib.pagesizes import letter
+
 
 import datetime
 
@@ -155,7 +166,7 @@ def filtrar_estado_por_periodo(request):
                     " left outer join "
                     "(select 1 as codigo_detalle_e, count(fecha_detalle_e) as count, fecha_detalle_e "
                     "from db_app_detalleestado "
-                    "where estado_id = " + tipo + 
+                    "where estado_id = " + tipo +
                     "group by fecha_detalle_e "
                     "order by fecha_detalle_e) s on p.fechas = s.fecha_detalle_e")
 
@@ -176,15 +187,290 @@ def filtrar_estado_por_periodo(request):
 
 @login_required
 def prof_detalle_grupo(request, id_grupo):
-    try:
-        empleado = Empleado.objects.get(username=request.user)
-        grupo = Grupo.objects.get(codigo=id_grupo, empleado=empleado)
-        alumnos = Alumno.objects.filter(grupo=grupo)
-        context = {'grupo': grupo, 'alumnos': alumnos}
-        return render(request, 'modulo_asistencia/profesor_detalle_grupo.html', context)
-    except ObjectDoesNotExist:
-        raise Http404("No se encuentra la ruta especificada o no es el usuario correcto")
+    user = User.objects.get(username=request.user)
+    prof = Empleado.objects.get(username=user)
+    if user.groups.filter(name="Profesor").exists():
+        grupo = Grupo.objects.get(codigo=id_grupo, profesor=prof)
+        inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
+        alumnos = []
+        for inscripcion in inscripciones:
+            alumnos.append(inscripcion.alumno)
+        alumnos_ins=[]
+        for alum in alumnos:
+             deta=DetalleEstado.objects.get(actual_detalle_e=True,alumno_id=alum.codigo)
+             estado=Estado.objects.get(codigo_estado=deta.estado_id)
+             if estado.tipo_estado=="Activo" or estado.tipo_estado=="Inscrito":
+                alumnos_ins.append(alum)
+        for alumno in alumnos_ins:
+            alumno.primerTelefono = alumno.telefono_set.first()
 
+        context = {'grupo': grupo,
+                   'alumnos':alumnos_ins}
+        return render(request, 'modulo_asistencia/profesor_detalle_grupo.html', context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def prof_listado_grupo(request, id_grupo):
+    user = User.objects.get(username=request.user)
+    prof = Empleado.objects.get(username=user)
+    if user.groups.filter(name="Profesor").exists():
+        grupo = Grupo.objects.get(codigo=id_grupo, profesor=prof)
+        inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
+        alumnos = []
+        for inscripcion in inscripciones:
+            alumnos.append(inscripcion.alumno)
+        alumnos_ins=[]
+        for alum in alumnos:
+             deta=DetalleEstado.objects.get(actual_detalle_e=True,alumno_id=alum.codigo)
+             estado=Estado.objects.get(codigo_estado=deta.estado_id)
+             if estado.tipo_estado=="Activo" or estado.tipo_estado=="Inscrito":
+                alumnos_ins.append(alum)
+        alumnos_in=sorted(alumnos_ins,key=lambda alumno: alumno.apellido)
+
+    # Generar el Pdf
+
+        response = HttpResponse(content_type='application/pdf')
+        # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
+        buffer = BytesIO()
+        # Canvas nos permite hacer el reporte con coordenadas X y Y
+        pdf = canvas.Canvas(buffer,pagesize=letter)
+        # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
+        # self.cabecera(pdf)
+        # Con show page hacemos un corte de página para pasar a la siguiente
+
+        # def cabecera(self, pdf):
+        # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
+        archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+        # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+        pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+        # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+        pdf.setFont("Helvetica", 16)
+        # Dibujamos una cadena en la ubicación X,Y especificada
+        pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+        pdf.setFont("Helvetica", 16)
+        # Dibujamos una cadena en la ubicación X,Y especificada
+        gru= "Grupo"+" "+str(grupo.codigo)+", "+str(grupo.horario)
+        pdf.drawString(180, 650,gru )
+        pdf.setFont("Helvetica", 14)
+        pdf.drawString(350, 690, u"Fecha:____/____/________ ")
+        docente="Docente: "+prof.nombre+" "+prof.apellido
+        pdf.drawString(100, 610, docente)
+
+
+
+        #tabla
+
+        # Creamos una tupla de encabezados para neustra tabla
+        encabezados = ('Nombre', 'Firma')
+        # Creamos una lista de tuplas que van a contener a las personas
+        detalles = [(str(alu.apellido)+" "+str(alu.nombre), " ") for alu in alumnos_in]
+        # Establecemos el tamaño de cada una de las columnas de la tabla
+        detalle_orden = Table([encabezados] + detalles, colWidths=[9 * cm, 5 * cm, 5 * cm, 5 * cm])
+        # Aplicamos estilos a las celdas de la tabla
+        detalle_orden.setStyle(TableStyle(
+            [
+                # La primera fila(encabezados) va a estar centrada
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                # Los bordes de todas las celdas serán de color negro y con un grosor de 1
+                ('GRID', (0, 0), (2, alumnos_ins.__len__()+1), 1, colors.black),
+                # El tamaño de las letras de cada una de las celdas será de 10
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ]
+        ))
+        # Establecemos el tamaño de la hoja que ocupará la tabla
+        detalle_orden.wrapOn(pdf, 800, 600)
+        # Definimos la coordenada donde se dibujará la tabla
+        detalle_orden.drawOn(pdf, 100, 500)
+
+
+
+
+
+        pdf.showPage()
+        pdf.save()
+        pdf = buffer.getvalue()
+        buffer.close()
+        response.write(pdf)
+        return response
+
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+#Encargada de metodo POST, almacena las asistencias y retorna a "asistencia_a_clases" para regenerar la pantalla
+@login_required
+def guardarAsistencia(request, id_grupo):
+    if request.method == "POST":
+        try:
+            grupo = Grupo.objects.get(pk = id_grupo)
+        except Grupo.DoesNotExist:
+            return Http404('Grupo no existe')
+        inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
+        fecha_hoy = datetime.datetime.now()
+        fecha_aux = datetime.datetime(fecha_hoy.year, fecha_hoy.month, 1)
+
+        estado_activo = Estado.objects.filter(tipo_estado='Activo').first()
+        estado_inactivo = Estado.objects.filter(tipo_estado='Inactivo').first()
+        estado_presentados = Estado.objects.filter(tipo_estado='Presentados').first()
+        estado_no_presentados = Estado.objects.filter(tipo_estado='No Presentados').first()
+        estado_retenidos = Estado.objects.filter(tipo_estado='Retenidos').first()
+        estado_retirados = Estado.objects.filter(tipo_estado='Retirados').first()
+
+        metrica_estado_activo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo).first()
+        metrica_estado_inactivo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_inactivo).first()
+        #metrica_estado_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_presentados).first()
+        metrica_estado_no_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_no_presentados).first()
+        metrica_estado_retenidos = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retenidos).first()
+        metrica_estado_retirados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retirados).first()
+
+        for inscripcion in inscripciones:
+            if request.POST.get(str(inscripcion.alumno.codigo)):
+                asistencia = Asistencia.objects.create(fecha_asistencia=fecha_hoy, asistio=True, inscripcion = inscripcion)
+                asistencia.save()
+                detalle_estado = DetalleEstado.objects.filter(alumno=inscripcion.alumno, actual_detalle_e=True).first()
+                estado_actual = detalle_estado.estado.tipo_estado
+                if estado_actual == 'Inscrito':
+                    nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
+                    detalle_estado.actual_detalle_e = False;
+                    detalle_estado.save()
+                    nuevo_detalle_estado.save()
+                    metrica_estado_presentados = MetricaEstado.objects.filter(
+                        fecha_metrica=datetime.datetime(
+                            inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1
+                        ),estado=estado_presentados
+                    ).first()
+                    metrica_estado_presentados.cantidad = metrica_estado_presentados.cantidad + 1
+                    metrica_estado_presentados.save()
+                    metrica_estado_activo = MetricaEstado.objects.filter(
+                        fecha_metrica=datetime.datetime(
+                            inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1
+                        ), estado=estado_activo
+                    ).first()
+                    metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
+                    metrica_estado_activo.save()
+                    if inscripcion.fecha_inscripcion.month != fecha_hoy.month:
+                        metricaActivoMesActual = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo)
+                        metricaActivoMesActual.cantidad = metricaActivoMesActual.cantidad + 1
+                        metricaActivoMesActual.save()
+                        metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
+                        metrica_estado_retenidos.save()
+                elif estado_actual == 'Activo':
+                    fecha_detalle = detalle_estado.fecha_detalle_e
+                    if fecha_detalle.year < fecha_hoy.year or fecha_detalle.month < fecha_hoy.month:
+                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
+                        detalle_estado.actual_detalle_e = False
+                        detalle_estado.save()
+                        nuevo_detalle_estado.save()
+                        metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
+                        metrica_estado_retenidos.save()
+                        metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
+                        metrica_estado_activo.save()
+            else:
+                asistencia = Asistencia.objects.create(fecha_asistencia=fecha_hoy, asistio=False, inscripcion=inscripcion)
+                asistencia.save()
+                detalle_estado = DetalleEstado.objects.filter(alumno=inscripcion.alumno, actual_detalle_e=True).first()
+                estado_actual = detalle_estado.estado.tipo_estado
+                if estado_actual == 'Inscrito':
+                    if fecha_hoy.date() - inscripcion.fecha_inscripcion >= datetime.timedelta(days=20):
+                        inscripcion.actual_inscripcion = False
+                        inscripcion.save()
+                        detalle_estado.actual_detalle_e = False
+                        detalle_estado.save()
+                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_inactivo, alumno=inscripcion.alumno)
+                        nuevo_detalle_estado.save()
+
+                        # if fecha_hoy.day >= 21:
+                        #     metrica_estado_no_presentados.cantidad = metrica_estado_no_presentados.cantidad + 1
+                        #     metrica_estado_no_presentados.save()
+                        #     metrica_estado_inactivo.cantidad = metrica_estado_inactivo.cantidad + 1
+                        #     metrica_estado_inactivo.save()
+                        # else:                       #Caso especial
+                        fecha_caso_especial = datetime.datetime(inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1)
+                        metrica_estado_no_presentados_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_caso_especial, estado=estado_no_presentados).first()
+                        metrica_estado_no_presentados_especial.cantidad = metrica_estado_no_presentados_especial.cantidad + 1
+                        metrica_estado_no_presentados_especial.save()
+                        metrica_estado_inactivo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_caso_especial, estado=estado_inactivo).first()
+                        metrica_estado_inactivo_especial.cantidad = metrica_estado_inactivo_especial.cantidad + 1
+                        metrica_estado_inactivo_especial.save()
+
+                        inscripcion.grupo.horario.cantidad_alumnos = inscripcion.grupo.horario.cantidad_alumnos - 1
+                        inscripcion.grupo.horario.save()
+                        inscripcion.grupo.alumnosInscritos = inscripcion.grupo.alumnosInscritos - 1
+                        inscripcion.grupo.save()
+                elif estado_actual == 'Activo':
+                    if fecha_hoy.date() - inscripcion.asistencia_set.filter(asistio=True).order_by('fecha_asistencia').last().fecha_asistencia >= datetime.timedelta(days=25):
+                        inscripcion.actual_inscripcion = False
+                        inscripcion.save()
+                        detalle_estado.actual_detalle_e = False
+                        detalle_estado.save()
+                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy,actual_detalle_e=True,estado=estado_inactivo, alumno=inscripcion.alumno)
+                        nuevo_detalle_estado.save()
+
+                        # if fecha_hoy.day >= 26:
+                        #     metrica_estado_retirados.cantidad = metrica_estado_retirados.cantidad + 1
+                        #     metrica_estado_retirados.save()
+                        #     metrica_estado_inactivo.cantidad = metrica_estado_inactivo.cantidad + 1
+                        #     metrica_estado_inactivo.save()
+                        #     metrica_estado_activo.cantidad = metrica_estado_activo.cantidad - 1
+                        #     metrica_estado_activo.save()
+                        # else:
+                        fecha_caso_especial = Asistencia.objects.filter(inscripcion=inscripcion, asistio=True).order_by('fecha_asistencia').last().fecha_asistencia
+                        fecha_auxiliar = datetime.datetime(fecha_caso_especial.year, fecha_caso_especial.month, 1)
+                        metrica_estado_retirados_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_retirados).first()
+                        metrica_estado_inactivo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_inactivo).first()
+                        metrica_estado_activo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_activo).first()
+                        metrica_estado_retirados_especial.cantidad = metrica_estado_retirados_especial.cantidad + 1
+                        metrica_estado_retirados_especial.save()
+                        metrica_estado_inactivo_especial.cantidad = metrica_estado_inactivo_especial.cantidad + 1
+                        metrica_estado_inactivo_especial.save()
+                        metrica_estado_activo_especial.cantidad = metrica_estado_activo_especial.cantidad - 1
+                        metrica_estado_activo_especial.save()
+
+                        inscripcion.grupo.horario.cantidad_alumnos = inscripcion.grupo.horario.cantidad_alumnos - 1
+                        inscripcion.grupo.horario.save()
+                        inscripcion.grupo.alumnosInscritos = inscripcion.grupo.alumnosInscritos - 1
+                        inscripcion.grupo.save()
+    else:
+        return redirect('asistencia_grupo', id_grupo)
+    return asistencia_a_clases(request, id_grupo)
+
+def insertarFechasMetricasEstado():
+    #fecha_hoy = datetime.datetime.now()
+    fecha_hoy = datetime.datetime.now()
+    if MetricaEstado.objects.count() != 0:
+        fecha_vieja = MetricaEstado.objects.all().order_by('fecha_metrica').last().fecha_metrica
+        mes = fecha_vieja.month + 1
+        anio = fecha_vieja.year
+        while (anio < fecha_hoy.year or mes <= fecha_hoy.month):
+            if mes == 13:
+                mes = 1
+                anio = anio + 1
+            fecha_intermedia = datetime.datetime(anio, mes, 1)
+            estados = Estado.objects.all()
+            for estado in estados:
+                metrica_estado = MetricaEstado.objects.create(fecha_metrica=fecha_intermedia, cantidad = 0, estado=estado)
+                metrica_estado.save()
+            mes = mes + 1
+    else :
+        fecha_intermedia = datetime.datetime(fecha_hoy.year, fecha_hoy.month, 1)
+        estados = Estado.objects.all()
+        for estado in estados:
+            metrica_estado = MetricaEstado.objects.create(fecha_metrica=fecha_intermedia, cantidad=0, estado=estado)
+            metrica_estado.save()
+
+# def fechas():
+#     fecha_hoy = datetime.datetime(2018, 12, 1)      #Simulando fecha actual
+#     fecha_vieja = datetime.datetime(2018, 12, 1)    #Simulando ultima fecha sacada de BD
+#     mes = fecha_vieja.month + 1
+#     anio = fecha_vieja.year
+#     while (anio < fecha_hoy.year or mes <= fecha_hoy.month):
+#         if mes == 13:
+#             mes = 1
+#             anio = anio + 1
+#         fecha_intermedia = datetime.datetime(anio, mes, 1)
+#         print str(fecha_intermedia)                 # En cada print recorrer estados y crear un registro en cero
+#         mes = mes + 1
 @login_required
 def ver_metricas_estado(request):
     if request.user.groups.filter(name="Director").exists():
@@ -400,177 +686,3 @@ def asistencia_a_clases(request, id_grupo):
             'tomarAsistencia':tomarAsistencia,
         }
         return render(request, 'modulo_asistencia/profesor_ingresar_asistencia.html', context)
-
-#Encargada de metodo POST, almacena las asistencias y retorna a "asistencia_a_clases" para regenerar la pantalla
-@login_required
-def guardarAsistencia(request, id_grupo):
-    if request.method == "POST":
-        try:
-            grupo = Grupo.objects.get(pk = id_grupo)
-        except Grupo.DoesNotExist:
-            return Http404('Grupo no existe')
-        inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
-        fecha_hoy = datetime.datetime.now()
-        fecha_aux = datetime.datetime(fecha_hoy.year, fecha_hoy.month, 1)
-
-        estado_activo = Estado.objects.filter(tipo_estado='Activo').first()
-        estado_inactivo = Estado.objects.filter(tipo_estado='Inactivo').first()
-        estado_presentados = Estado.objects.filter(tipo_estado='Presentados').first()
-        estado_no_presentados = Estado.objects.filter(tipo_estado='No Presentados').first()
-        estado_retenidos = Estado.objects.filter(tipo_estado='Retenidos').first()
-        estado_retirados = Estado.objects.filter(tipo_estado='Retirados').first()
-
-        metrica_estado_activo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo).first()
-        metrica_estado_inactivo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_inactivo).first()
-        #metrica_estado_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_presentados).first()
-        metrica_estado_no_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_no_presentados).first()
-        metrica_estado_retenidos = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retenidos).first()
-        metrica_estado_retirados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retirados).first()
-
-        for inscripcion in inscripciones:
-            if request.POST.get(str(inscripcion.alumno.codigo)):
-                asistencia = Asistencia.objects.create(fecha_asistencia=fecha_hoy, asistio=True, inscripcion = inscripcion)
-                asistencia.save()
-                detalle_estado = DetalleEstado.objects.filter(alumno=inscripcion.alumno, actual_detalle_e=True).first()
-                estado_actual = detalle_estado.estado.tipo_estado
-                if estado_actual == 'Inscrito':
-                    nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
-                    detalle_estado.actual_detalle_e = False;
-                    detalle_estado.save()
-                    nuevo_detalle_estado.save()
-                    metrica_estado_presentados = MetricaEstado.objects.filter(
-                        fecha_metrica=datetime.datetime(
-                            inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1
-                        ),estado=estado_presentados
-                    ).first()
-                    metrica_estado_presentados.cantidad = metrica_estado_presentados.cantidad + 1
-                    metrica_estado_presentados.save()
-                    metrica_estado_activo = MetricaEstado.objects.filter(
-                        fecha_metrica=datetime.datetime(
-                            inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1
-                        ), estado=estado_activo
-                    ).first()
-                    metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
-                    metrica_estado_activo.save()
-                    if inscripcion.fecha_inscripcion.month != fecha_hoy.month:
-                        metricaActivoMesActual = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo)
-                        metricaActivoMesActual.cantidad = metricaActivoMesActual.cantidad + 1
-                        metricaActivoMesActual.save()
-                        metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
-                        metrica_estado_retenidos.save()
-                elif estado_actual == 'Activo':
-                    fecha_detalle = detalle_estado.fecha_detalle_e
-                    if fecha_detalle.year < fecha_hoy.year or fecha_detalle.month < fecha_hoy.month:
-                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_activo, alumno=inscripcion.alumno)
-                        detalle_estado.actual_detalle_e = False
-                        detalle_estado.save()
-                        nuevo_detalle_estado.save()
-                        metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
-                        metrica_estado_retenidos.save()
-                        metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
-                        metrica_estado_activo.save()
-            else:
-                asistencia = Asistencia.objects.create(fecha_asistencia=fecha_hoy, asistio=False, inscripcion=inscripcion)
-                asistencia.save()
-                detalle_estado = DetalleEstado.objects.filter(alumno=inscripcion.alumno, actual_detalle_e=True).first()
-                estado_actual = detalle_estado.estado.tipo_estado
-                if estado_actual == 'Inscrito':
-                    if fecha_hoy.date() - inscripcion.fecha_inscripcion >= datetime.timedelta(days=20):
-                        inscripcion.actual_inscripcion = False
-                        inscripcion.save()
-                        detalle_estado.actual_detalle_e = False
-                        detalle_estado.save()
-                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy, actual_detalle_e=True, estado=estado_inactivo, alumno=inscripcion.alumno)
-                        nuevo_detalle_estado.save()
-
-                        # if fecha_hoy.day >= 21:
-                        #     metrica_estado_no_presentados.cantidad = metrica_estado_no_presentados.cantidad + 1
-                        #     metrica_estado_no_presentados.save()
-                        #     metrica_estado_inactivo.cantidad = metrica_estado_inactivo.cantidad + 1
-                        #     metrica_estado_inactivo.save()
-                        # else:                       #Caso especial
-                        fecha_caso_especial = datetime.datetime(inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1)
-                        metrica_estado_no_presentados_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_caso_especial, estado=estado_no_presentados).first()
-                        metrica_estado_no_presentados_especial.cantidad = metrica_estado_no_presentados_especial.cantidad + 1
-                        metrica_estado_no_presentados_especial.save()
-                        metrica_estado_inactivo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_caso_especial, estado=estado_inactivo).first()
-                        metrica_estado_inactivo_especial.cantidad = metrica_estado_inactivo_especial.cantidad + 1
-                        metrica_estado_inactivo_especial.save()
-
-                        inscripcion.grupo.horario.cantidad_alumnos = inscripcion.grupo.horario.cantidad_alumnos - 1
-                        inscripcion.grupo.horario.save()
-                        inscripcion.grupo.alumnosInscritos = inscripcion.grupo.alumnosInscritos - 1
-                        inscripcion.grupo.save()
-                elif estado_actual == 'Activo':
-                    if fecha_hoy.date() - inscripcion.asistencia_set.filter(asistio=True).order_by('fecha_asistencia').last().fecha_asistencia >= datetime.timedelta(days=25):
-                        inscripcion.actual_inscripcion = False
-                        inscripcion.save()
-                        detalle_estado.actual_detalle_e = False
-                        detalle_estado.save()
-                        nuevo_detalle_estado = DetalleEstado.objects.create(fecha_detalle_e=fecha_hoy,actual_detalle_e=True,estado=estado_inactivo, alumno=inscripcion.alumno)
-                        nuevo_detalle_estado.save()
-
-                        # if fecha_hoy.day >= 26:
-                        #     metrica_estado_retirados.cantidad = metrica_estado_retirados.cantidad + 1
-                        #     metrica_estado_retirados.save()
-                        #     metrica_estado_inactivo.cantidad = metrica_estado_inactivo.cantidad + 1
-                        #     metrica_estado_inactivo.save()
-                        #     metrica_estado_activo.cantidad = metrica_estado_activo.cantidad - 1
-                        #     metrica_estado_activo.save()
-                        # else:
-                        fecha_caso_especial = Asistencia.objects.filter(inscripcion=inscripcion, asistio=True).order_by('fecha_asistencia').last().fecha_asistencia
-                        fecha_auxiliar = datetime.datetime(fecha_caso_especial.year, fecha_caso_especial.month, 1)
-                        metrica_estado_retirados_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_retirados).first()
-                        metrica_estado_inactivo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_inactivo).first()
-                        metrica_estado_activo_especial = MetricaEstado.objects.filter(fecha_metrica=fecha_auxiliar, estado=estado_activo).first()
-                        metrica_estado_retirados_especial.cantidad = metrica_estado_retirados_especial.cantidad + 1
-                        metrica_estado_retirados_especial.save()
-                        metrica_estado_inactivo_especial.cantidad = metrica_estado_inactivo_especial.cantidad + 1
-                        metrica_estado_inactivo_especial.save()
-                        metrica_estado_activo_especial.cantidad = metrica_estado_activo_especial.cantidad - 1
-                        metrica_estado_activo_especial.save()
-
-                        inscripcion.grupo.horario.cantidad_alumnos = inscripcion.grupo.horario.cantidad_alumnos - 1
-                        inscripcion.grupo.horario.save()
-                        inscripcion.grupo.alumnosInscritos = inscripcion.grupo.alumnosInscritos - 1
-                        inscripcion.grupo.save()
-    else:
-        return redirect('asistencia_grupo', id_grupo)
-    return asistencia_a_clases(request, id_grupo)
-
-def insertarFechasMetricasEstado():
-    #fecha_hoy = datetime.datetime.now()
-    fecha_hoy = datetime.datetime.now()
-    if MetricaEstado.objects.count() != 0:
-        fecha_vieja = MetricaEstado.objects.all().order_by('fecha_metrica').last().fecha_metrica
-        mes = fecha_vieja.month + 1
-        anio = fecha_vieja.year
-        while (anio < fecha_hoy.year or mes <= fecha_hoy.month):
-            if mes == 13:
-                mes = 1
-                anio = anio + 1
-            fecha_intermedia = datetime.datetime(anio, mes, 1)
-            estados = Estado.objects.all()
-            for estado in estados:
-                metrica_estado = MetricaEstado.objects.create(fecha_metrica=fecha_intermedia, cantidad = 0, estado=estado)
-                metrica_estado.save()
-            mes = mes + 1
-    else :
-        fecha_intermedia = datetime.datetime(fecha_hoy.year, fecha_hoy.month, 1)
-        estados = Estado.objects.all()
-        for estado in estados:
-            metrica_estado = MetricaEstado.objects.create(fecha_metrica=fecha_intermedia, cantidad=0, estado=estado)
-            metrica_estado.save()
-
-# def fechas():
-#     fecha_hoy = datetime.datetime(2018, 12, 1)      #Simulando fecha actual
-#     fecha_vieja = datetime.datetime(2018, 12, 1)    #Simulando ultima fecha sacada de BD
-#     mes = fecha_vieja.month + 1
-#     anio = fecha_vieja.year
-#     while (anio < fecha_hoy.year or mes <= fecha_hoy.month):
-#         if mes == 13:
-#             mes = 1
-#             anio = anio + 1
-#         fecha_intermedia = datetime.datetime(anio, mes, 1)
-#         print str(fecha_intermedia)                 # En cada print recorrer estados y crear un registro en cero
-#         mes = mes + 1
