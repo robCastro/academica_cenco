@@ -95,12 +95,12 @@ class Alumno (models.Model):
     solvente = models.BooleanField(default=False)
     # foreign keys
     encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT, null=True, blank=True)
-    opciones_estado = (
-        ('activo', 'activo'),
-        ('inactivo', 'inactivo')
-    )
-
-    estado = models.CharField(max_length=8, choices=opciones_estado, default='activo')
+    # opciones_estado = (
+    #     ('activo', 'activo'),
+    #     ('inactivo', 'inactivo')
+    # )
+    #
+    # estado = models.CharField(max_length=8, choices=opciones_estado, default='activo')
     def __unicode__(self):
         return self.nombre + " " + self.apellido
 
@@ -153,13 +153,13 @@ class Estado(models.Model):
 class DetalleEstado(models.Model):
     codigo_detalle_e = models.AutoField(primary_key=True)
     fecha_detalle_e = models.DateField()
-    actual_detalle_e = models.BooleanField(default=True)
+    actual_detale_e = models.BooleanField(default=True)
     # foreign keys
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, null=False, blank=False)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE, null=False, blank=False)
 
     def __unicode__(self):
-        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detalle_e)
+        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detale_e)
 
 
 class Carrera(models.Model):

@@ -132,8 +132,8 @@
     }
 
     #example td, #example th{
-        padding: 5px 0px 5px 5px;
-        margin: 5px 0px 5px 5px;
+        padding: 5px 5px 5px 5px;
+        margin: 5px 5px 5px 5px;
         white-space: nowrap;
     }
 
@@ -170,6 +170,7 @@
         margin-left: 5px;
 
     }
+
     </style>
 
 {% endblock %}
@@ -188,7 +189,7 @@
         <td width='100px' rowspan="2" valign="top">
             <p></p>
             <h4> Credenciales</h4>
-            <div class='divNotifAlumnos' style="padding-left: 20px; width: 160px">
+            <div class='divNotifAlumnos' style="padding-left: 20px; width: 160px; margin-right: 40px">
                 <p></p>
                     <h5><u><a href="{% url "director_credenciales_propias" %}" style="color:black ">Director</a></u></h5>
                     <p></p>
@@ -211,10 +212,9 @@
     <tr>
         <h4 align="center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Listado de alumnos</h4>
-
         <td width="900px" valign="top">
             <div style="width: auto">
-            <table id="example" class="table table-bordered table-hover" style="width:100%;">
+            <table id="example" class="table table-bordered table-hover" style="min-width: 900px;">
             <thead>
                 <tr bgcolor="#f0f8ff" >
                     <th >Codigo</th>
@@ -230,7 +230,7 @@
                 <tbody>
                 {% for user in alumnos%}
                     <tr data-toggle="modal" data-target="#myDeleteModal">
-                        <td width="20px"><a href="#">{{ user.codigo }}</a></td>
+                        <td><a href="#">{{ user.codigo }}</a></td>
                         <td>{{ user.nombre }} </td>
                         <td>{{ user.apellido }}</td>
                         <td>{{ user.primerTelefono|default_if_none:""  }}</td>

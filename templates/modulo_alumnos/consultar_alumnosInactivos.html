@@ -80,7 +80,7 @@
 
         <br/>
         <br/>
-        <h4 align="center">Listado de alumnos activos</h4>
+        <h4 align="center">Listado de alumnos inactivos</h4>
 
         <td width='60%' height='30px' align="right" valign="top" style="padding-top: 20px;">
 
@@ -89,11 +89,11 @@
     </tr>
     <tr>
         <td width="900px">
-            <div style="text-align: right; align-items: right;">
-            <a type="button" style="margin-bottom: 10px; margin-right: 10px" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
-            <a type="button" style="float: right; margin-bottom: 10px;" class="btn btn-primary" href="{% url 'consultarAlumnosInactivos' %}">Ver Inactivos</a>
-            </div>
-                <div style="width: 950px; padding-top: 10px;">
+         <div style="text-align: right; align-items: right;">
+            <a type="button" style="margin-bottom: 10px; margin-right: 10px;" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
+            <a type="button" style="float: right; margin-bottom: 10px; " class="btn btn-primary" href="{% url 'asistenteConsultarAlumnos' %}">Ver Activos</a>
+         </div>
+            <div style="width: 950px; padding-top: 10px;">
             <table id="example" class="table table-bordered table-hover table-sm" style="min-width: 900px;">
             <thead>
                 <tr bgcolor="#f0f8ff" >
