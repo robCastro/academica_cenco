@@ -197,32 +197,172 @@ def ver_metricas_estado(request):
                 fechaMin = datetime.datetime(fechaHoy.year - 1, 12, 1)
             else:
                 fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month - 2, 1)
-            fechaMin = datetime.datetime(2018, 1, 1)
-            estadoActivo = Estado.objects.filter(tipo_estado="Inscrito").first()
-            metricasActivos = MetricaEstado.objects.filter(fecha_metrica__range=(fechaMin, fechaHoy)).filter(
-                estado=estadoActivo).order_by('fecha_metrica')
-            promedio = metricasActivos.aggregate(Avg('cantidad')).get('cantidad__avg')
-            minimo = metricasActivos.aggregate(Min('cantidad')).get('cantidad__min')
-            maximo = metricasActivos.aggregate(Max('cantidad')).get('cantidad__max')
+            metricas = MetricaEstado.objects.filter(fecha_metrica__range=(fechaMin, fechaHoy)).order_by(
+                'fecha_metrica')
+            #promedio = metricasActivos.aggregate(Avg('cantidad')).get('cantidad__avg')
+            #minimo = metricasActivos.aggregate(Min('cantidad')).get('cantidad__min')
+            #maximo = metricasActivos.aggregate(Max('cantidad')).get('cantidad__max')
             fechas = []
-            cantidades = []
-            color = '#008000'
-            for metricaActivo in metricasActivos:
-                fechas.append(metricaActivo.fecha_metrica)
-                cantidades.append(metricaActivo.cantidad)
+            cantidadesActivos = []
+            cantidadesRetenidos = []
+            cantidadesPresentados = []
+            cantidadesReingresos = []
+            cantidadesInactivos = []
+            cantidadesRetirados = []
+            cantidadesNoPresentados = []
+            cantidadesInscritos = []
+            cantidadesGraduados = []
+            for metrica in metricas:
+                tipoEstado = metrica.estado.tipo_estado
+                if tipoEstado == "Activo":
+                    fechas.append(metrica.fecha_metrica.strftime('%b %y'))
+                    cantidadesActivos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Retenidos":
+                    cantidadesRetenidos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Presentados":
+                    cantidadesPresentados.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Reingresos":
+                    cantidadesReingresos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Inactivo":
+                    cantidadesInactivos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Retirados":
+                    cantidadesRetirados.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "No Presentados":
+                    cantidadesNoPresentados.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Inscrito":
+                    cantidadesInscritos.append(metrica.cantidad)
+                    continue
+                else:
+                    cantidadesGraduados.append(metrica.cantidad)
+                    continue
             context = {
                 'fechas' : fechas,
-                'cantidades' : cantidades,
-                'promedio' : promedio,
-                'minimo' : minimo,
-                'maximo' : maximo,
-                'color' : color,
-                'etiqueta' : 'Activos',
+                'cantidadesActivos' : cantidadesActivos,
+                'cantidadesRetenidos' : cantidadesRetenidos,
+                'cantidadesPresentados': cantidadesPresentados,
+                'cantidadesReingresos': cantidadesReingresos,
+                'cantidadesInactivos': cantidadesInactivos,
+                'cantidadesRetirados':cantidadesRetirados,
+                'cantidadesNoPresentados':cantidadesNoPresentados,
+                'cantidadesInscritos':cantidadesInscritos,
+                'cantidadesGraduados':cantidadesGraduados,
+                #'promedio' : promedio,
+                #'minimo' : minimo,
+                #'maximo' : maximo,
             }
             return render(request, 'modulo_asistencia/director_ver_metrica_estados.html', context)
     else:
         return HttpResponseForbidden('No tiene acceso a esta url')
 
+@login_required
+def filtrar_metricas(request):
+    if request.user.groups.filter(name="Director").exists():
+        if request.method == 'POST':
+            fechaHoy = datetime.datetime.today()
+            periodo = request.POST.get('periodo_consulta')
+            if periodo == 'semestre':
+                if fechaHoy.month <= 5:
+                    fechaMin = datetime.datetime(fechaHoy.year - 1, 6 + fechaHoy.month, 1)
+                else:
+                    fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month - 5, 1)
+            elif periodo == 'anio':
+                fechaMin = datetime.datetime(fechaHoy.year - 1, fechaHoy.month, 1)
+            elif periodo == 'todo':
+                fechaMin = None
+            elif periodo == 'personalizado':
+                fechaInicio = request.POST.get('fecha_inicio')
+                fechaFin = request.POST.get('fecha_fin')
+                fechaAuxMin = datetime.datetime.strptime(fechaInicio, '%d/%m/%Y')
+                fechaAuxFin = datetime.datetime.strptime(fechaFin, '%d/%m/%Y')
+                if fechaAuxMin > fechaAuxFin:
+                    print "No valido"
+                    mensaje = "Fecha Inicio debe ser mayor a Fecha Fin."
+                    return JsonResponse(
+                        {
+                             'mensaje' : mensaje,
+                        }, status=500
+                    )
+                fechaMin = datetime.datetime(fechaAuxMin.year, fechaAuxMin.month, 1)
+                    # Sobreescribiendo fecha hoy para utilizar en consultar mas abajo
+                fechaHoy = datetime.datetime(fechaAuxFin.year, fechaAuxFin.month, 1)
+            else:  #Para Trimestre
+                if fechaHoy.month <= 2:
+                    fechaMin = datetime.datetime(fechaHoy.year - 1, 9 + fechaHoy.month, 1)
+                else:
+                    fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month - 2, 1)
+            if fechaMin != None:
+                metricas= MetricaEstado.objects.filter(fecha_metrica__range=(fechaMin, fechaHoy)).order_by(
+                    'fecha_metrica')
+            else:
+                metricas = MetricaEstado.objects.all().order_by('fecha_metrica')
+            fechas = []
+            cantidadesActivos = []
+            cantidadesRetenidos = []
+            cantidadesPresentados = []
+            cantidadesReingresos = []
+            cantidadesInactivos = []
+            cantidadesRetirados = []
+            cantidadesNoPresentados = []
+            cantidadesInscritos = []
+            cantidadesGraduados = []
+            for metrica in metricas:
+                tipoEstado = metrica.estado.tipo_estado
+                if tipoEstado == "Activo":
+                    fechas.append(metrica.fecha_metrica.strftime('%b %y'))
+                    cantidadesActivos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Retenidos":
+                    cantidadesRetenidos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Presentados":
+                    cantidadesPresentados.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Reingresos":
+                    cantidadesReingresos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Inactivo":
+                    cantidadesInactivos.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Retirados":
+                    cantidadesRetirados.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "No Presentados":
+                    cantidadesNoPresentados.append(metrica.cantidad)
+                    continue
+                elif tipoEstado == "Inscrito":
+                    cantidadesInscritos.append(metrica.cantidad)
+                    continue
+                else:
+                    cantidadesGraduados.append(metrica.cantidad)
+                    continue
+            return JsonResponse(
+                {
+                    'fechas' : fechas,
+                    'cantidadesActivos' : cantidadesActivos,
+                    'cantidadesRetenidos' : cantidadesRetenidos,
+                    'cantidadesPresentados': cantidadesPresentados,
+                    'cantidadesReingresos': cantidadesReingresos,
+                    'cantidadesInactivos': cantidadesInactivos,
+                    'cantidadesRetirados':cantidadesRetirados,
+                    'cantidadesNoPresentados':cantidadesNoPresentados,
+                    'cantidadesInscritos':cantidadesInscritos,
+                    'cantidadesGraduados':cantidadesGraduados,
+                    #'promedio' : promedio,
+                    #'minimo' : minimo,
+                    #'maximo' : maximo,
+                }, status=200
+            )
+        else:
+            return redirect('director_ver_metricas_estado')
+    else:
+        return HttpResponseForbidden('No tiene acceso a esta url')
 
 #Encargada de manejar metodo GET, valida si se puede o no ingresar asistencias en este momento
 @login_required
@@ -282,7 +422,7 @@ def guardarAsistencia(request, id_grupo):
 
         metrica_estado_activo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo).first()
         metrica_estado_inactivo = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_inactivo).first()
-        metrica_estado_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_presentados).first()
+        #metrica_estado_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_presentados).first()
         metrica_estado_no_presentados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_no_presentados).first()
         metrica_estado_retenidos = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retenidos).first()
         metrica_estado_retirados = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_retirados).first()
@@ -298,10 +438,26 @@ def guardarAsistencia(request, id_grupo):
                     detalle_estado.actual_detalle_e = False;
                     detalle_estado.save()
                     nuevo_detalle_estado.save()
+                    metrica_estado_presentados = MetricaEstado.objects.filter(
+                        fecha_metrica=datetime.datetime(
+                            inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1
+                        ),estado=estado_presentados
+                    ).first()
                     metrica_estado_presentados.cantidad = metrica_estado_presentados.cantidad + 1
                     metrica_estado_presentados.save()
+                    metrica_estado_activo = MetricaEstado.objects.filter(
+                        fecha_metrica=datetime.datetime(
+                            inscripcion.fecha_inscripcion.year, inscripcion.fecha_inscripcion.month, 1
+                        ), estado=estado_activo
+                    ).first()
                     metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
                     metrica_estado_activo.save()
+                    if inscripcion.fecha_inscripcion.month != fecha_hoy.month:
+                        metricaActivoMesActual = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo)
+                        metricaActivoMesActual.cantidad = metricaActivoMesActual.cantidad + 1
+                        metricaActivoMesActual.save()
+                        metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
+                        metrica_estado_retenidos.save()
                 elif estado_actual == 'Activo':
                     fecha_detalle = detalle_estado.fecha_detalle_e
                     if fecha_detalle.year < fecha_hoy.year or fecha_detalle.month < fecha_hoy.month:

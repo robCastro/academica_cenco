@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
 	<script src="{% static 'js/jquery-ui.js' %}"></script>
 
+    <!-- Para widget de fechas -->
+    <script src="{% static 'js/jquery-1.12.4/jquery-1.12.4.js' %}"></script>
+    <script src="{% static 'js/jquery-1.12.4/jquery-ui.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
+
     <style>
         canvas {
             -moz-user-select: none;
@@ -27,8 +32,7 @@
         <span class="btnCerrar">×</span>
         <strong></strong>
     </div>
-
-    <div style="padding-left: 25%; padding-top: 4%" id="titulo">
+    <div style="padding-left: 25%; padding-top: 2%" id="titulo">
         <h2>Reporte de Estados</h2>
     </div>
     <table width="100%">
@@ -37,16 +41,14 @@
                 <h4>Reportes</h4>
                 <div class='divNotifGrupo'>
                     <div style="padding-left: 10%">
-                        <h5>Reporte de Estados</h5>
+                        <h5><u><a href="{% url 'director_ver_metricas_estado' %}">Reporte de Estados</a></u></h5>
                         <h5>Reporte 2</h5>
                         <h5>Reporte 3</h5>
                         <h5>Reporte 4</h5>
                     </div>
                 </div>
             </td>
-            <td width="80%" style="padding-top: 2%" valign="top">
-                <form id="frmConsultar">
-                {% csrf_token %}
+            <td width="80%" style="padding-top: 5%" valign="top">
                 <table width="100%">
                     <tr>
                         <td width="20%">Tipo de Gráfico</td>
@@ -71,7 +73,7 @@
                         </td>
                         <td></td>
                         <td>
-                            <select class="custom-select" id="intervalo">
+                            <select class="custom-select" onchange="cambiarPeriodo()" id="intervalo">
                                 <option value="trimestre">Último Trimestre</option>
                                 <option value="semestre">Último Semestre</option>
                                 <option value="anio">Último Año</option>
@@ -98,29 +100,34 @@
                             </select>
                         </td>
                         <td></td>
-                        <td><button class="btn btn-primary">Consultar</button></td>
+                        <td></td>
                     </tr>
                 </table>
-                </form>
-            </td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>
-                <div style="width: 100%" id="id_grafico">
-                    <canvas id="canvas"></canvas>
-                </div>
-                <div style="padding-top: 3%">
-                    <table width="100%" id="resumenEstados">
+                <div id="areaIntervaloP" style="padding-top: 3%; padding-left: 30%" hidden="">
+                    <table>
+                        <tr>
+                            <td width="29%"><label for="fechaInicio"><strong>Fecha Inicio*:</strong></label></td>
+                            <td width="13%"></td>
+                            <td width="30%"><label for="fechaFin"><strong>Fecha Fin*:</strong></label></td>
+                            <td width="5%"></td>
+                        </tr>
                         <tr>
                             <td>
-                                Promedio: {{ promedio }}
+                                <div class="form-group">
+                                    <input class="form-control" onchange="validarFechas()" type="text" id="fechaInicio">
+                                </div>
                             </td>
+                            <td></td>
                             <td>
-                                Maximo: {{ maximo }}
+                                <div class="form-group">
+                                    <input class="form-control" onchange="validarFechas()" type="text" id="fechaFin">
+                                </div>
                             </td>
+                            <td></td>
                             <td>
-                                Minimo: {{ minimo }}
+                                <div class="form-group">
+                                    <button class="btn btn-primary" id="btnConsultar" onclick="consultarPersonalizado()" disabled="">Consultar</button>
+                                </div>
                             </td>
                         </tr>
                     </table>
@@ -129,20 +136,187 @@
         </tr>
     </table>
 
+    <div style="width: 100%; text-align: center; padding-top: 3%" id="id_grafico">
+        <canvas id="canvas" style="display: inline;"></canvas>
+    </div>
+    <div style="padding-left: 48%">
+        <table width="100%">
+            <tr>
+                <td width="15%"><button onclick="aumentarTamanioCanvas()" class="btn btn-outline-info">Alejar</button></td>
+                <td width="10%"></td>
+                <td width="15%"><button onclick="disminuirTamanioCanvas()" class="btn btn-outline-info">Acercar</button></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
     <script>
+
+    //Widget Fecha
+        //Fecha Inicio
+        $( function() {
+            $( "#fechaInicio" ).datepicker({
+                dateFormat: "dd/mm/yy",     //display de la fecha
+                altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+                minDate: "-90Y",
+                yearRange: "-90:+1",
+                monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+                monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+                dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+                changeMonth: true,
+                changeYear: true,
+            });
+        } );
+
+        $( function() {
+            $( "#fechaFin" ).datepicker({
+                dateFormat: "dd/mm/yy",     //display de la fecha
+                altFormat: "yy-mm-dd",      //manejo para backend (NO FUNCIONA), se manda como dateFormat
+                minDate: "-90Y",
+                yearRange: "-90:+1",
+                monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+                monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+                dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+                changeMonth: true,
+                changeYear: true,
+            });
+        } );
+
+    //Graficos
+
         var tipo = 'line';
+        var mostrarEstado = [true, false, false, false, false, false, false, false, false];
         var fechas = [
             {% for fecha in fechas %}
-                '{{ fecha|date:"M y" }}',
+                '{{ fecha }}',
             {% endfor %}
         ];
-        var cantidades = [
-            {% for cantidad in cantidades %}
+        var cantidadesActivos = [
+            {% for cantidad in cantidadesActivos %}
                 {{ cantidad }},
             {% endfor %}
         ];
-        var color = '{{ color }}';
-        var etiqueta = '{{ etiqueta }}';
+        var cantidadesRetenidos = [
+            {% for cantidad in cantidadesRetenidos %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesPresentados = [
+            {% for cantidad in cantidadesPresentados %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesReingresos = [
+            {% for cantidad in cantidadesReingresos %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesInactivos = [
+            {% for cantidad in cantidadesInactivos %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesRetirados = [
+            {% for cantidad in cantidadesRetirados %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesNoPresentados = [
+            {% for cantidad in cantidadesNoPresentados %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesInscritos = [
+            {% for cantidad in cantidadesInscritos %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+        var cantidadesGraduados = [
+            {% for cantidad in cantidadesGraduados %}
+                {{ cantidad }},
+            {% endfor %}
+        ];
+                //Colores
+        var colorActivos = '#008000';
+        var colorRetenidos = '#00e300';
+        var colorReingresos = '#ff9300';
+        var colorPresentados = '#00b9c4';
+        var colorInactivos = '#8f0000';
+        var colorRetirados = '#fc0001';
+        var colorNoPresentados = '#fc7e34';
+        var colorInscritos = '#000090';
+        var colorGraduados = '#808080';
+
+
+        function cambiarPeriodo(){
+            areaIntervaloPersonalizado = document.getElementById('areaIntervaloP');
+            periodo = document.getElementById('intervalo').value;
+            if (periodo !== "personalizado"){
+                AJAXcall_simple(periodo, "", "");
+                areaIntervaloPersonalizado.hidden = true;
+            }
+            else{
+                areaIntervaloPersonalizado.hidden = false;
+            }
+        }
+
+        function AJAXcall_simple(periodo, fechaInicio, fechaFin){
+            $('#espereG').css('display', 'inline');
+            $.ajax({
+                type: 'POST',
+                url: '/asistencia/filtrar_metricas_estados/',
+                data: {
+                    periodo_consulta: periodo,
+                    fecha_inicio: fechaInicio, //utilizados solamente en filtro personalizado
+                    fecha_fin: fechaFin, //utilizados solamente en filtro personalizado
+                    csrfmiddlewaretoken:'{{ csrf_token }}',
+                },
+                success: function (response) {
+                    $('#espereG').css('display', 'none');
+                    fechas = response.fechas;
+                    cantidadesActivos = response.cantidadesActivos;
+                    cantidadesRetenidos = response.cantidadesRetenidos;
+                    cantidadesPresentados = response.cantidadesPresentados;
+                    cantidadesReingresos = response.cantidadesReingresos;
+                    cantidadesInactivos = response.cantidadesInactivos;
+                    cantidadesRetirados = response.cantidadesRetirados;
+                    cantidadesNoPresentados = response.cantidadesNoPresentados;
+                    cantidadesInscritos = response.cantidadesInscritos;
+                    cantidadesGraduados = response.cantidadesGraduados;
+                    borrarGrafico();
+                    cargarGrafico();
+                    var m = $('#mensajeEmergente');
+                    m.css('display', 'none');
+                },
+                error: function (response) {
+                    $('#espereG').css('display', 'none');
+                    var m = $('#mensajeEmergente');
+                    console.log(response.responseJSON.mensaje);
+                    m.children('strong').html(response.responseJSON.mensaje);
+                    m.css('display','block');
+                    m.css('opacity',1);
+                    m.removeClass();
+                    m.addClass('alerta accionPeligrosa');
+                    desplazoArriba();
+                }
+            })
+        }
+
+        function disminuirTamanioCanvas(){
+            canvas = document.getElementById('canvas');
+            if (canvas.width > 100 && canvas.height > 100){
+                canvas.width = canvas.width - 50;
+                canvas.height = canvas.height - 50;
+            }
+            window.myLine.update();
+        }
+
+        function aumentarTamanioCanvas(){
+            canvas = document.getElementById('canvas');
+            canvas.width = canvas.width + 50;
+            canvas.height = canvas.height + 50;
+            window.myLine.update();
+        }
 
         function cargarGrafico(){
             var ctx = document.getElementById('canvas').getContext('2d');
@@ -150,28 +324,86 @@
                 type: tipo,
                 data: {
                     labels: fechas,
-                    datasets: [{
-                        label: etiqueta,
-                        backgroundColor: color,
-                        borderColor: color,
+                    datasets: [
+                    {
+                        label: 'Activos',
+                        stack: 'Stack 0',
+                        backgroundColor: colorActivos,
+                        borderColor: colorActivos,
                         borderWidth: 2,
-                        data: cantidades,
+                        data: cantidadesActivos,
                         fill: false,
                     },
                     {
-                        label: "Legend 2",
-                        backgroundColor: color,
-                        borderColor: color,
+                        label: 'Retenidos',
+                        stack: 'Stack 1',
+                        backgroundColor: colorRetenidos,
+                        borderColor: colorRetenidos,
                         borderWidth: 2,
-                        data: [1, 8, 3, 2 ,1],
+                        data: cantidadesRetenidos,
                         fill: false,
                     },
-                        {
-                        label: "Legend 3",
-                        backgroundColor: color,
-                        borderColor: color,
+                    {
+                        label: 'Presentados',
+                        stack: 'Stack 1',
+                        backgroundColor: colorPresentados,
+                        borderColor: colorPresentados,
                         borderWidth: 2,
-                        data: [3, 2, 2, 7, 7],
+                        data: cantidadesPresentados,
+                        fill: false,
+                    },
+                    {
+                        label: 'Reingresos',
+                        stack: 'Stack 1',
+                        backgroundColor: colorReingresos,
+                        borderColor: colorReingresos,
+                        borderWidth: 2,
+                        data: cantidadesReingresos,
+                        fill: false,
+                    },
+                    {
+                        label: 'Inactivos',
+                        stack: 'Stack 2',
+                        backgroundColor: colorInactivos,
+                        borderColor: colorInactivos,
+                        borderWidth: 2,
+                        data: cantidadesInactivos,
+                        fill: false,
+                    },
+                    {
+                        label: 'Retirados',
+                        stack: 'Stack 3',
+                        backgroundColor: colorRetirados,
+                        borderColor: colorRetirados,
+                        borderWidth: 2,
+                        data: cantidadesRetirados,
+                        fill: false,
+                    },
+                    {
+                        label: 'Inscritos',
+                        stack: 'Stack 4',
+                        backgroundColor: colorInscritos,
+                        borderColor: colorInscritos,
+                        borderWidth: 2,
+                        data: cantidadesInscritos,
+                        fill: false,
+                    },
+                    {
+                        label: 'No Presentados',
+                        stack: 'Stack 5',
+                        backgroundColor: colorNoPresentados,
+                        borderColor: colorNoPresentados,
+                        borderWidth: 2,
+                        data: cantidadesNoPresentados,
+                        fill: false,
+                    },
+                    {
+                        label: 'Graduados',
+                        stack: 'Stack 3',
+                        backgroundColor: colorGraduados,
+                        borderColor: colorGraduados,
+                        borderWidth: 2,
+                        data: cantidadesGraduados,
                         fill: false,
                     },
                     ]
@@ -179,11 +411,26 @@
                 options: {
                     responsive: true,
                     legend: {
+                        labels:{fontSize : 16, padding:20},
 				        position: 'left',
+                        onClick: function (e, legendItem) {
+                            var index = legendItem.datasetIndex;
+                            mostrarEstado[index] = !mostrarEstado[index];
+                            var ci = this.chart;
+                            var meta = ci.getDatasetMeta(index);
+
+                            // See controller.isDatasetVisible comment
+                            meta.hidden = meta.hidden === null? !ci.data.datasets[index].hidden : null;
+
+                            // We hid a dataset ... rerender the chart
+                            ci.update();
+                            console.log(mostrarEstado[index])
+                        },
                     },
                     title: {
                         display: true,
-                        text: 'Estado ' + etiqueta
+                        text: 'Reporte de Estados',
+                        fontSize: 20,
                     },
                     tooltips: {
                         mode: 'index',
@@ -215,18 +462,15 @@
                     }
                 }
             });
-        }
-
-        window.onload = function() {
-			cargarGrafico();
-			var grafico = window.myLine;
-			for (i = 1; i<= 2; i++){
-			    var meta = grafico.getDatasetMeta(i);
-			    meta.hidden = meta.hidden === null? !grafico.data.datasets[i].hidden : null;
-			    console.log("Contador = " + i);
+            var grafico = window.myLine;
+			for (i = 0; i<= 8; i++){
+			    if (!mostrarEstado[i]){ //Contiene true si la categoria de estado estaba siendo vista
+			        var meta = grafico.getDatasetMeta(i);
+			        meta.hidden = meta.hidden === null? !grafico.data.datasets[i].hidden : null;
+                }
             }
             grafico.update();
-		};
+        }
 
         function borrarGrafico(){
             $('#canvas').remove();
@@ -238,6 +482,40 @@
             console.log("Tipo es: " + tipo);
             borrarGrafico();
             cargarGrafico();
+        }
+
+    //Eventos de Pagina
+        window.onload = function() {
+			cargarGrafico();
+			var fechaInicio = document.getElementById('fechaInicio');
+            fechaInicio.onkeydown = function(e){
+                e.preventDefault();
+            };
+            var fechaFin = document.getElementById('fechaFin');
+            fechaFin.onkeydown = function(e){
+                e.preventDefault();
+            };
+		};
+
+        function desplazoArriba(){
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+        }
+
+    //Validaciones
+
+        function validarFechas(){
+            var fechaInicio = document.getElementById('fechaInicio').value;
+            var fechaFin = document.getElementById('fechaFin').value;
+            var valido = fechaInicio != "" && fechaFin != "";
+            document.getElementById('btnConsultar').disabled = !valido;
+        }
+
+    //botones
+
+        function consultarPersonalizado(){
+            var fechaInicio = document.getElementById('fechaInicio').value;
+            var fechaFin = document.getElementById('fechaFin').value;
+            AJAXcall_simple('personalizado', fechaInicio, fechaFin)
         }
     </script>
     <script src="{% static 'js/cerrar_alertas.js' %}"></script>
