@@ -186,7 +186,7 @@ def modificar_alumno(request,id_alumno):
        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
-
+@permission_required('db_app.ver_alumno')
 def ver_alumno_propio(request):
    if request.user.groups.filter(name="Alumno").exists():
     try:
@@ -576,7 +576,7 @@ def ConstanciaEstudioPDF(request):
                 #self.cabecera(pdf)
                 # Con show page hacemos un corte de página para pasar a la siguiente
 
-            #def cabecera(self, pdf):
+                #def cabecera(self, pdf):
                 # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
                 archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
                 # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
@@ -587,7 +587,7 @@ def ConstanciaEstudioPDF(request):
                 pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
                 pdf.setFont("Helvetica", 14)
                 alum = Alumno.objects.get(username=request.user)
-                nom=alum.nombre+" "+alum.apellido+","
+                nom=alum.nombre+" "+alum.apellido
 
                 ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
                 dia = "Apopa, " + ahora
@@ -595,20 +595,26 @@ def ConstanciaEstudioPDF(request):
                 x=-175
                 pdf.drawString(75, 745+x, u"A quien corresponda: ")
                 pdf.drawString(75, 685+x, u"El que suscribe, Director de esta institución, hace CONSTAR que:")
-                pdf.drawString(75, 670+x, nom)
+                pdf.drawString(100, 670+x, nom)
 
                 y=(nom.__len__()*7)+71
 
                 dui = alum.dui
+                ins = Inscripcion.objects.get(alumno_id=alum.codigo, actual_inscripcion=True)
+                id_gru = ins.grupo_id
+                grupo = Grupo.objects.get(codigo=id_gru)
+
                 if dui.__len__()==10:
-                    pdf.drawString(y, 670+x, u" con DUI: ")
-                    pdf.drawString(y+62, 670+x, dui)
+                    pdf.drawString(y+25, 670+x, u" con DUI: ")
+                    pdf.drawString(y+87, 670+x, dui)
                     pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:" )
-                    pdf.drawString(75, 595 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                    pdf.drawString(100, 640 + x, str(grupo.horario.dias_asignados)+" de "+str(grupo.horario.hora_inicio.strftime("%I:%M"))+" a "+str(grupo.horario.hora_fin.strftime("%I:%M")))
+                    pdf.drawString(75, 580 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
 
                 else:
-                    pdf.drawString(y, 670+x, u"es estudiante activo/a de esta institución en el horario:")
-                    pdf.drawString(75,600 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                    pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:")
+                    pdf.drawString(75,580 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                    pdf.drawString(100, 640 + x,str(grupo.horario.dias_asignados)+" de "+str(grupo.horario.hora_inicio.strftime("%I:%M"))+" a "+str(grupo.horario.hora_fin.strftime("%I:%M")))
 
                 s=120
                 pdf.drawString(200, 100+s, u"_________________________")
@@ -632,12 +638,12 @@ def ConstanciaEstudioPDF(request):
 
 
 
-                pdf.showPage()
-                pdf.save()
-                pdf = buffer.getvalue()
-                buffer.close()
-                response.write(pdf)
-                return response
+                    pdf.showPage()
+                    pdf.save()
+                    pdf = buffer.getvalue()
+                    buffer.close()
+                    response.write(pdf)
+                    return response
             else:
                 return redirect("Constancias")
 
