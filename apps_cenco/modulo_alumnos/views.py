@@ -59,6 +59,7 @@ def consultar_alumnos(request):
 @login_required
 def detalle_alumno(request,id_alumno):
     if request.user.groups.filter(name="Asistente").exists():
+        insertarFechasMetricasEstado()
         url = "/alumnos/" + str(id_alumno)
 
         if 'eliminar1' in request.POST:
@@ -79,7 +80,10 @@ def detalle_alumno(request,id_alumno):
             detalleEstado = DetalleEstado.objects.get(alumno=alumno, actual_detalle_e=True)
             detalleEstado.actual_detalle_e=False
             detalleEstado.save()
-            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detalle_e=True,alumno=alumno,estado=Estado.objects.get(tipo_estado='Inactivo'))
+            estadoInactivo = Estado.objects.get(tipo_estado='Inactivo')
+            estadoRetirado = Estado.objects.get(tipo_estado='Retirados')
+            estadoActivo = Estado.objects.get(tipo_estado='Activo')
+            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detalle_e=True,alumno=alumno,estado=estadoInactivo)
             inscripcion = Inscripcion.objects.filter(alumno=alumno, actual_inscripcion=True).first()
             inscripcion.actual_inscripcion = False
             inscripcion.save()
@@ -89,6 +93,17 @@ def detalle_alumno(request,id_alumno):
             grupo.save()
             grupo.horario.cantidad_alumnos=grupo.horario.cantidad_alumnos-1
             grupo.horario.save()
+            fechaHoy = datetime.today()
+            fechaAux = datetime(fechaHoy.year, fechaHoy.month, 1)
+            metricaInactivo = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoInactivo).first()
+            metricaInactivo.cantidad = metricaInactivo.cantidad + 1
+            metricaInactivo.save()
+            metricaRetirados = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoRetirado).first()
+            metricaRetirados.cantidad = metricaRetirados.cantidad + 1
+            metricaRetirados.save()
+            metricaActivo = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoActivo).first()
+            metricaActivo.cantidad = metricaActivo.cantidad + 1
+            metricaActivo.save()
             return HttpResponseRedirect(url)
         elif request.method=='POST':
             if request.method == 'POST':
@@ -546,78 +561,85 @@ def guardarModificacionAlumnoIndependiente(request):
 @login_required
 def ConstanciaEstudioPDF(request):
     if request.user.groups.filter(name="Alumno").exists():
-            # Indicamos el tipo de contenido a devolver, en este caso un pdf
-            response = HttpResponse(content_type='application/pdf')
-            # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
-            buffer = BytesIO()
-            # Canvas nos permite hacer el reporte con coordenadas X y Y
-            pdf = canvas.Canvas(buffer,pagesize=letter)
-            # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
-            #self.cabecera(pdf)
-            # Con show page hacemos un corte de página para pasar a la siguiente
+            alumno = Alumno.objects.get(username=request.user)
+            estado = alumno.detalleestado_set.get(actual_detalle_e=True).estado
+            # Agregar ands aqui para otras condiciones
+            permitirConstancia = estado.tipo_estado == 'Activo'
+            if permitirConstancia:
+                # Indicamos el tipo de contenido a devolver, en este caso un pdf
+                response = HttpResponse(content_type='application/pdf')
+                # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
+                buffer = BytesIO()
+                # Canvas nos permite hacer el reporte con coordenadas X y Y
+                pdf = canvas.Canvas(buffer,pagesize=letter)
+                # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
+                #self.cabecera(pdf)
+                # Con show page hacemos un corte de página para pasar a la siguiente
 
-        #def cabecera(self, pdf):
-            # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
-            archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
-            # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
-            pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
-            # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
-            pdf.setFont("Helvetica", 16)
-            # Dibujamos una cadena en la ubicación X,Y especificada
-            pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
-            pdf.setFont("Helvetica", 14)
-            alum = Alumno.objects.get(username=request.user)
-            nom=alum.nombre+" "+alum.apellido+","
+            #def cabecera(self, pdf):
+                # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
+                archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+                # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+                pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+                # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+                pdf.setFont("Helvetica", 16)
+                # Dibujamos una cadena en la ubicación X,Y especificada
+                pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+                pdf.setFont("Helvetica", 14)
+                alum = Alumno.objects.get(username=request.user)
+                nom=alum.nombre+" "+alum.apellido+","
 
-            ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
-            dia = "Apopa, " + ahora
-            pdf.drawString(425, 695, dia)
-            x=-175
-            pdf.drawString(75, 745+x, u"A quien corresponda: ")
-            pdf.drawString(75, 685+x, u"El que suscribe, Director de esta institución, hace CONSTAR que:")
-            pdf.drawString(75, 670+x, nom)
+                ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
+                dia = "Apopa, " + ahora
+                pdf.drawString(425, 695, dia)
+                x=-175
+                pdf.drawString(75, 745+x, u"A quien corresponda: ")
+                pdf.drawString(75, 685+x, u"El que suscribe, Director de esta institución, hace CONSTAR que:")
+                pdf.drawString(75, 670+x, nom)
 
-            y=(nom.__len__()*7)+71
+                y=(nom.__len__()*7)+71
 
-            dui = alum.dui
-            if dui.__len__()==10:
-                pdf.drawString(y, 670+x, u" con DUI: ")
-                pdf.drawString(y+62, 670+x, dui)
-                pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:" )
-                pdf.drawString(75, 595 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                dui = alum.dui
+                if dui.__len__()==10:
+                    pdf.drawString(y, 670+x, u" con DUI: ")
+                    pdf.drawString(y+62, 670+x, dui)
+                    pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:" )
+                    pdf.drawString(75, 595 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
 
+                else:
+                    pdf.drawString(y, 670+x, u"es estudiante activo/a de esta institución en el horario:")
+                    pdf.drawString(75,600 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+
+                s=120
+                pdf.drawString(200, 100+s, u"_________________________")
+                grupo = Group.objects.filter(name="Director").first()
+                director= grupo.user_set.first()
+                dir= director.first_name+" "+director.last_name
+                pdf.drawString(250,80+s,dir)
+                pdf.drawString(240, 60+s, u"Director de CENCO")
+                pdf.setFont("Helvetica", 10)
+                pdf.drawString(65, -70+s, u"*Valida solo con firma y sello del director por un periodo no mayor a un mes")
+
+
+
+
+
+
+
+
+
+
+
+
+
+                pdf.showPage()
+                pdf.save()
+                pdf = buffer.getvalue()
+                buffer.close()
+                response.write(pdf)
+                return response
             else:
-                pdf.drawString(y, 670+x, u"es estudiante activo/a de esta institución en el horario:")
-                pdf.drawString(75,600 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
-
-            s=120
-            pdf.drawString(200, 100+s, u"_________________________")
-            grupo = Group.objects.filter(name="Director").first()
-            director= grupo.user_set.first()
-            dir= director.first_name+" "+director.last_name
-            pdf.drawString(250,80+s,dir)
-            pdf.drawString(240, 60+s, u"Director de CENCO")
-            pdf.setFont("Helvetica", 10)
-            pdf.drawString(65, -70+s, u"*Valida solo con firma y sello del director por un periodo no mayor a un mes")
-
-
-
-
-
-
-
-
-
-
-
-
-
-            pdf.showPage()
-            pdf.save()
-            pdf = buffer.getvalue()
-            buffer.close()
-            response.write(pdf)
-            return response
+                return redirect("Constancias")
 
     else:
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
@@ -636,7 +658,13 @@ def ConstanciaEstudioPDF(request):
 @login_required
 def constancias(request):
    if request.user.groups.filter(name="Alumno").exists():
-
-    return render(request, 'modulo_alumnos/constancias.html')
+        alumno = Alumno.objects.get(username=request.user)
+        estado = alumno.detalleestado_set.get(actual_detalle_e=True).estado
+            #Agregar ands aqui para otras condiciones
+        permitirConstancia = estado.tipo_estado == 'Activo'
+        context = {
+            'permitirConstancia':permitirConstancia
+        }
+        return render(request, 'modulo_alumnos/constancias.html', context)
    else:
-     raise Http404('Error, no tiene permiso para esta página')
+        raise Http404('Error, no tiene permiso para esta página')

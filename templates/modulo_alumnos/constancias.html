@@ -6,7 +6,7 @@
     <div class="container-fluid" style="display: inline-flex">
     {{ block.super }}
 
-
+{% if permitirConstancia %}
     <table style="width: 80%;" cellpadding="30px">
 <tr >
     <td align="left"><h3>Constancias</h3></td>
@@ -45,4 +45,10 @@
 
 
     </div>
+{% else %}
+    <div style="padding-top: 5%">
+    <h5>Necesita ser estudiante activo y solvente para solicitar constancia, favor comunicarse con la escuela para solventar su situación.</h5>
+    </div>
+
+{% endif %}<!--de if permitir constancia arriba-->
 {% endblock %}
