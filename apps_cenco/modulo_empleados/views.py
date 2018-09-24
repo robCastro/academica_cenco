@@ -303,3 +303,25 @@ def director_datos_propios_contrasenia(request):
             return Http404('Error, acceso solo mediante POST')
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def empleado_datos_propios(request):
+   id = request.user.id
+   u = User.objects.get(pk=id)
+   if u.groups.filter(name='Asistente').exists():
+     plantilla = 'plantillas_base/base_asistente.html'
+   elif u.groups.filter(name='Profesor').exists():
+     plantilla = 'plantillas_base/base_profesor.html'
+
+   if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Profesor").exists():
+    try:
+        empleado = Empleado.objects.get(username=request.user)
+        telEmpleado = Telefono.objects.filter(empleado=empleado).first()
+    except Empleado.DoesNotExist:
+        raise Http404('Empleado no Existe')
+
+    context = {"empleado": empleado,"telEmpleado":telEmpleado,"plantilla":plantilla}
+    return render(request, 'modulo_empleados/empleado_datos_propios.html',context)
+   else:
+     raise Http404('Error, no tiene permiso para esta página')

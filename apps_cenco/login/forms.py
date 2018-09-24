@@ -11,7 +11,6 @@ class AsistenteCredencialesPropiasForm(forms.Form):
     contrasenia1=forms.CharField(max_length=15,widget=forms.PasswordInput(attrs={'size':'15','requerid':'True','class':'form-control'}),label='Contraseña nueva:')
     contrasenia2=forms.CharField(max_length=15,widget=forms.PasswordInput(attrs={'size':'15','requerid':'True','class':'form-control'}),label="Repetir contraseña nueva:")
 
-
     def clean_contrasenia2(self):
         contrasenia1 = self.cleaned_data.get('contrasenia1')
         contrasenia2 = self.cleaned_data.get('contrasenia2')
