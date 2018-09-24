@@ -16,6 +16,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from django.conf import settings
+from reportlab.lib.pagesizes import letter
 
 
 import datetime
@@ -164,7 +165,7 @@ def prof_listado_grupo(request, id_grupo):
         # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
         buffer = BytesIO()
         # Canvas nos permite hacer el reporte con coordenadas X y Y
-        pdf = canvas.Canvas(buffer)
+        pdf = canvas.Canvas(buffer,pagesize=letter)
         # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
         # self.cabecera(pdf)
         # Con show page hacemos un corte de página para pasar a la siguiente
@@ -173,14 +174,19 @@ def prof_listado_grupo(request, id_grupo):
         # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
         archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
         # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
-        pdf.drawImage(archivo_imagen, 40, 750, 120, 90, preserveAspectRatio=True)
+        pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
         # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
         pdf.setFont("Helvetica", 16)
         # Dibujamos una cadena en la ubicación X,Y especificada
+        pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+        pdf.setFont("Helvetica", 16)
+        # Dibujamos una cadena en la ubicación X,Y especificada
         gru= "Grupo"+" "+str(grupo.codigo)+", "+str(grupo.horario)
-        pdf.drawString(180, 790,gru )
+        pdf.drawString(180, 650,gru )
         pdf.setFont("Helvetica", 14)
-        pdf.drawString(180, 745, u"Fecha:____/____/________ ")
+        pdf.drawString(350, 690, u"Fecha:____/____/________ ")
+        docente="Docente: "+prof.nombre+" "+prof.apellido
+        pdf.drawString(100, 610, docente)
 
 
 
@@ -206,7 +212,7 @@ def prof_listado_grupo(request, id_grupo):
         # Establecemos el tamaño de la hoja que ocupará la tabla
         detalle_orden.wrapOn(pdf, 800, 600)
         # Definimos la coordenada donde se dibujará la tabla
-        detalle_orden.drawOn(pdf, 100, 600)
+        detalle_orden.drawOn(pdf, 100, 500)
 
 
 
