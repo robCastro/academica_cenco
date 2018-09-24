@@ -542,7 +542,7 @@ def ConstanciaEstudioPDF(request):
             pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
             pdf.setFont("Helvetica", 14)
             alum = Alumno.objects.get(username=request.user)
-            nom=alum.nombre+" "+alum.apellido+","
+            nom=alum.nombre+" "+alum.apellido
 
             ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
             dia = "Apopa, " + ahora
@@ -550,20 +550,26 @@ def ConstanciaEstudioPDF(request):
             x=-175
             pdf.drawString(75, 745+x, u"A quien corresponda: ")
             pdf.drawString(75, 685+x, u"El que suscribe, Director de esta institución, hace CONSTAR que:")
-            pdf.drawString(75, 670+x, nom)
+            pdf.drawString(100, 670+x, nom)
 
             y=(nom.__len__()*7)+71
 
             dui = alum.dui
+            ins = Inscripcion.objects.get(alumno_id=alum.codigo, actual_inscripcion=True)
+            id_gru = ins.grupo_id
+            grupo = Grupo.objects.get(codigo=id_gru)
+
             if dui.__len__()==10:
-                pdf.drawString(y, 670+x, u" con DUI: ")
-                pdf.drawString(y+62, 670+x, dui)
+                pdf.drawString(y+25, 670+x, u" con DUI: ")
+                pdf.drawString(y+87, 670+x, dui)
                 pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:" )
-                pdf.drawString(75, 595 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                pdf.drawString(100, 640 + x, str(grupo.horario.dias_asignados)+" de "+str(grupo.horario.hora_inicio.strftime("%I:%M"))+" a "+str(grupo.horario.hora_fin.strftime("%I:%M")))
+                pdf.drawString(75, 580 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
 
             else:
-                pdf.drawString(y, 670+x, u"es estudiante activo/a de esta institución en el horario:")
-                pdf.drawString(75,600 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:")
+                pdf.drawString(75,580 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                pdf.drawString(100, 640 + x,str(grupo.horario.dias_asignados)+" de "+str(grupo.horario.hora_inicio.strftime("%I:%M"))+" a "+str(grupo.horario.hora_fin.strftime("%I:%M")))
 
             s=120
             pdf.drawString(200, 100+s, u"_________________________")

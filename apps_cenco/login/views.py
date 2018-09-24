@@ -137,7 +137,7 @@ def principal(request):
             return redirect('encargado_misDatos')
 
         elif has_group(request.user, 'Alumno'):
-            return redirect('homeAlumno')
+            return redirect('ver_alumno_propio')
 
         elif has_group(request.user, 'Profesor'):
             return redirect('profesor_consultar_grupos')
