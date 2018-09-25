@@ -13,4 +13,5 @@ urlpatterns = [
     url(r'^director_datos_usuario/$', views.director_datos_propios_usuario, name="director_datos_propios_usuario"),
     url(r'^director_datos_correo/$', views.director_datos_propios_correo, name="director_datos_propios_correo"),
     url(r'^director_datos_contrasenia/$', views.director_datos_propios_contrasenia, name="director_datos_propios_contrasenia"),
+    url(r'^mis_datos/$', views.asistente_datos_propios, name="asist_datos_propios"),
 ]

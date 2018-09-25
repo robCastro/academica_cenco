@@ -271,3 +271,17 @@ def director_datos_propios_contrasenia(request):
             return Http404('Error, acceso solo mediante POST')
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
+def asistente_datos_propios(request):
+    if request.user.groups.filter(name="Asistente").exists():
+        username = User.objects.get(username=request.user)
+        user=Empleado.objects.get(username_id=username)
+        telefonos = Telefono.objects.filter(empleado=user)
+        context = {
+            'user': user,
+            'telefonos': telefonos,
+        }
+        return render(request, "modulo_empleados/asist_datos_propios.html",context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
