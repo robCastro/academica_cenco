@@ -1,0 +1,35 @@
+{% extends 'plantillas_base/base_asistente.html' %}
+
+{% block titulo %}Mis Datos{% endblock %}
+
+{% block head_content %}
+{% endblock %}
+
+{% block content %}
+<div style="margin-left: 40px;">
+<br>
+<br>
+    <h3>Mis Datos</h3>
+<br>
+<table class="table table-sm" style="width: 40%; white-space: normal;">
+<tr><td><strong>Nombre:</strong> </td><td>{{ user.nombre }}</td></tr>
+<tr><td><strong>Apellido:</strong> </td><td>{{ user.apellido }}</td></tr>
+<tr><td><strong>Direcci&oacute;n:</strong> </td><td>{{ user.direccion }}</td></tr>
+<tr><td><strong>Correo:</strong> </td><td>{{ user.correo }}</td></tr>
+<tr><td><strong>DUI:</strong> </td><td>{{ user.dui }}</td></tr>
+<tr><td><strong>ISSS:</strong> </td><td>{{ user.isss }}</td></tr>
+<tr><td><strong>AFP:</strong> </td><td>{{ user.afp }}</td></tr>
+<tr><td><strong>NIT:</strong> </td><td>{{ user.nit }}</td></tr>
+<tr><td><strong>Cargo que ocupa:</strong> </td><td>{% if user.tipo == 'Asi' %}Asistente{% elif user.tipo == 'Pro' %}Profesor{% elif user.tipo == 'Tec' %}T&eacute;cnico{% endif %}</td></tr>
+<tr><td><strong>Estado:</strong> </td><td>{{ user.estado }}</td></tr>
+</table>
+<br>
+<table class="table table-sm" style="width: 40%;">
+<th>Tel&eacute;fonos</th>
+{% for tel in telefonos %}
+    <tr><td>{{ tel.numero }}</td></tr>
+{% endfor %}
+</table>
+</div>
+<br>
+{% endblock %}

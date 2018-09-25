@@ -131,7 +131,45 @@
         text-underline-mode: none;
     }
 
-    .table-hover tbody tr:hover td, .table-hover tbody tr:hover {background-color: #cce6ff}
+    #example td, #example th{
+        padding: 5px 5px 5px 5px;
+        margin: 5px 5px 5px 5px;
+        white-space: nowrap;
+    }
+
+    input{
+        border-radius: 5px;
+        border:1px solid #949494 !important;;
+        padding: 3px;
+        padding-left: 10px;
+
+    }
+
+    input:focus{
+        border-radius: 5px;
+        border:2px solid #2C3E50 !important;;
+    }
+
+    select {
+       {#-webkit-appearance: button;#}
+       -webkit-border-radius: 2px;
+       -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+       -webkit-padding-end: 10px;
+       -webkit-padding-start: 2px;
+       -webkit-user-select: none;
+       background-position: 97% center;
+       background-repeat: no-repeat;
+       border: 1px solid #828282;
+       color: #000000;
+       overflow: hidden;
+       padding: 2px 10px;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+        height: 30px;
+        margin-right: 5px;
+        margin-left: 5px;
+
+    }
 
     </style>
 
@@ -148,10 +186,10 @@
     <table width='100%' align="center">
 
     <tr id="tr_mod" style="height: 30px;">
-        <td width='20%' rowspan="2" valign="top">
+        <td width='100px' rowspan="2" valign="top">
             <p></p>
             <h4> Credenciales</h4>
-            <div class='divNotifAlumnos'>
+            <div class='divNotifAlumnos' style="padding-left: 20px; width: 160px; margin-right: 40px">
                 <p></p>
                     <h5><u><a href="{% url "director_credenciales_propias" %}" style="color:black ">Director</a></u></h5>
                     <p></p>
@@ -170,20 +208,13 @@
 
         <br/>
         <br/>
-        <h4 align="center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Listado de alumnos</h4>
-
-
-        <td width='20%' align="left" valign="top" ></td>
-
-        <td width="40%" align="right">&nbsp;&nbsp;</td>
-
-
     </tr>
     <tr>
-        <td width="80%" valign="top">
-        <div style="padding-left: 10px;" >
-            <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;">
+        <h4 align="center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Listado de alumnos</h4>
+        <td width="900px" valign="top">
+            <div style="width: auto">
+            <table id="example" class="table table-bordered table-hover" style="min-width: 900px;">
             <thead>
                 <tr bgcolor="#f0f8ff" >
                     <th >Codigo</th>
@@ -192,20 +223,20 @@
                     <th>Telefono</th>
                     <th>Correo</th>
                     <th>Usuario</th>
-                    <th>D&iacute;as Correspondientes</th>
+                    <th>Horario</th>
                 </tr>
             </thead>
                 </thead>
                 <tbody>
                 {% for user in alumnos%}
                     <tr data-toggle="modal" data-target="#myDeleteModal">
-                        <td width="20px"><a href="#">{{ user.codigo }}</a></td>
+                        <td><a href="#">{{ user.codigo }}</a></td>
                         <td>{{ user.nombre }} </td>
                         <td>{{ user.apellido }}</td>
                         <td>{{ user.primerTelefono|default_if_none:""  }}</td>
                         <td>{{ user.correo|default_if_none:"" }}</td>
                         <td>{{ user.username|default_if_none:"" }}</td>
-                        <td>{{user.grupo.horario.dias_asignados}}</td>
+                        <td>{{user.grupo.horario.dias_asignados|default_if_none:""}}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -221,6 +252,7 @@
                 </tr>
                 </tfoot>{% endcomment %}
             </table>
+            </div>
             {% comment %}<div class="pagination">
             {% if users.has_other_pages %}
 
@@ -244,11 +276,12 @@
 
             {% endif %}
             </div>{% endcomment %}
-        </div>
+
 
 
 
     </td>
+    <td width="10px"></td>
     </tr>
     </table>
 

@@ -47,12 +47,41 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_alumnos(request):
     if request.user.groups.filter(name="Asistente").exists():
-        alumnos= Alumno.objects.all()
+        detalleEstado = DetalleEstado.objects.filter(actual_detale_e=True, estado_id=1)
+        alum = []
+
+        for detE in detalleEstado:
+            alum.append(detE.alumno.codigo)
+        alumnos = []
+        for al in alum:
+            alumno = Alumno.objects.get(pk=al)
+            alumnos.append(alumno)
 
         for alumno in alumnos:
             alumno.primerTelefono = alumno.telefono_set.first()
 
         return render(request, 'modulo_alumnos/consultar_alumnos.html', {'alumnos': alumnos})
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
+def consultar_alumnos_inactivos(request):
+    if request.user.groups.filter(name="Asistente").exists():
+        detalleEstado=DetalleEstado.objects.filter(actual_detale_e=False,estado_id=1)
+        alum=[]
+
+        for detE in detalleEstado:
+            alum.append(detE.alumno.codigo)
+        alumnos=[]
+        for al in alum:
+            alumno=Alumno.objects.get(pk=al)
+            alumnos.append(alumno)
+
+        for alumno in alumnos:
+            alumno.primerTelefono=alumno.telefono_set.first()
+
+
+        return render(request, 'modulo_alumnos/consultar_alumnosInactivos.html', {'alumnos': alumnos})
     else:
         raise Http404('Error, no tiene permiso para esta página')
 

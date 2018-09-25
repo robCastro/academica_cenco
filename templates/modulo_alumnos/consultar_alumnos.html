@@ -18,6 +18,46 @@
         text-underline-mode: none;
     }
 
+    #example td, #example th{
+        padding: 5px 5px 5px 5px;
+        margin: 5px 5px 5px 5px;
+        white-space: nowrap;
+    }
+
+    input{
+        border-radius: 5px;
+        border:1px solid #949494 !important;;
+        padding: 3px;
+        padding-left: 10px;
+
+    }
+
+    input:focus{
+        border-radius: 5px;
+        border:2px solid #2C3E50 !important;;
+    }
+
+    select {
+       {#-webkit-appearance: button;#}
+       -webkit-border-radius: 2px;
+       -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+       -webkit-padding-end: 10px;
+       -webkit-padding-start: 2px;
+       -webkit-user-select: none;
+       background-position: 97% center;
+       background-repeat: no-repeat;
+       border: 1px solid #828282;
+       color: #000000;
+       overflow: hidden;
+       padding: 2px 10px;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+        height: 30px;
+        margin-right: 5px;
+        margin-left: 5px;
+
+    }
+
     </style>
 
 {% endblock %}
@@ -26,10 +66,11 @@
     <table width='100%' >
 
     <tr id="tr_mod" style="height: 30px;">
-        <td width='20%' rowspan="2" valign="top">
+        <td width='250px' rowspan="2" valign="top">
             <p></p>
+        </br>
             <h6> Notificaciones:</h6>
-            <div class='divNotifAlumnos'>
+            <div class='divNotifAlumnos' style="padding-left: 20px; width: 160px; margin-right: 40px">
                 <h4></h4>
 
 
@@ -39,20 +80,21 @@
 
         <br/>
         <br/>
-        <h4 align="center">Listado de alumnos</h4>
+        <h4 align="center">Listado de alumnos activos</h4>
 
-        <td width='60%' height='30px' align="right" valign="top" style="padding-bottom: 10px;">
+        <td width='60%' height='30px' align="right" valign="top" style="padding-top: 20px;">
 
-                <!-- Button trigger modal -->
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a type="button" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
 
         </td>
     </tr>
     <tr>
-        <td width="80%" colspan="2">
-
-            <table id="example" class="table table-bordered table-hover table-sm" style="width:100%">
+        <td width="900px">
+            <div style="text-align: right; align-items: right;">
+            <a type="button" style="margin-bottom: 10px; margin-right: 10px" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
+            <a type="button" style="float: right; margin-bottom: 10px;" class="btn btn-primary" href="{% url 'consultarAlumnosInactivos' %}">Ver Inactivos</a>
+            </div>
+                <div style="width: 950px; padding-top: 10px;">
+            <table id="example" class="table table-bordered table-hover table-sm" style="min-width: 900px;">
             <thead>
                 <tr bgcolor="#f0f8ff" >
                     <th>Codigo</th>
@@ -61,7 +103,7 @@
                     <th>Telefono</th>
                     <th>Correo</th>
                     <th>Encargado</th>
-                    <th>D&iacute;as Correspondientes</th>
+                    <th>Horario</th>
                 </tr>
             </thead>
                 <tbody>
@@ -89,7 +131,7 @@
                 </tr>
                 </tfoot>{% endcomment %}
             </table>
-
+            </div>
     </td>
     </tr>
     </table>

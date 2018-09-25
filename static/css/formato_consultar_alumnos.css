@@ -1,9 +1,9 @@
 body {
- font-size:16px;
+    font-size:16px;
+    overflow-x: auto;
 }
 
 .divNotifAlumnos{
-    min-height: 400px;
     width: 90%;
     border: 2px solid black;
     padding:2%;
