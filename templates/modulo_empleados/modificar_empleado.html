@@ -160,11 +160,14 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <select id="cbxRolEmpleado" name="cbxRol" class="custom-select" {% if grupo_pc %} disabled {% endif %}>
+                        <select id="cbxRolEmpleado" name="cbxRol"{% if grupo_pc %} disabled class="custom-select is-valid"{% else %}  class="custom-select"  {% endif %}>
                             <option value="Asi" {% if empleado.tipo == "Asi" %} selected {% endif %}>Asistente</option>
                             <option value="Pro" {% if empleado.tipo == "Pro" %} selected {% endif %}>Profesor</option>
                             <option value="Tec" {% if empleado.tipo == "Tec" %} selected {% endif %}>Técnico</option>
                         </select>
+                        {% if grupo_pc %}
+                            <div class="valid-feedback">No se puede cambiar rol, porque tiene grupos.</div>
+                        {% endif %}
                     </div>
                 </td>
                 <td></td>
