@@ -169,8 +169,8 @@ def modificar_empleado(request,id_empleado):
                 if usuario:
                     #Modificar grupo de usuario
                     if empleado.tipo == 'Tec':
-                        if empleado.username.groups.filter(name='Técnico').exists():
-                            empleado.username.groups.remove(Group.objects.get(name='Técnico').id)
+                        if empleado.username.groups.filter(name='Tecnico').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Tecnico').id)
                         if tipoEmp == 'Pro':
                             empleado.username.groups.add(Group.objects.get(name='Profesor').id)
                         if tipoEmp == 'Asi':
@@ -180,7 +180,7 @@ def modificar_empleado(request,id_empleado):
                         if empleado.username.groups.filter(name='Profesor').exists():
                             empleado.username.groups.remove(Group.objects.get(name='Profesor').id)
                         if tipoEmp == 'Tec':
-                            empleado.username.groups.add(Group.objects.get(name='Técnico').id)
+                            empleado.username.groups.add(Group.objects.get(name='Tecnico').id)
                         if tipoEmp == 'Asi':
                             empleado.username.groups.add(Group.objects.get(name='Asistente').id)
 
@@ -188,7 +188,7 @@ def modificar_empleado(request,id_empleado):
                         if empleado.username.groups.filter(name='Asistente').exists():
                             empleado.username.groups.remove(Group.objects.get(name='Asistente').id)
                         if tipoEmp == 'Tec':
-                            empleado.username.groups.add(Group.objects.get(name='Técnico').id)
+                            empleado.username.groups.add(Group.objects.get(name='Tecnico').id)
                         if tipoEmp == 'Pro':
                             empleado.username.groups.add(Group.objects.get(name='Profesor').id)
                 #Modificar tipo de empleado
