@@ -258,13 +258,19 @@ def director_datos_propios_usuario(request):
     if request.user.groups.filter(name="Director").exists():
         if request.method == 'POST':
             user = User.objects.get(username=request.user)
-            user.username = request.POST.get('usuario')
-            if not user.check_password(request.POST.get('contrasenia2')):
-                return HttpResponse('',status=500)
+            nuevoUser = request.POST.get('usuario')
+            if not User.objects.filter(username=nuevoUser).exists():
+                if not user.check_password(request.POST.get('contrasenia2')):
+                    mensaje = 'Error al guardar los datos. Verifique que la contraseña sea la correcta.'
+                    return HttpResponse(mensaje,status=500)
+                else:
+                    user.username = nuevoUser
+                    user.save()
+                    mensaje = "Datos modificados con éxito" + "," + user.username
+                    return HttpResponse(mensaje,status=200)
             else:
-                user.save()
-                mensaje = "Datos modificados con éxito" + "," + user.username
-                return HttpResponse(mensaje,status=200)
+                mensaje = "Usuario ya existe, escoger otro."
+                return HttpResponse(mensaje, status=500)
         else:
             return Http404('Error, acceso solo mediante POST')
     else:

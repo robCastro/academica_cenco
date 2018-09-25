@@ -215,7 +215,6 @@ def modificar_alumno(request,id_alumno):
        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
-@permission_required('db_app.ver_alumno')
 def ver_alumno_propio(request):
    if request.user.groups.filter(name="Alumno").exists():
     try:

@@ -116,7 +116,8 @@ $(document).on('submit', '#cambiarUsuarioForm', function (a) {
             $('#espereM2').css('display', 'none');
 
             var m = $('#mensajeEmergente');
-            m.children('strong').html(response.split(",")[0]);
+            console.log(response);
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();
@@ -139,9 +140,8 @@ $(document).on('submit', '#cambiarUsuarioForm', function (a) {
             $('#contraseniaModal2').val('');
             $('#cambiarUsuarioModal').modal('hide');
             $('#espereM2').css('display', 'none');
-
             var m = $('#mensajeEmergente');
-            m.children('strong').html('Error al guardar los datos. Verifique que la contraseña sea la correcta.');
+            m.children('strong').html(response.responseText);
             m.css('display','block');
             m.css('opacity',1);
             m.removeClass();

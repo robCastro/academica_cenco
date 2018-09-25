@@ -183,12 +183,24 @@ def asist_detalle_grupo(request, id_grupo):
         if request.method == 'POST':
             codProfesor = request.POST.get('cbxProfesores')
             if request.POST.get('cambioGrupo'):
-                alumnos = grupo.alumno_set.all()
+                inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True, grupo = grupo)
+                codAlumnos = []
+                for inscripcion in inscripciones:
+                    codAlumnos.append(inscripcion.alumno.codigo)
+                alumnos = Alumno.objects.filter(pk__in=codAlumnos).order_by('apellido')
                 codGrupo = request.POST.get('cbxGrupos')
                 nuevoGrupo = Grupo.objects.get(pk=codGrupo)
                 for alumno in alumnos:
                     if request.POST.get(str(alumno.codigo)): #extrayendo los checkbox de alumnos
-                        alumno.grupo = nuevoGrupo
+                        print "Moviendo ALumno"
+                        #alumno.grupo = nuevoGrupo
+                        viejaInscripcion = Inscripcion.objects.filter(alumno=alumno, actual_inscripcion=True).first()
+                        viejaInscripcion.actual_inscripcion = False
+                        nuevaInscripcion = Inscripcion.objects.create(alumno=alumno, grupo=nuevoGrupo,
+                                                                      actual_inscripcion=True,
+                                                                      fecha_inscripcion=datetime.now())
+                        viejaInscripcion.save()
+                        nuevaInscripcion.save()
                         grupo.alumnosInscritos = grupo.alumnosInscritos - 1
                         nuevoGrupo.alumnosInscritos = nuevoGrupo.alumnosInscritos + 1
                         if grupo.horario != nuevoGrupo.horario:
@@ -199,7 +211,11 @@ def asist_detalle_grupo(request, id_grupo):
                 nuevoGrupo.horario.save()
                 nuevoGrupo.save()
             grupo.save()
-        alumnos = grupo.alumno_set.all().order_by('codigo')
+        inscripciones = Inscripcion.objects.filter(actual_inscripcion=True, grupo = grupo)
+        codAlumnos = []
+        for inscripcion in inscripciones:
+            codAlumnos.append(inscripcion.alumno.codigo)
+        alumnos = Alumno.objects.filter(pk__in = codAlumnos).order_by('codigo')
         telefonos = []
         for alumno in alumnos:
             telefonos.append(alumno.telefono_set.first())
