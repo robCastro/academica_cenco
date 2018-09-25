@@ -61,7 +61,7 @@ class Grupo(models.Model):
     codigo = models.AutoField(primary_key=True)
     fechaInicio = models.DateField()
     alumnosInscritos = models.IntegerField(default=0)
-    # activo_grupo = models.BooleanField(default=True)
+    activo_grupo = models.BooleanField(default=True)
     # foreign keys
     horario = models.ForeignKey(Horario, on_delete=models.PROTECT)
     profesor = models.ForeignKey(Empleado, on_delete=models.PROTECT, blank=False)
