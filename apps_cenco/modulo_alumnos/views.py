@@ -47,7 +47,7 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_alumnos(request):
     if request.user.groups.filter(name="Asistente").exists():
-        detalleEstado = DetalleEstado.objects.filter(actual_detale_e=True, estado_id=1)
+        detalleEstado = DetalleEstado.objects.filter(actual_detalle_e=True, estado_id=1)
         alum = []
 
         for detE in detalleEstado:
@@ -67,7 +67,7 @@ def consultar_alumnos(request):
 @login_required
 def consultar_alumnos_inactivos(request):
     if request.user.groups.filter(name="Asistente").exists():
-        detalleEstado=DetalleEstado.objects.filter(actual_detale_e=False,estado_id=1)
+        detalleEstado=DetalleEstado.objects.filter(actual_detalle_e=False,estado_id=1)
         alum=[]
 
         for detE in detalleEstado:

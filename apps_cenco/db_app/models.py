@@ -153,13 +153,13 @@ class Estado(models.Model):
 class DetalleEstado(models.Model):
     codigo_detalle_e = models.AutoField(primary_key=True)
     fecha_detalle_e = models.DateField()
-    actual_detale_e = models.BooleanField(default=True)
+    actual_detalle_e = models.BooleanField(default=True)
     # foreign keys
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, null=False, blank=False)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE, null=False, blank=False)
 
     def __unicode__(self):
-        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detale_e)
+        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detalle_e)
 
 
 class Carrera(models.Model):
