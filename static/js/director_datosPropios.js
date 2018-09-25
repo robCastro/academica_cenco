@@ -47,8 +47,8 @@
         type: 'POST',
         url: '/empleados/director_datos/',
         data: {
-            nombre:$('#nombreModal1').val(),
-            apellido:$('#apellidoModal1').val(),
+            nombre:$('#nombreModal1').val().trim(),
+            apellido:$('#apellidoModal1').val().trim(),
             contrasenia1:$('#contraseniaModal1').val(),
 
             csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
@@ -81,6 +81,7 @@
         error: function (response) {
             $('#btnGuardarModal1').attr('disabled', false);
 
+            $('#contraseniaModal1').val('');
             $('#cambiarNombreModal').modal('hide');
             $('#espere').css('display', 'none');
 
@@ -103,7 +104,7 @@ $(document).on('submit', '#cambiarUsuarioForm', function (a) {
         type: 'POST',
         url: '/empleados/director_datos_usuario/',
         data: {
-            usuario:$('#usuarioModal2').val(),
+            usuario:$('#usuarioModal2').val().trim(),
             contrasenia2:$('#contraseniaModal2').val(),
 
             csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
@@ -135,6 +136,7 @@ $(document).on('submit', '#cambiarUsuarioForm', function (a) {
         error: function (response) {
             $('#btnGuardarModal2').attr('disabled', false);
 
+            $('#contraseniaModal2').val('');
             $('#cambiarUsuarioModal').modal('hide');
             $('#espereM2').css('display', 'none');
 
@@ -190,6 +192,7 @@ $(document).on('submit', '#cambiarCorreoForm', function (a) {
         error: function (response) {
             $('#btnGuardarModal3').attr('disabled', false);
 
+            $('#contraseniaModal3').val('');
             $('#cambiarCorreoModal').modal('hide');
             $('#espereM3     ').css('display', 'none');
 
@@ -242,6 +245,9 @@ $(document).on('submit', '#cambiarContraseniaForm', function (a) {
         error: function (response) {
             $('#btnGuardarModal4').attr('disabled', false);
 
+            $('#contraseniaModal4').val('');
+            $('#contraseniaNueva').val('')
+            $('#contraseniaRepetir').val('');
             $('#cambiarContraseniaModal').modal('hide');
             $('#espereM4').css('display', 'none');
 

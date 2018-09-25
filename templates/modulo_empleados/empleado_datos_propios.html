@@ -1,0 +1,99 @@
+{%  extends plantilla %}
+
+{% block titulo %}{{ empleado.apellido }}, {{ empleado.nombre }}{% endblock %}
+
+{% block content %}
+                <div style="padding-left: 20%; padding-top: 1%">
+                    <h3>Mis Datos</h3>
+                </div>
+                <div style="padding-left: 31%; padding-top: 2%; padding-right: 40%">
+                    <table width="100%" class="table table-borderless">
+                        <tr>
+                            <td width="40%">
+                                <h6><b>Nombre:</b></h6>
+                            </td>
+                            <td width="60%">
+                                <h6>{{ empleado.nombre }}</h6>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h6><b>Apellido:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.apellido }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h6><b>Dirección:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.direccion }}</h6>
+                             </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                 <h6><b> DUI:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.dui }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                 <h6><b> NIT:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.nit }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                 <h6><b> ISSS:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.isss }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                 <h6><b> AFP:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.afp }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        {% if empleado.correo %}
+                        <tr>
+                            <td>
+                                <h6><b>Correo:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ empleado.correo }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        {% endif %}
+                        {% if telEmpleado %}
+                        <tr>
+                            <td>
+                                <h6><b>Telefono:</b></h6>
+                            </td>
+                            <td>
+                                <h6>{{ telEmpleado }}</h6>
+                            </td>
+                            <td></td>
+                        </tr>
+                        {% endif %}
+
+                    </table>
+                </div>
+
+{% endblock %}

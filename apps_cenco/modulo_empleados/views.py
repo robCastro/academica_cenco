@@ -21,7 +21,7 @@ from datetime import datetime
 from apps_cenco.modulo_empleados.forms import CrearEmpleadoForm
 from django.template.loader import get_template
 from apps_cenco.db_app.models import Empleado, Telefono, Grupo
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,Group
 
 import sys
 
@@ -126,6 +126,7 @@ def modificar_empleado(request,id_empleado):
             mensaje=""
             empleado = Empleado.objects.get(pk=id_empleado)
             telefono = Telefono.objects.filter(empleado=empleado).count()
+            usuario = empleado.username
             if not telefono:
                 telefono = Telefono.objects.create(numero='1',empleado=empleado)
             else:
@@ -141,9 +142,15 @@ def modificar_empleado(request,id_empleado):
             empleado.isss = request.POST.get('isss')
             empleado.afp = request.POST.get('afp')
             correo = request.POST.get('correo')
+            empleado.correo = correo
+            tipoEmp=request.POST.get('tipoEmp')
 
-            if correo:
-                empleado.correo=correo
+            # Cambia nombre y apellido de usuario
+            if usuario:
+                empleado.username.first_name = request.POST.get('nombre')
+                empleado.username.last_name = request.POST.get('apellido')
+                empleado.username.email = correo
+                empleado.username.save()
 
             # Verifica que el profesor tenga grupos asignados
             if empleado.tipo == 'Pro':
@@ -159,7 +166,33 @@ def modificar_empleado(request,id_empleado):
                 grupo_pc = False
 
             if not grupo_pc:
-                empleado.tipo = request.POST.get('tipoEmp')
+                if usuario:
+                    #Modificar grupo de usuario
+                    if empleado.tipo == 'Tec':
+                        if empleado.username.groups.filter(name='Técnico').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Técnico').id)
+                        if tipoEmp == 'Pro':
+                            empleado.username.groups.add(Group.objects.get(name='Profesor').id)
+                        if tipoEmp == 'Asi':
+                            empleado.username.groups.add(Group.objects.get(name='Asistente').id)
+
+                    if empleado.tipo == 'Pro':
+                        if empleado.username.groups.filter(name='Profesor').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Profesor').id)
+                        if tipoEmp == 'Tec':
+                            empleado.username.groups.add(Group.objects.get(name='Técnico').id)
+                        if tipoEmp == 'Asi':
+                            empleado.username.groups.add(Group.objects.get(name='Asistente').id)
+
+                    if empleado.tipo == 'Asi':
+                        if empleado.username.groups.filter(name='Asistente').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Asistente').id)
+                        if tipoEmp == 'Tec':
+                            empleado.username.groups.add(Group.objects.get(name='Técnico').id)
+                        if tipoEmp == 'Pro':
+                            empleado.username.groups.add(Group.objects.get(name='Profesor').id)
+                #Modificar tipo de empleado
+                empleado.tipo = tipoEmp
 
             empleado.save()
 
@@ -270,3 +303,25 @@ def director_datos_propios_contrasenia(request):
             return Http404('Error, acceso solo mediante POST')
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def empleado_datos_propios(request):
+   id = request.user.id
+   u = User.objects.get(pk=id)
+   if u.groups.filter(name='Asistente').exists():
+     plantilla = 'plantillas_base/base_asistente.html'
+   elif u.groups.filter(name='Profesor').exists():
+     plantilla = 'plantillas_base/base_profesor.html'
+
+   if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Profesor").exists():
+    try:
+        empleado = Empleado.objects.get(username=request.user)
+        telEmpleado = Telefono.objects.filter(empleado=empleado).first()
+    except Empleado.DoesNotExist:
+        raise Http404('Empleado no Existe')
+
+    context = {"empleado": empleado,"telEmpleado":telEmpleado,"plantilla":plantilla}
+    return render(request, 'modulo_empleados/empleado_datos_propios.html',context)
+   else:
+     raise Http404('Error, no tiene permiso para esta página')
