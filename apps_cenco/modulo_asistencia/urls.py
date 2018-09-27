@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^guardar_asistencia/(?P<id_grupo>\d+)$', views.guardarAsistencia, name="guardar_asistencia_grupo"), #para guardar datos
     url(r'^prof_consultar/(?P<id_grupo>\d+)$', views.prof_detalle_grupo, name="prof_detalle_grupo"),
     url(r'^listado_asistencia/(?P<id_grupo>\d+)$',views.prof_listado_grupo, name="listado_asistencia_pdf"),
+    url(r'^detalle_asistencia/(?P<id_alumno>\d+)$',views.detalle_asistencia, name="detalle_asistencia"),
 ]

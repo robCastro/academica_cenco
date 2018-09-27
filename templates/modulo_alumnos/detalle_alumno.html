@@ -106,6 +106,9 @@
                         <td style="padding-left: 1rem">{{ alumno.encargado|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
+                        <td><a href="{% url 'detalle_asistencia' alumno.codigo %}"><u>Ver Asistencias</u></a></td>
+                    </tr>
+                    <tr>
                         <td>Telefonos:  </td>
                     </tr>
 

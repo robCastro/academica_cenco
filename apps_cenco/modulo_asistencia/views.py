@@ -26,7 +26,7 @@ from reportlab.lib.pagesizes import letter
 import datetime
 
 # Create your views here.
-from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion, Asistencia, Estado, MetricaEstado
+from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion, Asistencia, Estado, MetricaEstado, Encargado
 from apps_cenco.modulo_asistencia.forms import IntervaloFechaForm, FechaAsistenciaForm
 
 @login_required
@@ -686,3 +686,72 @@ def asistencia_a_clases(request, id_grupo):
             'tomarAsistencia':tomarAsistencia,
         }
         return render(request, 'modulo_asistencia/profesor_ingresar_asistencia.html', context)
+
+@login_required
+def detalle_asistencia(request, id_alumno):
+    plantillaBase = "plantillas_base/"
+    if request.user.groups.filter(name="Asistente").exists():
+        plantillaBase = plantillaBase + "base_asistente.html"
+    elif request.user.groups.filter(name="Profesor").exists():
+        plantillaBase = plantillaBase + "base_profesor.html"
+    elif request.user.groups.filter(name="Encargado").exists():
+        if not Alumno.objects.filter(codigo = id_alumno, encargado = Encargado.objects.get(username=request.user)).exists():
+            return HttpResponseForbidden("Usted no es encargado del estudiante que está consultando.")
+        plantillaBase = plantillaBase + "base_encargado.html"
+    elif request.user.groups.filter(name="Alumno").exists():
+        if not Alumno.objects.filter(codigo = id_alumno, username = request.user).exists():
+            return HttpResponseForbidden("No puede consultar asistencias de otros alumnos.")
+        plantillaBase = plantillaBase + "base_alumno.html"
+    else:
+        return HttpResponseForbidden('No tiene acceso a esta url')
+    try:
+        alumno = Alumno.objects.get(codigo = id_alumno)
+    except Alumno.DoesNotExist:
+        raise Http404('Alumno no existe')
+    estado = DetalleEstado.objects.filter(actual_detalle_e=True, alumno = alumno).first()
+    mostrarAsistencia = True
+    mostrarInasistencia = True
+    fechaHoy = datetime.datetime.today()
+    asistencias = Asistencia.objects.filter(inscripcion__alumno=alumno).order_by('-fecha_asistencia')
+    ultimaAsistencia = asistencias.filter(asistio=True).first()
+    fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month, 1)
+    periodo = "mes"
+    if request.method == "POST":
+        periodo = request.POST.get('periodo')
+        mostrarAsistencia = request.POST.get('asistio')
+        mostrarInasistencia = request.POST.get('noAsistio')
+        if periodo == "trim":
+            if fechaHoy.month <= 2:
+                fechaMin = datetime.datetime(fechaHoy.year - 1, 10 + fechaHoy.month , 1)
+            else:
+                fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month - 2 , 1)
+        elif periodo == "sem":
+            if fechaHoy.month <= 5:
+                fechaMin = datetime.datetime(fechaHoy.year - 1, 7 + fechaHoy.month , 1)
+            else:
+                fechaMin = datetime.datetime(fechaHoy.year, fechaHoy.month - 5 , 1)
+        elif periodo == "anio":
+            fechaMin = datetime.datetime(fechaHoy.year - 1, fechaHoy.month, 1)
+        elif periodo == "todo":
+            fechaMin = None
+        elif periodo == "personalizado":
+            fechaMin = None
+    #Para mensual no se hace nada porque se calcula de una vez arriba antes de IF request POST
+    if fechaMin != None:
+        asistencias = asistencias.filter(fecha_asistencia__range=(fechaMin, fechaHoy))
+    if not (mostrarAsistencia and mostrarInasistencia):
+        if mostrarAsistencia:
+            asistencias = asistencias.filter(asistio=True)
+        else:
+            asistencias = asistencias.filter(asistio=False)
+    context = {
+        'plantillaBase' : plantillaBase,
+        'alumno' : alumno,
+        'estado' : estado,
+        'ultimaAsistencia' : ultimaAsistencia,
+        'asistencias': asistencias,
+        'mostrarAsistencias': mostrarAsistencia,
+        'mostrarInasistencias' : mostrarInasistencia,
+        'periodo' : periodo,
+    }
+    return render(request, 'modulo_asistencia/detalle_asistencia.html', context)
