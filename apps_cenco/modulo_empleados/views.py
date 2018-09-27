@@ -70,12 +70,24 @@ def dir_crear_empleado(request):
                 newusername = User.objects.create_user(username=usuario, first_name=empleado.nombre,
                                                        last_name= empleado.apellido, email=empleado.correo,
                                                        password=password)
+                newusername.save()
                 empleado.username = newusername
                 empleado.estado = 'activo'
                 telefono = formTelefono.save(commit=False)
                 empleado.save()
                 telefono.empleado = empleado
                 telefono.save()
+                tipo =  request.POST.get('tipo')
+                if tipo == 'Asi':
+                    grupo = Group.objects.get(name='Asistente')
+                    grupo.user_set.add(newusername)
+                elif tipo == 'Pro':
+                    grupo = Group.objects.get(name='Profesor')
+                    grupo.user_set.add(newusername)
+                elif tipo == 'Tec':
+                    grupo = Group.objects.get(name='Técnico')
+                    grupo.user_set.add(newusername)
+
                 return HttpResponse('Emleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
 
             else:
@@ -100,7 +112,10 @@ def generar_username(nombre, apellido):
     try:
         usuarios = User.objects.filter(first_name=nombre, last_name=apellido)
         numero = usuarios.count()
-        return nombre+apellido+str(numero)
+        if numero == 0:
+            return nombre + apellido
+        else:
+            return nombre + apellido + str(numero)
     except ObjectDoesNotExist:
         return nombre+apellido
 
