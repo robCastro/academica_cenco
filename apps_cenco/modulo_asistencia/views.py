@@ -14,7 +14,7 @@ if os.name != 'nt':
 import datetime
 
 # Create your views here.
-from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion, Asistencia
+from apps_cenco.db_app.models import DetalleEstado, Grupo, Empleado, Alumno, Inscripcion, Asistencia, Encargado
 from apps_cenco.modulo_asistencia.forms import IntervaloFechaForm, FechaAsistenciaForm
 
 @login_required
@@ -185,12 +185,70 @@ def prof_detalle_grupo(request, id_grupo):
         raise Http404("No se encuentra la ruta especificada o no es el usuario correcto")
 
 
-def prof_ingresar_asistencia(request, id_grupo):
-    if request.method == 'POST':
-        form = FechaAsistenciaForm(request.POST)
-        if form.is_valid():
-            form = form.cleaned_data
-            fecha = form.get('fechaAsistencia')
+@login_required
+def alumno_consultar_asistencia(request):
+    if request.user.groups.filter(name="Alumno").exists():
+        if request.method == 'POST':
+            alumno = Alumno.objects.get(username=request.user)
+            grupo = request.POST.get('grupo')
+            asistencias = Inscripcion.objects.raw(
+                'select 1 as codigo_ins, a.grupo_id, b.fecha_asistencia, b.asistio from db_app_inscripcion as a  '
+                'right outer join '
+                '(select * from db_app_asistencia) as b on b.inscripcion_id = a.codigo_ins'
+                ' where a.alumno_id = ' + str(alumno.codigo) + ' and a.grupo_id = '+str(grupo))
+
+            context = {'asistencias': asistencias}
+            return JsonResponse(context)
+
+        else:
+            alumno = Alumno.objects.get(username = request.user)
+            asistencias = Inscripcion.objects.raw(
+                'select 1 as codigo_ins, a.grupo_id, b.fecha_asistencia, b.asistio from db_app_inscripcion as a  '
+                ' right outer join '
+                '(select * from db_app_asistencia) as b on b.inscripcion_id = a.codigo_ins'
+                ' where a.alumno_id = '+str(alumno.codigo) + ' and a.actual_inscripcion = true')
+
+            grupos = Inscripcion.objects.raw('select 1 as codigo_ins, grupo_id, actual_inscripcion '
+                                             'from db_app_inscripcion '
+                                             'where alumno_id = '+str(alumno.codigo))
+            context = {'asistencias': asistencias, 'grupos': grupos}
+            return render(request, 'modulo_asistencia/alumno_consultar_asistencia.html', context)
+
+    else:
+        return HttpResponseForbidden('No tiene acceso a esta ruta')
 
 
+@login_required
+def encargado_consultar_asistencia(request):
+    if request.user.groups.filter(name="Encargado").exists():
+        if request.method == 'POST':
+            alumno = request.POST.get('alumno')
+            grupo = request.POST.get('grupo')
+            asistencias = Inscripcion.objects.raw(
+                'select 1 as codigo_ins, a.grupo_id, b.fecha_asistencia, b.asistio from db_app_inscripcion as a  '
+                'right outer join '
+                '(select * from db_app_asistencia) as b on b.inscripcion_id = a.codigo_ins'
+                ' where a.alumno_id = ' + str(alumno.codigo) + ' and a.grupo_id=' + str(grupo))
+
+            context = {'asistencias': asistencias}
+            return JsonResponse(context)
+
+        else:
+            encargado = Encargado.objects.get(username=request.user)
+            alumnos = Alumno.objects.filter(encargado=encargado)
+            alumno = alumnos.first()
+            asistencias = Inscripcion.objects.raw(
+                'select 1 as codigo_ins, a.grupo_id, b.fecha_asistencia, b.asistio from db_app_inscripcion as a  '
+                'right outer join '
+                '(select * from db_app_asistencia) as b on b.inscripcion_id = a.codigo_ins'
+                ' where a.alumno_id = ' + str(alumno.codigo)+ ' and a.actual_inscripcion = true')
+
+            grupos = Inscripcion.objects.raw('select 1 as codigo_ins, grupo_id, actual_inscripcion '
+                                             'from db_app_inscripcion '
+                                             'where alumno_id = ' + str(alumno.codigo))
+            context = {'asistencias': asistencias, 'grupos': grupos, 'alumnos': alumnos, 'alumno': alumno}
+            return render(request, 'modulo_asistencia/encargado_consultar_asistencia.html', context)
+
+    else:
+        return HttpResponseForbidden('No tiene acceso a esta ruta')
 
