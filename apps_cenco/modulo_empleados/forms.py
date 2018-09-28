@@ -35,7 +35,7 @@ class CrearEmpleadoForm(forms.ModelForm):
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'required': True,
                                                'pattern': '^[a-zA-Z]+ ?[a-zA-Z]+$', 'title': 'Ingrese su apellido o apellidos con un espacio entre palabras'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True,
-                                                'pattern': '^[a-zA-Z0-9 ]+$', 'title': 'Ingrese su dirección completa'}),
+                                                'pattern': '^[a-zA-Z0-9, ]+$', 'title': 'Ingrese su dirección completa'}),
             'correo': forms.TextInput(attrs={'class': 'form-control', 'required': False,
                                              'pattern': '^[\w\d_\.]+@[\w\d_]+\.[\w\d_\.]+$',
                                              'title': 'Ejemplo: MiCorreo@gmail.com'}),
@@ -46,10 +46,11 @@ class CrearEmpleadoForm(forms.ModelForm):
             'afp': forms.TextInput(attrs={'class': 'form-control', 'required': True,
                                           'pattern': '^[0-9]{12}$', 'title': 'Ejemplo: 123456789012'}),
             'nit': forms.TextInput(attrs={'class': 'form-control', 'required': True,
-                                          'pattern': '^[0-9]{17}$', 'title': 'Ejemplo: 101201019741235422'}),
+                                          'pattern': '^[0-9]{4}-[0-9]{6}-[0-9]{3}-[0-9]$',
+                                          'title': 'Ejemplo: 1012-010197-412-3'}),
             'tipo': forms.Select(attrs={'class': 'form-control', 'required': True}),
         }
- # formato nit ^[0-9]{3}-[0-9]{6}-[0-9]{3}-[0-9]$
+ # formato nit ^[0-9]{4}-[0-9]{6}-[0-9]{3}-[0-9]$
 
 
 

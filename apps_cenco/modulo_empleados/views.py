@@ -60,32 +60,41 @@ def dir_crear_empleado(request):
         if request.method == 'POST':
             form = CrearEmpleadoForm(request.POST)
             formTelefono = CrearTelefonoForm(request.POST)
-            print (request.POST)
             if form.is_valid() and formTelefono.is_valid():
                 empleado = form.save(commit=False)
-                print (request.POST)
-                usuario = request.POST.get('username')
-                if validar_username(usuario):
-                    password = User.objects.make_random_password(
-                        length=6,
-                        allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
-                    newusername = User.objects.create_user(username=usuario, email=empleado.correo, password=password)
-                    empleado.username = newusername
-                    empleado.estado = 'activo'
-                    telefono = formTelefono.save(commit=False)
-                    empleado.save()
-                    telefono.empleado = empleado
-                    telefono.save()
-                    return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
-                else:
-                    return HttpResponse('El nombre de usuario no esta disponible', status=500)
+                usuario = generar_username(empleado.nombre, empleado.apellido)
+                password = User.objects.make_random_password(
+                    length=6,
+                    allowed_chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+                newusername = User.objects.create_user(username=usuario, first_name=empleado.nombre,
+                                                       last_name= empleado.apellido, email=empleado.correo,
+                                                       password=password)
+                newusername.save()
+                empleado.username = newusername
+                empleado.estado = 'activo'
+                telefono = formTelefono.save(commit=False)
+                empleado.save()
+                telefono.empleado = empleado
+                telefono.save()
+                tipo =  request.POST.get('tipo')
+                if tipo == 'Asi':
+                    grupo = Group.objects.get(name='Asistente')
+                    grupo.user_set.add(newusername)
+                elif tipo == 'Pro':
+                    grupo = Group.objects.get(name='Profesor')
+                    grupo.user_set.add(newusername)
+                elif tipo == 'Tec':
+                    grupo = Group.objects.get(name='Técnico')
+                    grupo.user_set.add(newusername)
+
+                return HttpResponse('Emleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
+
             else:
-                print (form.errors, formTelefono.errors)
                 return HttpResponse('Se reciberon datos incorrectos', status=500)
         else:
             form = CrearEmpleadoForm()
-            formTelefono = CrearTelefonoForm()
-            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form, 'formT': formTelefono})
+            form_telefono = CrearTelefonoForm()
+            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form, 'formT': form_telefono})
     else:
         raise Http404('No tiene permiso para esta ruta')
 
@@ -98,14 +107,17 @@ def validar_username(username):
         return True
 
 
-@login_required
-def verificar_username_libre(request):
-    if request.method == 'POST':
-        usuario = request.POST.get('nombreUsuario')
-        if User.objects.get(username = usuario):
-            return HttpResponse('Usuario no disponible', status=500)
+def generar_username(nombre, apellido):
+    try:
+        usuarios = User.objects.filter(first_name=nombre, last_name=apellido)
+        numero = usuarios.count()
+        if numero == 0:
+            return nombre + apellido
         else:
-            return HttpResponse('Usuario disponible')
+            return nombre + apellido + str(numero)
+    except ObjectDoesNotExist:
+        return nombre+apellido
+
 
 @login_required
 def consultar_empleados_inactivos(request):

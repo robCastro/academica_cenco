@@ -1,0 +1,19 @@
+{% extends 'plantillas_base/base_encargado.html' %}
+{% load staticfiles %}
+
+{% block titulo %} Registro de Asistencia {% endblock %}
+
+{% block content %}
+
+    <table class="table table-sm" style="width: 30%">
+    <thead><th>Fecha De Clases</th><th>Asistencia</th></thead>
+    {% for a in asistencias %}
+        <tr><td>{{ a.fecha_asistencia }}</td><td>{% if a.asistio %}
+            <img src="{% static 'img/asist_check.jpeg'%}" style="width: 24px; height: 24px;" >{% else %}
+        <img src="{% static 'img/asistencia_bad.jpeg'%}" style="width: 24px; height: 24px;" >{% endif %}</td></tr>
+    {% endfor %}
+    </table>
+
+
+
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+{% block titulo %} Registro de Asistencia {% endblock %}
+
+{% block head_content %}
+
+    <script>
+    function changeDate(valor){
+        $.ajax({
+                type: 'POST',
+                url: '/asistencia/consultar/',
+                data: {
+                    opcion: valor,
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (response) {
+                  $('#btnConsultar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+
+
+                  var m = $('#mensajeEmergente');
+                  m.css('display', 'none');
+                },
+                error: function (response) {
+                  $('#btnConsultar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response.responseText);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta cuidado');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
+                }
+            })
+    }
+
+    </script>
+
+{% endblock %}
+{% block content %}
+    <br><br>
+    <table>
+    <tr>
+    <td>
+    <select>
+    {% for g in grupos %}
+    <option value="{{ g.grupo_id }}" {% if g.actual_inscripcion %}selected{% endif %}>Grupo No. {{ g.grupo_id }}</option>
+    {% endfor %}
+    </select>
+    </td><td>
+    <select id="id_filtro_fecha" onchange="changeDate(this.value);">
+        <option value="trimestre">&Uacute;ltimo Trimestre</option>
+        <option value="semestre">&Uacute;ltimo Semestre</option>
+        <option value="anual">&Uacute;ltimo A&ntilde;o</option>
+        <option value="personalizado">Personalizado...</option>
+    </select>
+    </td></tr></table>
+    <br><br>
+    <h3>{% for g in grupos %}{% if g.actual_inscripcion %}Su asistencia en el Grupo No. {{ g.grupo_id }}{% endif %}{% endfor %}</h3>
+
+    <table class="table table-sm" style="width: 30%">
+    <thead><th>Fecha De Clases</th><th>Asistencia</th></thead>
+    {% for a in asistencias %}
+        <tr><td>{{ a.fecha_asistencia }}</td><td>{% if a.asistio %}
+            <img src="{% static 'img/asist_check.jpeg'%}" style="width: 24px; height: 24px;" >{% else %}
+        <img src="{% static 'img/asistencia_bad.jpeg'%}" style="width: 24px; height: 24px;" >{% endif %}</td></tr>
+    {% endfor %}
+    </table>
+
+{% endblock %}

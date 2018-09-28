@@ -14,7 +14,6 @@
                 type: 'POST',
                 url: '/empleados/crear/',
                 data: {
-                    username: $('#id_username').val(),
                     nombre: $('#id_nombre').val(),
                     apellido: $('#id_apellido').val(),
                     direccion: $('#id_direccion').val(),
@@ -37,6 +36,7 @@
                   m.css('opacity',1);
                   m.removeClass();
                   m.addClass('alerta exito');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
                 },
                 error: function (response) {
                   $('#btnGuardar').attr('disabled', false);
@@ -47,6 +47,7 @@
                   m.css('opacity',1);
                   m.removeClass();
                   m.addClass('alerta accionPeligrosa');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
                 }
             })
         });
@@ -63,21 +64,21 @@
         <span class="btnCerrar">&times;</span>
             <strong></strong>
         </div>
-
-   <table width="50%">
-   <h3>Registrar Empleado</h3><br>
+    <h3>Registrar Empleado</h3><br>
+   <table width="50%" cellpadding="10px" cellspacing="10px">
+    <tr>
+        <td rowspan="16" width="70px"></td>
+    </tr>
     <form method="POST" id="GuardarForm">
     {% csrf_token %}
-        <tr><td><h4>Datos personales</h4></td></tr>
-        <tr><th><label for="id_username">Nombre de usuario:</label></th>
-            <td><input type="text" name="username" id="id_username" required class="form-control" maxlength="40"
-                        pattern="[a-zA-Z0-9_]{4,30}", title="Ejemplo: Su_Nombre123"/>
-            </td></tr>
+        <tr><td colspan="2"><h4>Datos personales</h4></td></tr>
+        <tr><th width="100px"></th>
+            <td></td></tr>
     {{ form }}
-       <tr><td><br><br> <h4>Tel&eacute;fono de contacto</h4></td></tr>
+       <tr><td colspan="2"><br><br> <h4>Tel&eacute;fono de contacto</h4></td></tr>
     {{ formT }}
     <tr>
-        <td>
+        <td colspan="4">
             <button id="btnGuardar" type="submit" class="btn-primary" style="font-size: 20px">Registrar Nuevo Empleado</button>
             <div style="display: none" id="espereE">
                     <img src="{% static 'img/ajax-loader.gif' %}">
