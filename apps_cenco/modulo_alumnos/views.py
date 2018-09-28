@@ -133,7 +133,7 @@ def detalle_alumno(request,id_alumno):
             metricaRetirados.cantidad = metricaRetirados.cantidad + 1
             metricaRetirados.save()
             metricaActivo = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoActivo).first()
-            metricaActivo.cantidad = metricaActivo.cantidad + 1
+            metricaActivo.cantidad = metricaActivo.cantidad - 1
             metricaActivo.save()
             return HttpResponseRedirect(url)
         elif request.method=='POST':
@@ -207,6 +207,10 @@ def modificar_alumno(request,id_alumno):
         form = ModificarAlumnoForm(request.POST,instance=alumno)
         if form.is_valid():
             form.save()
+            alumno = form.save(commit=False)
+            alumno.username.first_name = alumno.nombre
+            alumno.username.last_name = alumno.apellido
+            alumno.username.save()
             return redirect('detalle_alumno', alumno.pk)
     else:
         form = ModificarAlumnoForm(instance=alumno)
@@ -508,7 +512,9 @@ def guardarModificacionAlumnoDependiente(request):
             alumno.fechaNacimiento = fechaNacimientoConFormato
             alumno.dui = duiAl
             alumno.correo = correoAl
-
+            alumno.username.first_name = nombreAl
+            alumno.username.last_name = apellidoAl
+            alumno.username.save()
             #verificando si el alumno será independiente
 
             hacerIndep = request.POST.get('hacerIndep')
@@ -570,6 +576,10 @@ def guardarModificacionAlumnoIndependiente(request):
             alumno.fechaNacimiento = fechaNacimientoConFormato
             alumno.dui = duiAl
             alumno.correo = correoAl
+
+            alumno.username.first_name = nombreAl
+            alumno.username.last_name = apellidoAl
+            alumno.username.save()
 
             codEncargado = request.POST.get('codEncargado')
             if codEncargado != "":
@@ -681,7 +691,8 @@ def constancias(request):
             #Agregar ands aqui para otras condiciones
         permitirConstancia = estado.tipo_estado == 'Activo'
         context = {
-            'permitirConstancia':permitirConstancia
+            'permitirConstancia':permitirConstancia,
+            'alumno': alumno,
         }
         return render(request, 'modulo_alumnos/constancias.html', context)
    else:

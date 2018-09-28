@@ -84,10 +84,10 @@ def dir_crear_empleado(request):
                     grupo = Group.objects.get(name='Profesor')
                     grupo.user_set.add(newusername)
                 elif tipo == 'Tec':
-                    grupo = Group.objects.get(name='Técnico')
+                    grupo = Group.objects.get(name='Tecnico')
                     grupo.user_set.add(newusername)
 
-                return HttpResponse('Emleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
+                return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
 
             else:
                 return HttpResponse('Se reciberon datos incorrectos', status=500)
