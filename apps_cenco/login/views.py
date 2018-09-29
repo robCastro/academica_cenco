@@ -101,13 +101,17 @@ def consultar_alumnos(request):
 
 @requires_csrf_token
 @login_required
-def asistenteCredencialesPropias(request):
+def empleadoCredencialesPropias(request):
 
     id = request.user.id
     usuario = request.user.username
     u = User.objects.get(pk=id)
+    if u.groups.filter(name='Asistente').exists():
+        plantilla='plantillas_base/base_asistente.html'
+    elif u.groups.filter(name='Profesor').exists():
+        plantilla='plantillas_base/base_profesor.html'
 
-    if request.user.groups.filter(name="Asistente").exists():
+    if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Profesor").exists():
      if request.method == 'POST':
         form = AsistenteCredencialesPropiasForm(request.POST,user=request.user)
         if form.is_valid():
@@ -115,11 +119,11 @@ def asistenteCredencialesPropias(request):
             u.set_password(form.cleaned_data.get('contrasenia1'))
             u.save()
             messages.success(request,'Sus credenciales han sido modificadas')
-            return redirect('asistenteCredencialesPropias')
+            return redirect('empleadoCredencialesPropias')
      else:
         form = AsistenteCredencialesPropiasForm(initial={'usuario':usuario},user=request.user)
-     context = {"form": form}
-     return render(request, "login/asistente_credenciales_propias.html", context)
+     context = {"form": form,"plantilla":plantilla}
+     return render(request, "login/empleado_credenciales_propias.html", context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
 
@@ -137,7 +141,10 @@ def principal(request):
             return redirect('encargado_misDatos')
 
         elif has_group(request.user, 'Alumno'):
-            return redirect('home_alumno')
+            return redirect('ver_alumno_propio')
+
+        elif has_group(request.user, 'Profesor'):
+            return redirect('profesor_consultar_grupos')
 
         # return redirect('credenciales_director')
     else:

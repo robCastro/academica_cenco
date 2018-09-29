@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from datetime import datetime
+import time
+
+from apps_cenco.modulo_asistencia.views import insertarFechasMetricasEstado
 
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -11,7 +14,7 @@ from django.shortcuts import render,redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
-from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -30,6 +33,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 
 import sys
 reload(sys)
@@ -38,7 +47,16 @@ sys.setdefaultencoding('utf-8')
 @login_required
 def consultar_alumnos(request):
     if request.user.groups.filter(name="Asistente").exists():
-        alumnos= Alumno.objects.all()
+        estadoActivo = Estado.objects.filter(tipo_estado = "Activo").first()
+        detalleEstado = DetalleEstado.objects.filter(actual_detalle_e=True, estado = estadoActivo)
+        alum = []
+
+        for detE in detalleEstado:
+            alum.append(detE.alumno.codigo)
+        alumnos = []
+        for al in alum:
+            alumno = Alumno.objects.get(pk=al)
+            alumnos.append(alumno)
 
         for alumno in alumnos:
             alumno.primerTelefono = alumno.telefono_set.first()
@@ -48,8 +66,31 @@ def consultar_alumnos(request):
         raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
+def consultar_alumnos_inactivos(request):
+    if request.user.groups.filter(name="Asistente").exists():
+        estadoInactivo = Estado.objects.filter(tipo_estado="Inactivo").first()
+        detalleEstado=DetalleEstado.objects.filter(actual_detalle_e=True,estado = estadoInactivo)
+        alum=[]
+
+        for detE in detalleEstado:
+            alum.append(detE.alumno.codigo)
+        alumnos=[]
+        for al in alum:
+            alumno=Alumno.objects.get(pk=al)
+            alumnos.append(alumno)
+
+        for alumno in alumnos:
+            alumno.primerTelefono=alumno.telefono_set.first()
+
+
+        return render(request, 'modulo_alumnos/consultar_alumnosInactivos.html', {'alumnos': alumnos})
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
 def detalle_alumno(request,id_alumno):
     if request.user.groups.filter(name="Asistente").exists():
+        insertarFechasMetricasEstado()
         url = "/alumnos/" + str(id_alumno)
 
         if 'eliminar1' in request.POST:
@@ -67,17 +108,33 @@ def detalle_alumno(request,id_alumno):
             return HttpResponseRedirect(url)
         elif 'desactivar' in request.POST:
             alumno = Alumno.objects.get(pk=id_alumno)
-            detalleEstado = DetalleEstado.objects.get(alumno=alumno, actual_detale_e=True)
-            detalleEstado.actual_detale_e=False
+            detalleEstado = DetalleEstado.objects.get(alumno=alumno, actual_detalle_e=True)
+            detalleEstado.actual_detalle_e=False
             detalleEstado.save()
-            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detale_e=True,alumno=alumno,estado=Estado.objects.get(tipo_estado='retirado'))
-            grupo=Grupo.objects.get(codigo=alumno.grupo.codigo)
+            estadoInactivo = Estado.objects.get(tipo_estado='Inactivo')
+            estadoRetirado = Estado.objects.get(tipo_estado='Retirados')
+            estadoActivo = Estado.objects.get(tipo_estado='Activo')
+            DetalleEstado.objects.create(fecha_detalle_e=datetime.now().date(),actual_detalle_e=True,alumno=alumno,estado=estadoInactivo)
+            inscripcion = Inscripcion.objects.filter(alumno=alumno, actual_inscripcion=True).first()
+            inscripcion.actual_inscripcion = False
+            inscripcion.save()
+            #grupo=Grupo.objects.get(codigo=alumno.grupo.codigo)
+            grupo = inscripcion.grupo
             grupo.alumnosInscritos=grupo.alumnosInscritos-1
             grupo.save()
             grupo.horario.cantidad_alumnos=grupo.horario.cantidad_alumnos-1
             grupo.horario.save()
-            alumno.grupo=None
-            alumno.save()
+            fechaHoy = datetime.today()
+            fechaAux = datetime(fechaHoy.year, fechaHoy.month, 1)
+            metricaInactivo = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoInactivo).first()
+            metricaInactivo.cantidad = metricaInactivo.cantidad + 1
+            metricaInactivo.save()
+            metricaRetirados = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoRetirado).first()
+            metricaRetirados.cantidad = metricaRetirados.cantidad + 1
+            metricaRetirados.save()
+            metricaActivo = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estadoActivo).first()
+            metricaActivo.cantidad = metricaActivo.cantidad - 1
+            metricaActivo.save()
             return HttpResponseRedirect(url)
         elif request.method=='POST':
             if request.method == 'POST':
@@ -117,11 +174,11 @@ def detalle_alumno(request,id_alumno):
 
             #activar y desactivar
             try:
-                detalleEstado = DetalleEstado.objects.get(alumno=alumno,actual_detale_e=True)
+                detalleEstado = DetalleEstado.objects.get(alumno=alumno,actual_detalle_e=True)
                 estado=detalleEstado.estado.tipo_estado
             except:
                 estado=None
-
+            print estado
             context={
                 'edad':edad,
                 'alumno':alumno,
@@ -150,6 +207,10 @@ def modificar_alumno(request,id_alumno):
         form = ModificarAlumnoForm(request.POST,instance=alumno)
         if form.is_valid():
             form.save()
+            alumno = form.save(commit=False)
+            alumno.username.first_name = alumno.nombre
+            alumno.username.last_name = alumno.apellido
+            alumno.username.save()
             return redirect('detalle_alumno', alumno.pk)
     else:
         form = ModificarAlumnoForm(instance=alumno)
@@ -160,7 +221,6 @@ def modificar_alumno(request,id_alumno):
        raise Http404('Error, no tiene permiso para esta página')
 
 @login_required
-@permission_required('db_app.ver_alumno')
 def ver_alumno_propio(request):
    if request.user.groups.filter(name="Alumno").exists():
     try:
@@ -186,6 +246,9 @@ def inscribirAlumno(request):
     reload(sys)
     sys.setdefaultencoding('utf-8')
     if request.user.groups.filter(name="Asistente").exists():
+
+        insertarFechasMetricasEstado()
+
         if request.method == 'POST':
             mensaje = ""
             nombre = request.POST.get('nombre')
@@ -199,16 +262,17 @@ def inscribirAlumno(request):
             numero = request.POST.get('numero')
             tipo = request.POST.get('tipo')
             fechaNacimientoConFormato = datetime.strptime(fechaNacimiento, "%d/%m/%Y").date()
-            print codEncargado
             #validando existencia de encargado
             if codEncargado != "-1":              #codigo -1 es para alumnos independientes
                 try:
                     encargado = Encargado.objects.get(codigo=codEncargado)
                 except Encargado.DoesNotExist:
-                    #$ es para hacer split en JS
-                    mensaje = "Error en guardado de alumno, Encargado invalido.$"
+                    mensaje = "Error en guardado de alumno, Encargado invalido."
                     print mensaje
-                    return HttpResponse(mensaje, status=500)
+                    respuesta = {
+                        'mensaje' : mensaje
+                    }
+                    return JsonResponse(respuesta, status=500)
 
             #validando existencia de grupo
             try:
@@ -216,8 +280,10 @@ def inscribirAlumno(request):
             except Grupo.DoesNotExist:
                 mensaje = "Error en guardado de alumno, Grupo invalido."
                 print mensaje
-                return HttpResponse(mensaje, status=500)
-
+                respuesta = {
+                    'mensaje': mensaje
+                }
+                return JsonResponse(respuesta, status=500)
             # generando usuario
             strUsuario = generarUsuario(nombre, apellido)
             if correo == "":
@@ -231,26 +297,46 @@ def inscribirAlumno(request):
 
             if codEncargado != "-1":      #cod -1 es para alumnos independientes
                 alumno = Alumno.objects.create(username=usuario,nombre=nombre, apellido=apellido, direccion=direccion,
-                                           fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,encargado=encargado,
-                                           grupo=grupo)
+                                           fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,encargado=encargado)
             else:
                 alumno = Alumno.objects.create(username=usuario, nombre=nombre, apellido=apellido, direccion=direccion,
-                                               fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui,
-                                               grupo=grupo)
+                                               fechaNacimiento=fechaNacimientoConFormato, correo=correo, dui=dui)
             alumno.save()
+
+            #inscripcion
+            inscripcion = Inscripcion.objects.create(fecha_inscripcion=datetime.now(), actual_inscripcion=True, alumno = alumno, grupo = grupo)
+            inscripcion.save()
+
+            #estado
+            estado = Estado.objects.filter(tipo_estado="Inscrito").first()
+            detalle_estado = DetalleEstado.objects.create(fecha_detalle_e = datetime.now(), actual_detalle_e=True, estado = estado, alumno = alumno)
+            detalle_estado.save()
+
+            #Metrica Estado
+            fechaHoy = datetime.now()
+            fechaAux = datetime(fechaHoy.year, fechaHoy.month, 1)
+            metrica_estado_inscrito = MetricaEstado.objects.filter(fecha_metrica=fechaAux, estado=estado).first()
+            metrica_estado_inscrito.cantidad = metrica_estado_inscrito.cantidad + 1
+            metrica_estado_inscrito.save()
+
+            #Cantidades en grupos y horarios
             grupo.horario.cantidad_alumnos = grupo.horario.cantidad_alumnos + 1
             grupo.horario.save()
             grupo.alumnosInscritos = grupo.alumnosInscritos + 1
             grupo.save()
+
             #Guardando telefono
             if numero != "":
                 telefono = Telefono.objects.create(numero=numero, tipo=tipo, alumno=alumno)
                 telefono.save()
-            mensaje = "¡Alumno Inscrito! Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
-            return HttpResponse(mensaje, status=200)
+            mensaje = "Alumno Inscrito, Usuario: " + strUsuario + " Contraseña: " + fechaNacimiento
+            respuesta = {
+                'mensaje': mensaje
+            }
+            return JsonResponse(respuesta, status=200)
         else:
-            grupos = Grupo.objects.all().order_by('-codigo')
-            cantidadGrupos = Grupo.objects.all().count()
+            grupos = Grupo.objects.all().order_by('-codigo').filter(activo_grupo = True)
+            cantidadGrupos = Grupo.objects.all().filter(activo_grupo = True).count()
             encargados = Encargado.objects.all().order_by('nombre')
             context = {
                 'grupos' : grupos,
@@ -426,7 +512,9 @@ def guardarModificacionAlumnoDependiente(request):
             alumno.fechaNacimiento = fechaNacimientoConFormato
             alumno.dui = duiAl
             alumno.correo = correoAl
-
+            alumno.username.first_name = nombreAl
+            alumno.username.last_name = apellidoAl
+            alumno.username.save()
             #verificando si el alumno será independiente
 
             hacerIndep = request.POST.get('hacerIndep')
@@ -442,7 +530,6 @@ def guardarModificacionAlumnoDependiente(request):
                     codNuevoEncargado = request.POST.get('codNuevoEncargado')
                     if codNuevoEncargado == "":
                         mensaje = "Error, no seleccionó un nuevo encargado."
-                        print mensaje
                         return HttpResponse(mensaje, status=500)
                     try:
                         nuevoEncargado = Encargado.objects.get(codigo=codNuevoEncargado)
@@ -490,6 +577,10 @@ def guardarModificacionAlumnoIndependiente(request):
             alumno.dui = duiAl
             alumno.correo = correoAl
 
+            alumno.username.first_name = nombreAl
+            alumno.username.last_name = apellidoAl
+            alumno.username.save()
+
             codEncargado = request.POST.get('codEncargado')
             if codEncargado != "":
                 try:
@@ -506,74 +597,77 @@ def guardarModificacionAlumnoIndependiente(request):
         return HttpResponse(status=200)
     else:
         raise Http404("No tiene permisos para esta pagina")
+
 @login_required
 def ConstanciaEstudioPDF(request):
     if request.user.groups.filter(name="Alumno").exists():
-        #def get(self, request, *args, **kwargs):
+        alumno = Alumno.objects.get(username=request.user)
+        estado = alumno.detalleestado_set.get(actual_detalle_e=True).estado
+        # Agregar ands aqui para otras condiciones
+        permitirConstancia = estado.tipo_estado == 'Activo'
+        if permitirConstancia:
             # Indicamos el tipo de contenido a devolver, en este caso un pdf
             response = HttpResponse(content_type='application/pdf')
             # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
             buffer = BytesIO()
             # Canvas nos permite hacer el reporte con coordenadas X y Y
-            pdf = canvas.Canvas(buffer)
+            pdf = canvas.Canvas(buffer,pagesize=letter)
             # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
             #self.cabecera(pdf)
             # Con show page hacemos un corte de página para pasar a la siguiente
 
-        #def cabecera(self, pdf):
+            #def cabecera(self, pdf):
             # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
             archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
             # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
-            pdf.drawImage(archivo_imagen, 40, 750, 120, 90, preserveAspectRatio=True)
+            pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
             # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
             pdf.setFont("Helvetica", 16)
             # Dibujamos una cadena en la ubicación X,Y especificada
-            pdf.drawString(180, 790, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+            pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
             pdf.setFont("Helvetica", 14)
             alum = Alumno.objects.get(username=request.user)
             nom=alum.nombre+" "+alum.apellido
-            pdf.drawString(75, 745, u"A quien corresponda: ")
-            pdf.drawString(75, 710, u"El que suscribe, Director de esta institución, hace CONSTAR: ")
-            pdf.drawString(75, 695, u"Que ")
-            pdf.drawString(105, 695, nom)
-
-            y=(nom.__len__()*7)+110
-
+            ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
+            dia = "Apopa, " + ahora
+            pdf.drawString(425, 695, dia)
+            x=-175
+            pdf.drawString(75, 745+x, u"A quien corresponda: ")
+            pdf.drawString(75, 685+x, u"El que suscribe, Director de esta institución, hace CONSTAR que:")
+            pdf.drawString(100, 670+x, nom)
+            y=(nom.__len__()*7)+71
             dui = alum.dui
+            ins = Inscripcion.objects.get(alumno_id=alum.codigo, actual_inscripcion=True)
+            id_gru = ins.grupo_id
+            grupo = Grupo.objects.get(codigo=id_gru)
             if dui.__len__()==10:
-                pdf.drawString(y, 695, u"con dui: ")
-                pdf.drawString(y+54, 695, dui)
-                pdf.drawString(y + 134, 695, u"es estudiante" )
-                pdf.drawString(75, 680, u"de la carrera ")
-                pdf.drawString(75, 665, u"en el horario de: ")
+                pdf.drawString(y+25, 670+x, u" con DUI: ")
+                pdf.drawString(y+87, 670+x, dui)
+                pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:" )
+                pdf.drawString(100, 640 + x, str(grupo.horario.dias_asignados)+" de "+str(grupo.horario.hora_inicio.strftime("%I:%M"))+" a "+str(grupo.horario.hora_fin.strftime("%I:%M")))
+                pdf.drawString(75, 580 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
 
             else:
-                pdf.drawString(y, 695, u"es estudiante de la institución cursando")
-                pdf.drawString(75, 680, u"la carrera ")
-                pdf.drawString(75, 665, u"en el horario de: ")
-
-            pdf.drawString(75, 635, u"Para los fines que al interesado le convengan se extiende la presente")
-
-            ahora = str((datetime.now().date()))
-            dia= "el dia "+ahora
-            pdf.drawString(75, 620, dia)
-
-
-
-
-
-
-
-
-
-
-
+                pdf.drawString(75, 655+x, u"es estudiante activo/a de esta institución en el horario:")
+                pdf.drawString(75,580 + x, u"Se extiende la presente para los fines que al interesado le convengan.")
+                pdf.drawString(100, 640 + x,str(grupo.horario.dias_asignados)+" de "+str(grupo.horario.hora_inicio.strftime("%I:%M"))+" a "+str(grupo.horario.hora_fin.strftime("%I:%M")))
+            s=120
+            pdf.drawString(200, 100+s, u"_________________________")
+            grupo = Group.objects.filter(name="Director").first()
+            director= grupo.user_set.first()
+            dir= director.first_name+" "+director.last_name
+            pdf.drawString(250,80+s,dir)
+            pdf.drawString(240, 60+s, u"Director de CENCO")
+            pdf.setFont("Helvetica", 10)
+            pdf.drawString(65, -70+s, u"*Valida solo con firma y sello del director por un periodo no mayor a un mes")
             pdf.showPage()
             pdf.save()
             pdf = buffer.getvalue()
             buffer.close()
             response.write(pdf)
             return response
+        else:
+            return redirect("Constancias")
 
     else:
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
@@ -582,10 +676,24 @@ def ConstanciaEstudioPDF(request):
 
 
 
+
+
+
+
+
+
+
 @login_required
 def constancias(request):
    if request.user.groups.filter(name="Alumno").exists():
-
-    return render(request, 'modulo_alumnos/constancias.html')
+        alumno = Alumno.objects.get(username=request.user)
+        estado = alumno.detalleestado_set.get(actual_detalle_e=True).estado
+            #Agregar ands aqui para otras condiciones
+        permitirConstancia = estado.tipo_estado == 'Activo'
+        context = {
+            'permitirConstancia':permitirConstancia,
+            'alumno': alumno,
+        }
+        return render(request, 'modulo_alumnos/constancias.html', context)
    else:
-     raise Http404('Error, no tiene permiso para esta página')
+        raise Http404('Error, no tiene permiso para esta página')

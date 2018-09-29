@@ -57,7 +57,7 @@
 {% block content %}
     <form method="post" action="{% url 'asist_detalle_grupo' grupo.codigo %}">
     {% csrf_token %}
-    <table width="100%">
+    <table align="center">
         <tr>
             <td width='20%' style="padding-top: 5%" rowspan="{{ alumnos|length|add:"3" }}" valign="top">
                 <h4>Métricas</h4>

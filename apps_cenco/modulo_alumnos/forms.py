@@ -15,7 +15,7 @@ class InsertarAlumnoForm(forms.ModelForm):
             'correo',
             'fechaNacimiento',
             'dui',
-            'grupo',
+            # 'grupo',
             'encargado',
             ]
         labels ={
@@ -26,7 +26,7 @@ class InsertarAlumnoForm(forms.ModelForm):
             'correo'            : 'Correo',
             'fechaNacimiento'   : 'Fecha de Nacimiento',
             'dui'               : 'Dui',
-            'grupo'             : 'Grupo',
+            # 'grupo'             : 'Grupo',
             'encargado'         : 'Encargado',
         }
 
@@ -38,7 +38,7 @@ class InsertarAlumnoForm(forms.ModelForm):
             'correo': forms.EmailInput(attrs={'class': 'form-control', 'required': False}),
             'fechaNacimiento': forms.DateTimeInput(attrs={'class': 'form-control', 'required': True, 'type': 'date'}, ),
             'dui': forms.TextInput(attrs={'class': 'form-control', 'required': False,'pattern':'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[-]'+'[0-9]'}),
-            'grupo': forms.Select(attrs={'class': 'form-control', 'required': True}),
+            # 'grupo': forms.Select(attrs={'class': 'form-control', 'required': True}),
             'encargado': forms.Select(attrs={'class': 'form-control', 'required': True}),
         }
     def __init__ (self,*args,**kwargs):
@@ -105,7 +105,7 @@ class ModificarAlumnoForm(forms.ModelForm):
             'fechaNacimiento',
             'dui',
             'encargado',
-            'grupo',
+            # 'grupo',
             ]
         labels = {
             'nombre'            : 'Nombre:',
@@ -125,7 +125,7 @@ class ModificarAlumnoForm(forms.ModelForm):
             'fechaNacimiento'   : forms.DateInput(attrs={'size':'27'}),
             'dui'               : forms.TextInput(attrs={'size':'27','pattern': '[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[0-9]'+'[-]'+'[0-9]'}),
             'encargado'         : forms.Select(),
-            'grupo'             : forms.HiddenInput(),
+            # 'grupo'             : forms.HiddenInput(),
         }
 
     def __init__(self,*args,**kwargs):

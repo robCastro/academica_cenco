@@ -1,11 +1,12 @@
-{% extends 'plantillas_base/base_director.html' %}
+{%  extends 'plantillas_base/base_asistente.html' %}
 {% load staticfiles %}
-{% block titulo %}Empleados Activos{% endblock %}
+{% block titulo %}Listado de alumnos{% endblock %}
 
+#Espacio para los archivos de cabecera o head_content
 {% block head_content %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+
     <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
     <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
@@ -57,70 +58,86 @@
 
     }
 
-
-
     </style>
 
 {% endblock %}
 
 {% block content %}
-<table align="center">
+    <table width='100%' >
 
-    <tr align="left">
+    <tr id="tr_mod" style="height: 30px;">
+        <td width='250px' rowspan="2" valign="top">
+            <p></p>
+        </br>
+            <h6> Notificaciones:</h6>
+            <div class='divNotifAlumnos' style="padding-left: 20px; width: 160px; margin-right: 40px">
+                <h4></h4>
 
 
+            </div>
+
+        </td>
+
+        <br/>
+        <br/>
+        <h4 align="center">Listado de alumnos inactivos</h4>
+
+        <td width='60%' height='30px' align="right" valign="top" style="padding-top: 20px;">
+
+
+        </td>
     </tr>
-
     <tr>
-    <td width="10px"></td>
-    <td width="900px">
-        <div style="padding-top: 30px;">
-            <h4>Empleados Activos</h4>
-        </div>
-
-        <div style="text-align: right; align-items: right; padding-bottom: 20px;">
-            <a href="{% url 'crear_empleado' %}"><button style="margin-right: 10px" type="button" class="btn btn-primary">Nuevo empleado</button></a>
-
-            <a href="{% url 'consultar_empleados_inactivos' %}"><button type="button" class="btn btn-primary">Ver Inactivos</button></a>
-
-        </div>
-        <table id="example" class="table table-bordered table-hover table-sm" style="width:100%;">
+        <td width="900px">
+         <div style="text-align: right; align-items: right;">
+            <a type="button" style="margin-bottom: 10px; margin-right: 10px;" class="btn btn-primary" href="{% url 'InsertarAlumnoV2' %}">Inscribir Alumno</a>
+            <a type="button" style="float: right; margin-bottom: 10px; " class="btn btn-primary" href="{% url 'asistenteConsultarAlumnos' %}">Ver Activos</a>
+         </div>
+            <div style="width: 950px; padding-top: 10px;">
+            <table id="example" class="table table-bordered table-hover table-sm" style="min-width: 900px;">
             <thead>
                 <tr bgcolor="#f0f8ff" >
-
+                    <th>Codigo</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
                     <th>Telefono</th>
-                    <th>Tipo</th>
                     <th>Correo</th>
-
+                    <th>Encargado</th>
+                    <th>Horario</th>
                 </tr>
             </thead>
-                </thead>
                 <tbody>
-                {% for user in empleados%}
+                {% for user in alumnos%}
                     <tr>
-                        <td><a href="{% url 'director_ver_empleado' id_empleado=user.codigo %}">{{ user.nombre }}</a></td>
-                        <td>{{ user.apellido }} </td>
-                        <td>{{ user.primerTelefono|default_if_none:"" }}</td>
-                        <td>{{ user.primerTelefono.tipo|default_if_none:""  }}</td>
+                        <td><a href="{% url 'detalle_alumno' id_alumno=user.codigo %}">{{ user.codigo }}</a></td>
+                        <td>{{ user.nombre }} </td>
+                        <td>{{ user.apellido }}</td>
+                        <td>{{ user.primerTelefono|default_if_none:""  }}</td>
                         <td>{{ user.correo|default_if_none:"" }}</td>
-
+                        <td><a href="" ><font color=#4488ca>{{ user.encargado.nombre|default_if_none:"" }}</font> </a></td>
+                        <td>{{user.grupo.horario.dias_asignados}}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
-        </table>
+                {% comment %}<tfoot>
+                <tr bgcolor="#f0f8ff" >
+                    <th>Codigo</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Telefono</th>
+                    <th>Correo</th>
+                    <th>Encargado</th>
+                    <th>D&iacute;as Correspondientes</th>
+                </tr>
+                </tfoot>{% endcomment %}
+            </table>
+            </div>
     </td>
-    <td width="10px"></td>
     </tr>
-
-
-
-</table>
-
-
+    </table>
 
     <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+
     <script>
         $(document).ready(function() {
         var tabla = $('#example').DataTable( {
@@ -158,5 +175,6 @@
 
     });
     </script>
+
 
 {% endblock %}

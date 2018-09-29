@@ -4,19 +4,19 @@
 {% block titulo %} Estados {% endblock %}
 
 {% block head_content %}
-    <script src="http://www.chartjs.org/dist/2.7.2/Chart.bundle.js"></script>
-    <script src="http://www.chartjs.org/samples/latest/utils.js"></script>
+    <script src="{% static 'js/chartJS/Chart.bundle.js' %}"></script>
+    <script src="{% static 'js/chartJS/utils.js' %}"></script>
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
 	<script src="{% static 'js/jquery-ui.js' %}"></script>
 
-    	<style>
-	canvas {
-		-moz-user-select: none;
-		-webkit-user-select: none;
-		-ms-user-select: none;
-	}
+    <style>
+        canvas {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
 	</style>
 
 {% endblock %}
@@ -28,8 +28,26 @@
     <span class="btnCerrar">×</span>
         <strong></strong>
     </div>
+    <br>
+    <h3>Reporte de Estados</h3>
+<div style="min-width: 1200px">
+    <div style="display: inline-block; border: 2px solid black; float:left; margin-right: 25px; margin-top: 5%; box-shadow: 5px 5px 2px #888888; width: 140px; height: 200px">
+        <table class="table-sm table-hover">
+            <thead>
+                <th>Otros reportes:</th>
+            </thead>
+            <tbody>
+            <tr><td><a href="{% url 'director_ver_estados' %}" style="color: #3836cd">Reporte de Estados
+                <img src="{% static 'img/link.png' %}" width="18px" height="18px"/> </a></td></tr>
+            <tr><td>Reporte DOS</td></tr>
+            <tr><td>Reporte TRES</td></tr>
+            <tr><td>Reporte CUATRO</td></tr>
+            </tbody>
+        </table>
 
-    <div >
+    </div>
+<div style="display: inline-block; width: 85%; vert-align: top;" >
+    <div>
     <br>
     <table align="center" width="60%">
         <th>
@@ -61,7 +79,7 @@
                 <select onchange="changeType(this.value)" id="id_tipo">
                     <option value="activos" selected>Activos</option>
                     <option value="inscritos">Inscritos</option>
-                    <option value="retirados">Retirados</option>
+                    <option value="retirados">Inactivos</option>
                     <option value="graduados">Graduados</option>
                 </select>
             </td>
@@ -84,9 +102,11 @@
 
 
     </div>
-    <div style="width: 85%" id="id_grafico">
+    <div style="width: 100%" id="id_grafico">
 		<canvas id="canvas"></canvas>
 	</div>
+</div>
+</div>
     <script>
         $( function() {
             $( "#id_fechaInicial" ).datepicker({
@@ -152,6 +172,7 @@
                   m.css('opacity',1);
                   m.removeClass();
                   m.addClass('alerta cuidado');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
                 }
             }) });
 
@@ -173,6 +194,20 @@
 
     function changeType(valor){
         opt_tipo = valor;
+        if(valor === 'activos'){
+            line_plot_config.borderColor = '#008000';
+            bar_plot_config.backgroundColor = '#008000';
+        } else if(valor ==='inscritos'){
+            line_plot_config.borderColor = '#0000FF';
+            bar_plot_config.backgroundColor = '#0000FF';
+        }else if(valor === 'retirados'){
+            line_plot_config.borderColor = '#FF0000';
+            bar_plot_config.backgroundColor = '#FF0000';
+        }
+        else if (valor === 'graduados'){
+            line_plot_config.borderColor = '#808080';
+            bar_plot_config.backgroundColor = '#808080';
+        }
         var periodo = $('#id_periodo').val();
         if(periodo !== 'personalizado'){
             AJAXcall_simple(periodo);
@@ -232,7 +267,7 @@
     var line_plot_config = {
 				type: 'line',
 				label: 'Estudiantes activos',
-				borderColor: window.chartColors.blue,
+				borderColor: '#008000',
 				borderWidth: 2,
 				fill: false,
 				data: plot_data,};
@@ -240,7 +275,7 @@
     var bar_plot_config = {
 				type: 'bar',
 				label: 'Estudiantes activos',
-				backgroundColor: window.chartColors.orange,
+				backgroundColor: '#008000',
 				data: plot_data,
 				borderColor: 'white',
 				borderWidth: 2};
@@ -266,13 +301,23 @@
 					},
 					scales: {
 					    yAxes: [{
+					        scaleLabel: {
+					          display: true,
+                              labelString: 'Cantidad de Estudiantes',
+                            },
 					        ticks: {
 					            beginAtZero: true,
                                 callback: function(value) {if (value % 1 === 0) {return value;}},
                                 max: maximo,
 
 					        }
-					    }]
+					    }],
+                        xAxes: [{
+                            scaleLabel: {
+					          display: true,
+                              labelString: 'Fecha de actividad',
+                            },
+                        }]
 					}
 				}
 			});

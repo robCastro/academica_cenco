@@ -12,7 +12,6 @@ class Empleado (models.Model):
     apellido = models.CharField(max_length=40)
     direccion = models.TextField()
     correo = models.EmailField(blank=True)
-
     dui = models.CharField(max_length=10)
     isss = models.CharField(max_length=9)
     afp = models.CharField(max_length=12)
@@ -62,6 +61,8 @@ class Grupo(models.Model):
     codigo = models.AutoField(primary_key=True)
     fechaInicio = models.DateField()
     alumnosInscritos = models.IntegerField(default=0)
+    activo_grupo = models.BooleanField(default=True)
+    # foreign keys
     horario = models.ForeignKey(Horario, on_delete=models.PROTECT)
     profesor = models.ForeignKey(Empleado, on_delete=models.PROTECT, blank=False)
 
@@ -91,10 +92,15 @@ class Alumno (models.Model):
     correo = models.EmailField(blank=True, null=True)
     fechaNacimiento = models.DateField()
     dui = models.CharField(max_length=10, blank=True, null=True)
-    encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT, null=True, blank=True)
-    grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT,null=True,blank=True)
     solvente = models.BooleanField(default=False)
-
+    # foreign keys
+    encargado = models.ForeignKey(Encargado, on_delete=models.PROTECT, null=True, blank=True)
+    # opciones_estado = (
+    #     ('activo', 'activo'),
+    #     ('inactivo', 'inactivo')
+    # )
+    #
+    # estado = models.CharField(max_length=8, choices=opciones_estado, default='activo')
     def __unicode__(self):
         return self.nombre + " " + self.apellido
 
@@ -119,7 +125,6 @@ class Telefono (models.Model):
 
 # Modelos Agregados en Sprint 2
 
-
 class Inscripcion(models.Model):
     codigo_ins = models.AutoField(primary_key=True)
     fecha_inscripcion = models.DateField()
@@ -140,6 +145,7 @@ class Asistencia(models.Model):
 class Estado(models.Model):
     codigo_estado = models.AutoField(primary_key=True)
     tipo_estado = models.CharField(max_length=20, null=False, blank=False)
+
     def __unicode__(self):
         return self.tipo_estado
 
@@ -147,12 +153,13 @@ class Estado(models.Model):
 class DetalleEstado(models.Model):
     codigo_detalle_e = models.AutoField(primary_key=True)
     fecha_detalle_e = models.DateField()
-    actual_detale_e = models.BooleanField(default=True)
+    actual_detalle_e = models.BooleanField(default=True)
     # foreign keys
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, null=False, blank=False)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE, null=False, blank=False)
+
     def __unicode__(self):
-        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detale_e)
+        return self.alumno.__unicode__() + " "+ self.estado.__unicode__() + " " + str(self.actual_detalle_e)
 
 
 class Carrera(models.Model):
@@ -192,38 +199,26 @@ class Expediente(models.Model):
     fecha_proximo_pago_exp = models.DateField()
     pagado_hasta = models.DateField()
     # foreign keys
-    inscripcion = models.ForeignKey(Inscripcion, on_delete=models.PROTECT, null=False, blank=False)
-    carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT, null=False, blank=False)
+    alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=True)
+    carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT, null=True)
 
 
-class Avance(models.Model):
-    codigo_avance = models.AutoField(primary_key=True)
-    aprobado = models.BooleanField(default=False)
-    nota_final = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+class Cursa(models.Model):
+    codigo_cursa = models.AutoField(primary_key=True)
+    evaluacion1 = models.DecimalField(max_digits=6, decimal_places=4)
+    evaluacion2 = models.DecimalField(max_digits=6, decimal_places=4)
+    evaluacion3 = models.DecimalField(max_digits=6, decimal_places=4)
+    nota_final = models.DecimalField(max_digits=6, decimal_places=4)
     # foreign keys
-    detalle_pensum = models.ForeignKey(DetallePensum, on_delete=models.PROTECT, null=False, blank=False)
-    expediente = models.ForeignKey(Expediente, on_delete=models.PROTECT, null=False, blank=False)
-
-
-class Evaluacion(models.Model):
-    codigo_evaluacin = models.AutoField(primary_key=True)
-    nombre_eval = models.CharField(max_length=100, null=False, blank=False)
-    ponderacion = models.DecimalField(max_digits=6, decimal_places=4)
-
-
-class NotaEvaluacion(models.Model):
-    codigo_nota = models.AutoField(primary_key=True)
-    nota = models.DecimalField(max_digits=6, decimal_places=4, null=True)
-    # foreign keys
-    evaluacion = models.ForeignKey(Evaluacion, on_delete=models.PROTECT, null=False, blank=False)
-    avance = models.ForeignKey(Avance, on_delete=models.PROTECT, null=False, blank=False)
+    materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
+    alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
 
 
 class Colegiatura(models.Model):
     codigo_colegiatura = models.AutoField(primary_key=True)
     cuota_semanal = models.DecimalField(max_digits=10, decimal_places=2)
     forma_pago = models.CharField(max_length=100, null=False, blank=False)
-    actual = models.BooleanField(default=True)
+    actual_colegiatura = models.BooleanField(default=True)
     # foreign keys
     expediente = models.ForeignKey(Expediente, on_delete=models.PROTECT, null=False, blank=False)
 
@@ -236,3 +231,10 @@ class DetallePago(models.Model):
     cantidad_semanas = models.IntegerField(blank=False)
     # foreign keys
     colegiatura = models.ForeignKey(Colegiatura, on_delete=models.PROTECT, null=False, blank=False)
+
+class MetricaEstado(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    fecha_metrica = models.DateField()
+    cantidad = models.IntegerField(default=0)
+    # foreign keys
+    estado = models.ForeignKey(Estado, on_delete=models.PROTECT, null=False, blank=False)

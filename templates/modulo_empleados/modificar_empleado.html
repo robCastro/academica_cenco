@@ -7,7 +7,7 @@
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
     <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
-    <script src="{% static 'js/modificar_empleado.js' %}"></script>
+    <script src="{% static 'js/modificar_empleado.js' %}" ></script>
 
 {% endblock %}
 
@@ -35,6 +35,7 @@
                 <td width="25%">
                     <div class="form-group">
                         <input value="{{empleado.nombre}}" class="form-control" required="" maxlength="40" id="txtNombreEmpleado" name="txtNombreEmpleado" type="text" onkeyup="validarEmpleado()">
+                        <div class="invalid-feedback">Nombre no válido</div>
                     </div>
                 </td>
                 <td width="57%"></td>
@@ -46,6 +47,7 @@
                 <td>
                     <div class="form-group">
                         <input value="{{empleado.apellido}}" class="form-control" onkeyup="validarEmpleado()" required="" maxlength="40" id="txtApellidoEmpleado" name="txtApellidoEmpleado" type="text">
+                        <div class="invalid-feedback">Apellido no válido</div>
                     </div>
                 </td>
                 <td></td>
@@ -158,11 +160,14 @@
                 </td>
                 <td>
                     <div class="form-group">
-                        <select id="cbxRolEmpleado" name="cbxRol" class="custom-select" {% if grupo_pc %} disabled {% endif %}>
+                        <select id="cbxRolEmpleado" name="cbxRol"{% if grupo_pc %} disabled class="custom-select is-valid"{% else %}  class="custom-select"  {% endif %}>
                             <option value="Asi" {% if empleado.tipo == "Asi" %} selected {% endif %}>Asistente</option>
                             <option value="Pro" {% if empleado.tipo == "Pro" %} selected {% endif %}>Profesor</option>
                             <option value="Tec" {% if empleado.tipo == "Tec" %} selected {% endif %}>Técnico</option>
                         </select>
+                        {% if grupo_pc %}
+                            <div class="valid-feedback">No se puede cambiar rol, porque tiene grupos.</div>
+                        {% endif %}
                     </div>
                 </td>
                 <td></td>

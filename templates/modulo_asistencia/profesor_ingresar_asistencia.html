@@ -1,0 +1,141 @@
+{% extends 'plantillas_base/base_profesor.html' %}
+
+{% load staticfiles %}
+
+{% block titulo %} Asistencia {{ grupo.horario }} {{ grupo.codigo }} {% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <script>
+        //para uso general dentro de script
+        var codigosAlumnos = [];
+        {% for alumno in alumnos %}
+            codigosAlumnos.push('{{ alumno.codigo }}')
+        {% endfor %}
+    </script>
+    <script src="{% static 'js/ingresar_asistencia.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <!-- ALERTAS -->
+    <div id="mensajeEmergente" class="divEscondido">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+    <!-- FIN_ALERTAS -->
+
+    <div id="titulo" style="padding-left: 30%;padding-top: 3%">
+        <h3>{{ grupo.horario }} {{ grupo.codigo }}</h3>
+    </div>
+    <table width="100%">
+        <tr>
+            <td width="25%" style="padding-top: 2%" rowspan="{{ alumnos|length|add:3 }}" valign="top">
+                <h4>Métricas</h4>
+                <div class='divNotifGrupo'>
+                    <h5>Nota mayor:</h5>
+                    <p align="right"><b>Pendiente</b></p>
+                    <h5>Nota menor:</h5>
+                    <p align="right"><b>Pendiente</b></p>
+                    <h5>Promedio:</h5>
+                    <p align="right"><b>Pendiente</b></p>
+                </div>
+            </td>
+            <td valign="top">
+                    <div id="subtitulo" style="padding-left: 35%; padding-top: 2%; padding-bottom: 2%">
+                        <h4>Asistencia para: {{ hoy }}</h4>
+                    </div>
+                {% if tomarAsistencia and alumnos|length > 0 %}
+                    <div align="right" style="padding-bottom: 2%">
+                        <button type="button" id="btnMarcarTodos1" class="btn btn-outline-info" onclick="marcarTodos()">Marcar/Desmarcar Todos</button>
+                        <input type="checkbox" id="todosMarcados" hidden="">
+                    </div>
+                    <form method="post" action="{% url "guardar_asistencia_grupo" id_grupo=grupo.codigo %}" id="guardarAsistencia">
+                    {% csrf_token %}
+                    <table width="100%" class="table table-hover" id="alumnos">
+                    <thead>
+                        <tr>
+                            <th>Apellido</th>
+                            <th>Nombre</th>
+                            <th>Telefono</th>
+                            <th>Correo</th>
+                            <th align="center">Asistió</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alumno in alumnos %}
+                        <tr>
+                                <td>{{ alumno.apellido }}</td>
+                                <td>{{ alumno.nombre }}</td>
+                                <td>{% if alumno.tel %}{{ alumno.tel }}{% else %}-{% endif %}</td>
+                                <td>{{ alumno.correo }}</td>
+                                <td align="center"><input type="checkbox" name="{{ alumno.codigo }}" id="{{ alumno.codigo }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                    <div align="right">
+                        <button type="button" id="btnMarcarTodos2" onclick="marcarTodos()" class="btn btn-outline-info">Marcar/Desmarcar Todos</button>
+                    </div>
+                        <button type="submit" id="btnGuardarAsistencia" class="btn btn-primary">Guardar</button>
+                        <div style="display: none" id="espereI">
+                            <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
+                    </form>
+                {% else %}
+                    <div style="padding-left: 20%; padding-top: 10%">
+                        {% if tomarAsistencia %}
+                            <h4>No hay alumnos en este grupo.</h4>
+                        {% else %}
+                            <h4>La asistencia para el día de hoy ya fue ingresada.</h4>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+    <script>
+        $(document).ready(function() {
+        var tabla = $('#alumnos').DataTable( {
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+        tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });
+
+    });
+    </script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends plantillaBase %}
+{% load staticfiles %}
+
+{% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
+    <script>
+    function checkAsistio(){
+        asistio = document.getElementById('asistio');
+        noAsistio = document.getElementById('noAsistio');
+        if (asistio.checked == false && noAsistio.checked == false)
+            noAsistio.checked = true;
+    }
+
+    function checkNoAsistio(){
+        asistio = document.getElementById('asistio');
+        noAsistio = document.getElementById('noAsistio');
+        if (asistio.checked == false && noAsistio.checked == false)
+            asistio.checked = true;
+    }
+    </script>
+{% endblock %}
+
+{% block titulo %}Asistencia{% endblock %}
+
+{% block content %}
+    <!-- ALERTAS -->
+    <div id="mensajeEmergente" {% if usar_msj %} style="display: block; opacity: 1;" class="alerta exito"{% else %} class="divEscondido"{% endif %}>
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+
+    <table width="100%">
+        <tr>
+            <td width='20%' style="padding-top: 5%" valign="top" >
+                <h4>Notificaciones</h4>
+                &nbsp;&nbsp;
+                <div class='divNotifGrupo'>
+                    <div style="padding-bottom: 7%;padding-top: 7%"><h5>Inasistencias en los ultimos 30 días</h5></div>
+                    <div style="padding-bottom: 7%"><h5>Estudiantes Inactivos</h5></div>
+                </div>
+            </td>
+            <td valign="top">
+                <div style="padding-left: 10%; padding-top: 5%"><h3>Asistencias</h3></div>
+                <div style="padding-left: 10%;">
+                    <div style="padding-left: 17%;padding-top: 2%;padding-bottom: 2%"><h4>Control de <strong>{{ alumno }}</strong></h4></div>
+                    <h5>Estado: <strong>{{ estado.estado.tipo_estado }}</strong></h5>
+                    <h5>Ultima Asistencia: <strong>{% if ultimaAsistencia %}{{ ultimaAsistencia.fecha_asistencia }}{% else %}El alumno no se ha presentado a clases{% endif %}</strong></h5>
+                </div>
+            </td>
+        </tr>
+    </table>
+    {% if ultimaAsistencia %}
+        <div style="padding-left: 25%; padding-top: 5%"><h4>Busqueda</h4></div>
+        <form action="{% url 'detalle_asistencia' alumno.codigo %}" method="post">
+            {% csrf_token %}
+            <div style="display: inline-block; padding-left: 4%">
+                <table width="100%" cellpadding="20">
+                    <tr>
+                        <td valign="bottom">
+                            <div class="form-group">
+                                <h5><label for="periodo">Periodo:</label></h5>
+                            </div>
+                        </td>
+                        <td valign="top">
+                            <div class="form-group">
+                                <select class="custom-select" id="periodo" name="periodo">
+                                    <option value="mes" {% if periodo == "mes" %} selected {% endif %}>Ultimo Mes</option>
+                                    <option value="trim" {% if periodo == "trim" %} selected {% endif %}>Ultimo Trimestre</option>
+                                    <option value="sem" {% if periodo == "sem" %} selected {% endif %}>Ultimo Semestre</option>
+                                    <option value="anio" {% if periodo == "anio" %} selected {% endif %}>Ultimo Año</option>
+                                    <option value="todo" {% if periodo == "todo" %} selected {% endif %}>Todo</option>
+                                    <!--<option value="personalizado" {% if periodo == "personalizado" %} selected {% endif %}>Personalizado</option>-->
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input name="asistio" id="asistio" {% if mostrarAsistencias %} checked {% endif %} type="checkbox" onclick="checkAsistio()">
+                                <label for="asistio">Asistencias</label>
+
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input name="noAsistio" id="noAsistio" type="checkbox" {% if mostrarInasistencias %} checked {% endif %} onclick="checkNoAsistio()">
+                                <label for="noAsistio">Inasistencias</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Consultar</button>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="formPersonalizado" style="padding-left: 30%" valign="top" hidden>
+                <table cellpadding="10" cellspacing="10">
+                    <tr>
+                        <td>
+                            <div class="form-group"><label for="fechaInicio">Inicio:</label></div>
+                        </td>
+                        <td>
+                            <div class="form-group"><input type="text" id="fechaInicio"></div>
+                        </td>
+                        <td>
+                            <div class="form-group"><label for="fechaFin">Fin:</label></div>
+                        </td>
+                        <td>
+                            <div class="form-group"><input type="text" id="fechaFin"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </form>
+
+        <div style="padding-left: 25%; padding-top: 3%"><h4>Resultados</h4></div>
+        {% if asistencias|length == 0 %}
+            <div style="padding-left: 20%; padding-top: 3%"><h4>No hay registros para este periodo.</h4></div>
+        {% else %}
+            <table width="100%" class="table table-hover" id="asistencias">
+                <thead>
+                    <td>
+                        <strong>Fecha</strong>
+                    </td>
+                    <td>
+                        <strong>Horario</strong>
+                    </td>
+                    <td>
+                        <strong>Grupo</strong>
+                    </td>
+                    <td>
+                        <strong>Estado</strong>
+                    </td>
+                </thead>
+                <tbody>
+            {% for asistencia in asistencias %}
+                <tr>
+                    <td>
+                        {{ asistencia.fecha_asistencia|date:"d/m/y" }}
+                    </td>
+                    <td>
+                        {{ asistencia.inscripcion.grupo.horario.dias_asignados }} de {{ asistencia.inscripcion.grupo.horario.hora_inicio }} a {{ asistencia.inscripcion.grupo.horario.hora_fin }}
+                    </td>
+                    <td>
+                        {{ asistencia.inscripcion.grupo.codigo }}
+                    </td>
+                    <td>
+                        {% if asistencia.asistio %}Asistió {% else %}No Asistió {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% else %}
+        <div style="padding-left: 25%; padding-top: 3%"><h4>No hay registros de asistencia de este estudiante.</h4></div>
+
+    {% endif %}
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+    <script>
+        $(document).ready(function() {
+        var tabla = $('#asistencias').DataTable( {
+        "ordering": false,
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+        tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });
+        });
+    </script>
+{% endblock %}

@@ -23,9 +23,17 @@
         }
     </script>
     <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <script src="{% static 'js/jquery.min.js' %}" xmlns="http://www.w3.org/1999/html"></script>
 {% endblock %}
 
 {% block content %}
+    <!-- ALERTAS -->
+    <div id="mensajeEmergente" {% if usar_msj %} style="display: block; opacity: 1;" class="alerta exito"{% else %} class="divEscondido"{% endif %}>
+        <span class="btnCerrar">&times;</span>
+            <strong>{{ msj }}</strong>
+    </div>
+    <!-- FIN_ALERTAS -->
     <form method="post" action="{% url 'detalle_grupo' grupo.codigo %}">
     {% csrf_token %}
     <table width="100%">
@@ -173,4 +181,5 @@
         </div>
     </div>
     </div>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}

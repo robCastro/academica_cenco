@@ -21,7 +21,7 @@ from datetime import datetime
 from apps_cenco.modulo_empleados.forms import CrearEmpleadoForm
 from django.template.loader import get_template
 from apps_cenco.db_app.models import Empleado, Telefono, Grupo
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,Group
 
 import sys
 
@@ -36,7 +36,6 @@ def consultar_empleados(request):
         empleados= Empleado.objects.filter(estado='activo')
         for empleado in empleados:
             empleado.primerTelefono = empleado.telefono_set.first()
-
         return render(request, 'modulo_empleados/director_listaEmpleadosActivos.html', {'empleados': empleados})
     else:
         raise Http404('Error, no tiene permiso para ver esta página')
@@ -61,32 +60,41 @@ def dir_crear_empleado(request):
         if request.method == 'POST':
             form = CrearEmpleadoForm(request.POST)
             formTelefono = CrearTelefonoForm(request.POST)
-            print (request.POST)
             if form.is_valid() and formTelefono.is_valid():
                 empleado = form.save(commit=False)
-                print (request.POST)
-                usuario = request.POST.get('username')
-                if validar_username(usuario):
-                    password = User.objects.make_random_password(
-                        length=6,
-                        allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
-                    newusername = User.objects.create_user(username=usuario, email=empleado.correo, password=password)
-                    empleado.username = newusername
-                    empleado.estado = 'activo'
-                    telefono = formTelefono.save(commit=False)
-                    telefono.empleado = empleado
-                    empleado.save()
-                    telefono.save()
-                    return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
-                else:
-                    return HttpResponse('El nombre de usuario no esta disponible', status=500)
+                usuario = generar_username(empleado.nombre, empleado.apellido)
+                password = User.objects.make_random_password(
+                    length=6,
+                    allowed_chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+                newusername = User.objects.create_user(username=usuario, first_name=empleado.nombre,
+                                                       last_name= empleado.apellido, email=empleado.correo,
+                                                       password=password)
+                newusername.save()
+                empleado.username = newusername
+                empleado.estado = 'activo'
+                telefono = formTelefono.save(commit=False)
+                empleado.save()
+                telefono.empleado = empleado
+                telefono.save()
+                tipo =  request.POST.get('tipo')
+                if tipo == 'Asi':
+                    grupo = Group.objects.get(name='Asistente')
+                    grupo.user_set.add(newusername)
+                elif tipo == 'Pro':
+                    grupo = Group.objects.get(name='Profesor')
+                    grupo.user_set.add(newusername)
+                elif tipo == 'Tec':
+                    grupo = Group.objects.get(name='Tecnico')
+                    grupo.user_set.add(newusername)
+
+                return HttpResponse('Empleado guardado con exito. User: ' + usuario + ' Clave: ' + password)
+
             else:
-                print (form.errors, formTelefono.errors)
                 return HttpResponse('Se reciberon datos incorrectos', status=500)
         else:
             form = CrearEmpleadoForm()
-            formTelefono = CrearTelefonoForm()
-            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form, 'formT': formTelefono})
+            form_telefono = CrearTelefonoForm()
+            return render(request, 'modulo_empleados/dir_crear_empleado.html', {'form': form, 'formT': form_telefono})
     else:
         raise Http404('No tiene permiso para esta ruta')
 
@@ -99,14 +107,17 @@ def validar_username(username):
         return True
 
 
-@login_required
-def verificar_username_libre(request):
-    if request.method == 'POST':
-        usuario = request.POST.get('nombreUsuario')
-        if User.objects.get(username = usuario):
-            return HttpResponse('Usuario no disponible', status=500)
+def generar_username(nombre, apellido):
+    try:
+        usuarios = User.objects.filter(first_name=nombre, last_name=apellido)
+        numero = usuarios.count()
+        if numero == 0:
+            return nombre + apellido
         else:
-            return HttpResponse('Usuario disponible')
+            return nombre + apellido + str(numero)
+    except ObjectDoesNotExist:
+        return nombre+apellido
+
 
 @login_required
 def consultar_empleados_inactivos(request):
@@ -127,6 +138,7 @@ def modificar_empleado(request,id_empleado):
             mensaje=""
             empleado = Empleado.objects.get(pk=id_empleado)
             telefono = Telefono.objects.filter(empleado=empleado).count()
+            usuario = empleado.username
             if not telefono:
                 telefono = Telefono.objects.create(numero='1',empleado=empleado)
             else:
@@ -142,9 +154,15 @@ def modificar_empleado(request,id_empleado):
             empleado.isss = request.POST.get('isss')
             empleado.afp = request.POST.get('afp')
             correo = request.POST.get('correo')
+            empleado.correo = correo
+            tipoEmp=request.POST.get('tipoEmp')
 
-            if correo:
-                empleado.correo=correo
+            # Cambia nombre y apellido de usuario
+            if usuario:
+                empleado.username.first_name = request.POST.get('nombre')
+                empleado.username.last_name = request.POST.get('apellido')
+                empleado.username.email = correo
+                empleado.username.save()
 
             # Verifica que el profesor tenga grupos asignados
             if empleado.tipo == 'Pro':
@@ -160,7 +178,33 @@ def modificar_empleado(request,id_empleado):
                 grupo_pc = False
 
             if not grupo_pc:
-                empleado.tipo = request.POST.get('tipoEmp')
+                if usuario:
+                    #Modificar grupo de usuario
+                    if empleado.tipo == 'Tec':
+                        if empleado.username.groups.filter(name='Tecnico').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Tecnico').id)
+                        if tipoEmp == 'Pro':
+                            empleado.username.groups.add(Group.objects.get(name='Profesor').id)
+                        if tipoEmp == 'Asi':
+                            empleado.username.groups.add(Group.objects.get(name='Asistente').id)
+
+                    if empleado.tipo == 'Pro':
+                        if empleado.username.groups.filter(name='Profesor').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Profesor').id)
+                        if tipoEmp == 'Tec':
+                            empleado.username.groups.add(Group.objects.get(name='Tecnico').id)
+                        if tipoEmp == 'Asi':
+                            empleado.username.groups.add(Group.objects.get(name='Asistente').id)
+
+                    if empleado.tipo == 'Asi':
+                        if empleado.username.groups.filter(name='Asistente').exists():
+                            empleado.username.groups.remove(Group.objects.get(name='Asistente').id)
+                        if tipoEmp == 'Tec':
+                            empleado.username.groups.add(Group.objects.get(name='Tecnico').id)
+                        if tipoEmp == 'Pro':
+                            empleado.username.groups.add(Group.objects.get(name='Profesor').id)
+                #Modificar tipo de empleado
+                empleado.tipo = tipoEmp
 
             empleado.save()
 
@@ -226,13 +270,19 @@ def director_datos_propios_usuario(request):
     if request.user.groups.filter(name="Director").exists():
         if request.method == 'POST':
             user = User.objects.get(username=request.user)
-            user.username = request.POST.get('usuario')
-            if not user.check_password(request.POST.get('contrasenia2')):
-                return HttpResponse('',status=500)
+            nuevoUser = request.POST.get('usuario')
+            if not User.objects.filter(username=nuevoUser).exists():
+                if not user.check_password(request.POST.get('contrasenia2')):
+                    mensaje = 'Error al guardar los datos. Verifique que la contraseña sea la correcta.'
+                    return HttpResponse(mensaje,status=500)
+                else:
+                    user.username = nuevoUser
+                    user.save()
+                    mensaje = "Datos modificados con éxito" + "," + user.username
+                    return HttpResponse(mensaje,status=200)
             else:
-                user.save()
-                mensaje = "Datos modificados con éxito" + "," + user.username
-                return HttpResponse(mensaje,status=200)
+                mensaje = "Usuario ya existe, escoger otro."
+                return HttpResponse(mensaje, status=500)
         else:
             return Http404('Error, acceso solo mediante POST')
     else:
@@ -271,3 +321,25 @@ def director_datos_propios_contrasenia(request):
             return Http404('Error, acceso solo mediante POST')
     else:
         raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def empleado_datos_propios(request):
+   id = request.user.id
+   u = User.objects.get(pk=id)
+   if u.groups.filter(name='Asistente').exists():
+     plantilla = 'plantillas_base/base_asistente.html'
+   elif u.groups.filter(name='Profesor').exists():
+     plantilla = 'plantillas_base/base_profesor.html'
+
+   if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Profesor").exists():
+    try:
+        empleado = Empleado.objects.get(username=request.user)
+        telEmpleado = Telefono.objects.filter(empleado=empleado).first()
+    except Empleado.DoesNotExist:
+        raise Http404('Empleado no Existe')
+
+    context = {"empleado": empleado,"telEmpleado":telEmpleado,"plantilla":plantilla}
+    return render(request, 'modulo_empleados/empleado_datos_propios.html',context)
+   else:
+     raise Http404('Error, no tiene permiso para esta página')
