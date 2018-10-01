@@ -38,6 +38,6 @@ class EditarHorarioForm(forms.ModelForm):
         }
         widgets = {
             'dias_asignados': forms.Select(attrs={'class': 'form-control', 'required': True, 'id':'id_dias_asignadosEd'}),
-            'hora_inicio': forms.DateTimeInput(attrs={'class':'form-control', 'required':True,'type':'time', 'id': 'id_hora_inicioEd'},),
-            'hora_fin': forms.DateTimeInput(attrs={'class':'form-control', 'required':True,'type':'time', 'id': 'id_hora_finEd'},),
+            'hora_inicio': forms.DateTimeInput(format='%I:%M', attrs={'class':'form-control', 'required':True,'type':'time', 'id': 'id_hora_inicioEd'},),
+            'hora_fin': forms.DateTimeInput(format='%I:%M', attrs={'class':'form-control', 'required':True,'type':'time', 'id': 'id_hora_finEd'},),
         }

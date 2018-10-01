@@ -10,6 +10,23 @@
             selectFilas();
         });
 
+function timeConvertor(time) {
+    var PM = time.match('PM') ? true : false
+
+    time = time.split(':');
+    var min = time[1];
+
+    if (PM) {
+        var hour = 12 + parseInt(time[0],10);
+        min = min.replace('PM', '')
+    } else {
+        var hour = time[0];
+        min = min.replace('AM', '')
+    }
+    return (hour + ':' + min).trim();
+}
+
+
        function selectFilas(){
             var tr = $('#tabla_horarios').find('tr');
             tr.bind('click', function(event) {
@@ -25,9 +42,9 @@
                 // Asignacion a formulario para editar.
                 $('#id_horario_a_editar').html(tds[0].innerHTML);
                 $('#id_dias_asignadosEd').val(tds[1].innerHTML);
-                $('#id_hora_inicioEd').val(tds[2].innerHTML);
-                $('#id_hora_finEd').val(tds[3].innerHTML);
-
+                $('#id_hora_inicioEd').val(timeConvertor(tds[2].innerHTML));
+                $('#id_hora_finEd').val(timeConvertor(tds[3].innerHTML));
+                console.log(tds);
                 //Asignacion de id para eliminar.
                 $('#eliminar').html(tds[0].innerHTML);
                 $('#eliminarElemento').html(values);
@@ -150,6 +167,7 @@
                   m.removeClass();
                   m.addClass('alerta exito');
                   var fila = response.split(',');
+                  console.log(fila);
                   var table = document.getElementById("tabla_horarios");
                   table.deleteRow(indexSelected);
                   var row = table.insertRow(indexSelected);
