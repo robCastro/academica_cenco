@@ -170,7 +170,7 @@ def alumnoCredencialesPropias(request):
 
     id = request.user.id
     u = User.objects.get(pk=id)
-
+    alumno = Alumno.objects.filter(username = request.user).first()
     if request.user.groups.filter(name="Alumno").exists():
      if request.method == 'POST':
         form = AlumnoCredencialesPropiasForm(request.POST,user=request.user)
@@ -181,7 +181,7 @@ def alumnoCredencialesPropias(request):
             return redirect('alumnoCredencialesPropias')
      else:
         form = AlumnoCredencialesPropiasForm(user=request.user)
-     context = {"form": form}
+     context = {"form": form, "alumno":alumno}
      return render(request, "login/alumno_credenciales_propias.html", context)
     else:
         raise Http404('Error, no tiene permiso para esta página')
