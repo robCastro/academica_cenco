@@ -350,7 +350,7 @@ def guardarAsistencia(request, id_grupo):
                     metrica_estado_activo.cantidad = metrica_estado_activo.cantidad + 1
                     metrica_estado_activo.save()
                     if inscripcion.fecha_inscripcion.month != fecha_hoy.month:
-                        metricaActivoMesActual = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo)
+                        metricaActivoMesActual = MetricaEstado.objects.filter(fecha_metrica=fecha_aux, estado=estado_activo).first()
                         metricaActivoMesActual.cantidad = metricaActivoMesActual.cantidad + 1
                         metricaActivoMesActual.save()
                         metrica_estado_retenidos.cantidad = metrica_estado_retenidos.cantidad + 1
