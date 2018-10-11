@@ -16,7 +16,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import requires_csrf_token
 
-from apps_cenco.db_app.models import Alumno, Horario, Empleado
+from apps_cenco.db_app.models import Alumno, Horario, Empleado, Encargado
 from apps_cenco.login.forms import AsistenteCredencialesPropiasForm, AlumnoCredencialesPropiasForm, ModCredAsistForm
 
 import sys
@@ -234,3 +234,121 @@ def log_out(request):
     logout(request)
     return render(request, "sesiones/logout.html")
 
+@login_required
+def consultar_profesores(request):
+    user = User.objects.get(username = request.user)
+    if user.groups.filter(name = "Director").exists():
+
+        if request.method == 'POST':
+            idAlumno=request.POST.get('id_alumno')
+            alumno = Empleado.objects.get(pk=idAlumno)
+            contra1=request.POST.get('contrasena1')
+            contra2 = request.POST.get('contrasena2')
+
+            if contra1 and contra2 and contra1 != contra2:
+                raise forms.ValidationError('Las contraseñas no coinciden')
+            else:
+
+                alumno.username.set_password(contra1)
+                alumno.username.save()
+                messages.success(request, 'Las credenciales han sido modificadas')
+
+                return HttpResponseRedirect('/credenciales/profesores/')
+
+        else:
+
+
+            alumnos = Empleado.objects.filter(tipo='Pro').order_by('codigo')
+
+            for alumno in alumnos:
+                alumno.primerTelefono = alumno.telefono_set.first()
+
+            context = {
+
+                'alumnos': alumnos,
+
+            }
+
+        return render(request, 'login/credenciales_profesores.html', context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def consultar_tecnicos(request):
+    user = User.objects.get(username = request.user)
+    if user.groups.filter(name = "Director").exists():
+
+        if request.method == 'POST':
+            idAlumno=request.POST.get('id_alumno')
+            alumno = Empleado.objects.get(pk=idAlumno)
+            contra1=request.POST.get('contrasena1')
+            contra2 = request.POST.get('contrasena2')
+
+            if contra1 and contra2 and contra1 != contra2:
+                raise forms.ValidationError('Las contraseñas no coinciden')
+            else:
+
+                alumno.username.set_password(contra1)
+                alumno.username.save()
+                messages.success(request, 'Las credenciales han sido modificadas con exito')
+
+                return HttpResponseRedirect('/credenciales/tecnicos/')
+
+        else:
+
+
+            alumnos = Empleado.objects.filter(tipo='Tec').order_by('codigo')
+
+            for alumno in alumnos:
+                alumno.primerTelefono = alumno.telefono_set.first()
+
+            context = {
+
+                'alumnos': alumnos,
+
+            }
+
+        return render(request, 'login/credenciales_tecnicos.html', context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')
+
+
+@login_required
+def consultar_encargados(request):
+    user = User.objects.get(username = request.user)
+    if user.groups.filter(name = "Director").exists():
+
+        if request.method == 'POST':
+            idAlumno=request.POST.get('id_alumno')
+            alumno = Encargado.objects.get(pk=idAlumno)
+            contra1=request.POST.get('contrasena1')
+            contra2 = request.POST.get('contrasena2')
+
+            if contra1 and contra2 and contra1 != contra2:
+                raise forms.ValidationError('Las contraseñas no coinciden')
+            else:
+
+                alumno.username.set_password(contra1)
+                alumno.username.save()
+                messages.success(request, 'Las credenciales han sido modificadas con exito')
+
+                return HttpResponseRedirect('/credenciales/encargados/')
+
+        else:
+
+
+            alumnos = Encargado.objects.order_by('codigo')
+
+            for alumno in alumnos:
+                alumno.primerTelefono = alumno.telefono_set.first()
+
+            context = {
+
+                'alumnos': alumnos,
+
+            }
+
+        return render(request, 'login/credenciales_encargados.html', context)
+    else:
+        raise Http404('Error, no tiene permiso para esta página')

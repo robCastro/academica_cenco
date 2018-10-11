@@ -11,5 +11,7 @@ urlpatterns = [
     url(r'^alumno_home/$', views.homeAlumno, name='home_alumno'),
     url(r'^alumnos/$', views.consultar_alumnos,name='credenciales_alumno'),
     url(r'^asistentes/$', views.consultar_asistentes,name='credenciales_asistente'),
-
+    url(r'^profesores/$', views.consultar_profesores,name='credenciales_profesores'),
+    url(r'^tecnicos/$', views.consultar_tecnicos,name='credenciales_tecnicos'),
+    url(r'^encargados/$', views.consultar_encargados,name='credenciales_encargados'),
 ]

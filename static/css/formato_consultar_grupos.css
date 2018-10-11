@@ -10,7 +10,7 @@ body {
     text-align:left;
     box-shadow: 5px 5px 2px #888888;
     display: none;
-    min-height: 350px;
+    height: 360px;
 }
 
 .divNotifGrupo {

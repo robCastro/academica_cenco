@@ -1,16 +1,18 @@
-{%  extends 'plantillas_base/base_director.html' %}
+{% extends 'plantillas_base/base_director.html' %}
 {% load staticfiles %}
-{% block titulo %}credenciales de asistentes{% endblock %}
+{% block titulo %}Credenciales de Asistentes{% endblock %}
 
 #Espacio para los archivos de cabecera o head_content
 {% block head_content %}
+    <link href=" {% static 'css/formato_consultar_grupos.css' %} " rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href=" {% static 'css/formato_consultar_alumnos.css' %} " rel="stylesheet">
     <script src="{%  static 'js/consultar_alumnos.js' %}"></script>
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <script>
         function contraseniasIguales() {
             var contrasenia = document.getElementById('contrasenia');
@@ -37,7 +39,9 @@
             }
         }
 
-        {% comment %}$(document).ready(function() {
+
+
+        $(document).ready(function() {
 
             $('#example tr').click(function () {
                 var href = $(this).find("a").attr("href");
@@ -46,7 +50,7 @@
                 }
             });
 
-        });{% endcomment %}
+        });
 
            $(function() {
             selectFilas();
@@ -89,6 +93,7 @@
                     $('#myDeleteModal').modal('hide');
                     //location.reload();
 
+
                     var m = $('#mensajeEmergente');
                     m.children('strong').html('Contraseña guardada con éxito');
                     m.css('display','block');
@@ -103,12 +108,13 @@
 
                   error:function (response) {
                     var m = $('#mensajeEmergente');
-                    m.children('strong').html('Error. No se pudo guardar la nueva contraseña.');
+                    m.children('strong').html('No se pudo guardar la nueva contraseña');
                     m.css('display','block');
                     m.css('opacity',1);
                     m.removeClass();
                     m.addClass('alerta accionPeligrosa');
                   }
+
 
             })
         });
@@ -119,7 +125,6 @@
             $('#repContrasenia').val('');
           });
         });
-
     </script>
     <style>
     a {
@@ -177,59 +182,61 @@
     <span class="btnCerrar">×</span>
         <strong></strong>
     </div>
-    <table width='100%'>
+
+
+    <table width='100%' align="center">
 
     <tr id="tr_mod" style="height: 30px;">
-        <td width='20%' rowspan="2" valign="top">
+        <td width='100px' rowspan="2" valign="top">
             <p></p>
             <h4> Credenciales</h4>
-            <div class='divNotifAlumnos' style="padding-left: 20px; width: 160px; margin-right: 40px">
-                <p></p>
-                    <h5><u><a href="{% url "director_credenciales_propias" %}" style="color:black ">Director</a></u></h5>
-                    <p></p>
-                    <h5><u><a href="{% url "credenciales_asistente" %}" style="color:black ">Asistentes</a></u></h5>
-                    <p></p>
-                    <h5><u><a href="#" style="color:black ">Profesores</a></u></h5>
-                    <p></p>
-                    <h5><u><a href="#" style="color:black ">Tecnicos</a></u></h5>
-                    <p></p>
-                    <h5><u><a href="{% url "credenciales_alumno" %}" style="color:black ">Estudiantes</a></u></h5>
-                    <p></p>
-
-            </div>
+            <div class='divNotifGrupo' style="padding-left: 20px; width: 160px">
+        <p></p>
+        <h5><u><a href="{% url "director_credenciales_propias" %}">Director</a></u></h5>
+        <p></p>
+        <h5><u><a href="{% url "credenciales_asistente" %}">Asistentes</a></u></h5>
+        <p></p>
+        <h5><u><a href="{% url "credenciales_profesores" %}">Profesores</a></u></h5>
+        <p></p>
+        <h5><u><a href="{% url "credenciales_tecnicos" %}">Tecnicos</a></u></h5>
+        <p></p>
+        <h5><u><a href="{% url "credenciales_alumno" %}">Estudiantes</a></u></h5>
+        <p></p>
+        <h5><u><a href="{% url 'credenciales_encargados' %}">Encargados</a></u></h5>
+        <p></p>
+    </div>
 
         </td>
 
         <br/>
         <br/>
         <h4 align="center">Listado de asistentes</h4>
-
     </tr>
     <tr>
+
         <td width="900px" valign="top">
-        <div style=" width: auto">
-            <table id="example" class="table table-bordered table-hover table-sm" style="min-width:900px;">
+            <div style="width: 950px; margin-left: 2%;">
+            <table id="example" class="table table-bordered table-hover" style="min-width: 900px;">
             <thead>
                 <tr bgcolor="#f0f8ff" >
-                    <th >Codigo</th>
+                    <th>Codigo</th>
                     <th>Nombres</th>
                     <th>Apellidos</th>
                     <th>Telefono</th>
                     <th>Correo</th>
                     <th>Usuario</th>
-
                 </tr>
             </thead>
                 </thead>
                 <tbody>
-                {% for user in asistentes%}
+                {% for user in alumnos%}
                     <tr data-toggle="modal" data-target="#myDeleteModal">
-                        <td width="20px"><a href="{% url 'detalle_alumno' id_alumno=user.codigo %}">{{ user.codigo }}</a></td>
+                        <td><a href="#">{{ user.codigo }}</a></td>
                         <td>{{ user.nombre }} </td>
                         <td>{{ user.apellido }}</td>
-                        <td>{{ user.primerTelefono|default_if_none:""  }}</td>
-                        <td>{{ user.correo|default_if_none:"" }}</td>
-                        <td>{{ user.username|default_if_none:"" }}</td>
+                        <td>{{ user.primerTelefono|default_if_none:""}}</td>
+                        <td>{{ user.correo|default_if_none:""}}</td>
+                        <td>{{ user.username|default_if_none:""}}</td>
 
                     </tr>
                 {% endfor %}
@@ -246,11 +253,36 @@
                 </tr>
                 </tfoot>{% endcomment %}
             </table>
-        </div>
+            </div>
+            {% comment %}<div class="pagination">
+            {% if users.has_other_pages %}
+
+                {% if users.has_previous %}
+                  <a href="?page={{ users.previous_page_number }}">&laquo;</a>
+                {% else %}
+                    <a class="disabled"><span>&laquo;</span></a>
+                {% endif %}
+                {% for i in users.paginator.page_range %}
+                  {% if users.number == i %}
+                    <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
+                  {% else %}
+                    <a href="?page={{ i }}">{{ i }}</a>
+                  {% endif %}
+                {% endfor %}
+                {% if users.has_next %}
+                  <a href="?page={{ users.next_page_number }}">&raquo;</a>
+                {% else %}
+                    <a class="disabled"><span>&raquo;</span></a>
+                {% endif %}
+
+            {% endif %}
+            </div>{% endcomment %}
+
 
 
 
     </td>
+    <td width="10px"></td>
     </tr>
     </table>
 
@@ -259,11 +291,11 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                  <h5 class="nombre">Cambiar Credenciales</h5>
+                 <h5 class="nombre">Cambiar Credenciales</h5>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
                 <h4 class="modal-title" id="myDeleteModalLabel"></h4>
               </div>
-                <div class="modal-body" style="padding: 1rem 0 0">
+                <div class="modal-body" style="padding: 1rem 0 0;">
 
                         <form method="post" id="cambiarPass" autocomplete="off">
                             {% csrf_token %}
@@ -271,19 +303,18 @@
 
                             <table align="center">
                                 <tr>
-                                    <td><b>Nombre:</b></td>
-                                    <td><div id="nombre_alumno"></div></td>
+                                    <td style="padding-bottom: 10px;"><b>Nombre:</b></td>
+                                    <td style="padding-bottom: 10px;"><div id="nombre_alumno"></div></td>
+                                </tr>
+                                <tr style="margin-bottom: 15px;">
+                                    <td style="padding-bottom: 10px;"><b>Usuario actual:</b> &nbsp; &nbsp;</td>
+                                    <td style="padding-bottom: 10px;"><div id="nombre_usuario_alumno"></div></td>
                                 </tr>
                                 <tr>
-                                    <td><b>Usuario actual: &nbsp; &nbsp;</b></td>
-                                    <td><div id="nombre_usuario_alumno"></div></td>
-                                </tr>
-
-                                <tr>
-                                    <td>
+                                    <td style="padding-bottom: 10px;">
                                         <b>Contraseña:</b>
                                     </td>
-                                    <td>
+                                    <td style="padding-bottom: 10px;">
                                         <input type="password" class="form-control" id="contrasenia" name="contrasenia" autocomplete="off" onkeyup="contraseniasIguales()">
                                     </td>
                                     <td></td>
@@ -301,7 +332,6 @@
                                     <td></td>
                                 </tr>
                                 <tr><td><p></p></td></tr>
-
                             </table>
 
                             <div style="display: none;padding-left: 5rem;" id="espereG">
@@ -309,12 +339,16 @@
                                 Procesando. Por Favor Espere.
                             </div>
 
-                            <div class="modal-footer">
+                             <div class="modal-footer">
                                 <button type="submit button" class="btn btn-primary" id="guardarPass" name="guardarPass" disabled="disabled">Guardar</button>
                                 <button class="btn btn-small pull-left" data-dismiss="modal"><i class="icon-remove"></i>Cancelar</button>
 
                              </div>
+
                         </form>
+
+
+
                 </div>
             </div>
           </div>
@@ -359,6 +393,5 @@
 
     });
     </script>
-
-<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}
