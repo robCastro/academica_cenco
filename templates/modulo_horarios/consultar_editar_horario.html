@@ -50,8 +50,8 @@
         <tr>
             <td>{{ horario.codigo }}</td>
             <td>{{ horario.dias_asignados }}</td>
-            <td>{{ horario.hora_inicio }}</td>
-            <td>{{ horario.hora_fin }}</td>
+            <td>{{ horario.hora_inicio|time:"h:i A"}}</td>
+            <td>{{ horario.hora_fin|time:"h:i A"}}</td>
             <td>{{ horario.cantidad_alumnos }}</td>
         </tr>
     {% endfor %}

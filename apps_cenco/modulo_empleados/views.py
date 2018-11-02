@@ -99,24 +99,13 @@ def dir_crear_empleado(request):
         raise Http404('No tiene permiso para esta ruta')
 
 
-def validar_username(username):
-    try:
-        User.objects.get(username=username)
-        return False
-    except ObjectDoesNotExist:
-        return True
-
-
 def generar_username(nombre, apellido):
     try:
-        usuarios = User.objects.filter(first_name=nombre, last_name=apellido)
+        usuarios = User.objects.filter(username__contains=(nombre.split(' ')[0] + apellido.split(' ')[0]).lower())
         numero = usuarios.count()
-        if numero == 0:
-            return nombre + apellido
-        else:
-            return nombre + apellido + str(numero)
+        return (nombre.split(' ')[0] + apellido.split(' ')[0] + str(numero+1)).lower()
     except ObjectDoesNotExist:
-        return nombre+apellido
+        return (nombre.split(' ')[0] + apellido.split(' ')[0]).lower()
 
 
 @login_required

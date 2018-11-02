@@ -31,11 +31,11 @@ class CrearEmpleadoForm(forms.ModelForm):
         }
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': True,
-                                             'pattern': '^[a-zA-Z]+ ?[a-zA-Z]+$' ,'title': 'Ingrese su nombre o sus nombres con un espacio entre palabras'}),
+                                             'pattern': '^[ñÑa-zA-Z]+ ?[ñÑa-zA-Z]+$' ,'title': 'Ingrese su nombre o sus nombres con un espacio entre palabras'}),
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'required': True,
-                                               'pattern': '^[a-zA-Z]+ ?[a-zA-Z]+$', 'title': 'Ingrese su apellido o apellidos con un espacio entre palabras'}),
+                                               'pattern': '^[ñÑa-zA-Z]+ ?[ñÑa-zA-Z]+$', 'title': 'Ingrese su apellido o apellidos con un espacio entre palabras'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': True,
-                                                'pattern': '^[a-zA-Z0-9, ]+$', 'title': 'Ingrese su dirección completa'}),
+                                                'pattern': '^[ñÑa-zA-Z0-9, ]+$', 'title': 'Ingrese su dirección completa'}),
             'correo': forms.TextInput(attrs={'class': 'form-control', 'required': False,
                                              'pattern': '^[\w\d_\.]+@[\w\d_]+\.[\w\d_\.]+$',
                                              'title': 'Ejemplo: MiCorreo@gmail.com'}),

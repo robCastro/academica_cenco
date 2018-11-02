@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -64,8 +66,8 @@ def crear_nuevo_horario(request):
                     form.save()
                     respuesta = str(instancia.codigo) + ','
                     respuesta += instancia.dias_asignados + ','
-                    respuesta += str(instancia.hora_inicio.strftime("%H:%M")) + ','
-                    respuesta += str(instancia.hora_fin.strftime("%H:%M")) + ','
+                    respuesta += str(instancia.hora_inicio.strftime("%I:%M %A")) + ','
+                    respuesta += str(instancia.hora_fin.strftime("%I:%M %A")) + ','
                     respuesta += str(instancia.cantidad_alumnos)
                     return HttpResponse(respuesta, status=200)
                 else:
@@ -83,18 +85,25 @@ def editar_horario(request):
     user = User.objects.get(username=request.user)
     if user.groups.filter(name="Director").exists():
         if request.method == 'POST':
+            print (request.POST)
             id = request.POST.get('id')
             try:
                 horario = Horario.objects.get(codigo=id)
+                print (request.POST.get('dias_asignados'))
                 horario_form = CrearHorarioForm(request.POST, instance=horario)
                 if horario_form.is_valid():
                     nuevo_horario= horario_form.save(commit=False)
+                    print(nuevo_horario.dias_asignados)
                     if validar_horario(nuevo_horario, 'editar'):
                         horario_form.save()
+                        if horario.hora_inicio.hour >= 12:
+                            aux = 'PM'
+                        else:
+                            aux = 'AM'
                         respuesta = str(nuevo_horario.codigo) + ','
                         respuesta += nuevo_horario.dias_asignados + ','
-                        respuesta += str(nuevo_horario.hora_inicio.strftime("%H:%M")) + ','
-                        respuesta += str(nuevo_horario.hora_fin.strftime("%H:%M")) + ','
+                        respuesta += str(nuevo_horario.hora_inicio.strftime("%I:%M")+' '+aux) + ','
+                        respuesta += str(nuevo_horario.hora_fin.strftime("%I:%M")+' '+aux) + ','
                         respuesta += str(nuevo_horario.cantidad_alumnos)
                         return HttpResponse(respuesta, status=200)  # form valido y guardado con exito
                     else:
@@ -120,23 +129,27 @@ def validar_horario(horario, metodo):
     elif metodo.__eq__('editar'):
         horarios = Horario.objects.filter(~Q(codigo=horario.codigo), dias_asignados=horario.dias_asignados)
 
-    # Se recorren todos los horarios
-    for h in horarios:
-        # Si la hora de incio del nuevo horario esta en medio de otro horario retorna falso
-        if h.hora_inicio < horario.hora_inicio < h.hora_fin:
-            return False
-
-        # Si algun horario del mismo dia queda en medio del nuevo horario retorna falso
-        if horario.hora_inicio <= h.hora_inicio and h.hora_fin <= horario.hora_fin:
-            return False
-
-        # Si la hora de finalizacion del nuevo horario esta en medio de otro retorna falso
-        if h.hora_inicio < horario.hora_fin < h.hora_fin:
-            return False
-
+    if horarios.count() == 0:
         # Si la hora de inicio es mayor a la de finalizacion retorna falso
-        if horario.hora_inicio > horario.hora_fin:
-            return False
+        return not horario.hora_inicio >= horario.hora_fin
+    else:
+        # Se recorren todos los horarios
+        for h in horarios:
+            # Si la hora de incio del nuevo horario esta en medio de otro horario retorna falso
+            if h.hora_inicio < horario.hora_inicio < h.hora_fin:
+                return False
 
-    # Si niguna condicion hizo a la funcion retornar, no hay horarios que choquen y retorna true.
-    return True
+            # Si algun horario del mismo dia queda en medio del nuevo horario retorna falso
+            if horario.hora_inicio <= h.hora_inicio and h.hora_fin <= horario.hora_fin:
+                return False
+
+            # Si la hora de finalizacion del nuevo horario esta en medio de otro retorna falso
+            if h.hora_inicio < horario.hora_fin < h.hora_fin:
+                return False
+
+            # Si la hora de inicio es mayor a la de finalizacion retorna falso
+            if horario.hora_inicio > horario.hora_fin:
+                return False
+
+        # Si niguna condicion hizo a la funcion retornar, no hay horarios que choquen y retorna true.
+        return True
