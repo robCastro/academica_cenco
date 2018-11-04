@@ -168,16 +168,22 @@ class Carrera(models.Model):
     descripcion_carrera = models.CharField(max_length=200, null=False, blank=False)
     cuota_semanal_carrera = models.DecimalField(max_digits=10, decimal_places=2)
     precio_inscripcion_carrera = models.DecimalField(max_digits=10, decimal_places=2)
+    activo_carrera = models.BooleanField(default=True)
+    permitir_inscripcion = models.BooleanField(default=True)
+    pensum_mes_carrera = models.IntegerField(blank=False, default=10)
+    pensum_anio_carrera = models.IntegerField(blank=False, default=2018)
 
 
 class Materia(models.Model):
     codigo_materia = models.AutoField(primary_key=True)
     nombre_materia = models.CharField(max_length=20, null=False, blank=False)
     descripcion_materia = models.CharField(max_length=200, null=False, blank=False)
+    activo_materia = models.BooleanField(default=True)
 
 
 class DetallePensum(models.Model):
     codigo_detalle_p = models.AutoField(primary_key=True)
+    ordinal_materia_cursa = models.IntegerField(blank=False)
     # foreign keys
     materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
     carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT, null=False, blank=False)
@@ -198,6 +204,7 @@ class Expediente(models.Model):
     fecha_inicio_exp = models.DateField()
     fecha_proximo_pago_exp = models.DateField()
     pagado_hasta = models.DateField()
+    progreso_expediente = models.DecimalField(max_digits=4, decimal_places=2, default=0.0)
     # foreign keys
     alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=True)
     carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT, null=True)
@@ -205,13 +212,23 @@ class Expediente(models.Model):
 
 class Cursa(models.Model):
     codigo_cursa = models.AutoField(primary_key=True)
-    evaluacion1 = models.DecimalField(max_digits=6, decimal_places=4)
-    evaluacion2 = models.DecimalField(max_digits=6, decimal_places=4)
-    evaluacion3 = models.DecimalField(max_digits=6, decimal_places=4)
-    nota_final = models.DecimalField(max_digits=6, decimal_places=4)
+    nota_final = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    actual_cursa = models.BooleanField(default=True)
     # foreign keys
     materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
     alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
+
+
+class Evaluacion(models.Model):
+    codigo_evaluacion = models.AutoField(primary_key=True)
+    nombre_evaluacion = models.CharField(max_length=100, null=False, blank=False)
+    ponderacion_evaluacion = models.DecimalField(max_digits=5, decimal_places=4)
+    nota_evaluacion = models.DecimalField(max_digits=6, decimal_places=4, null=True)
+    fecha_ingreso_evaluacion = models.DateField()
+    fecha_realizacion_evaluacion = models.DateField()
+    # foreign keys
+    profesor = models.ForeignKey(Empleado, on_delete=models.PROTECT, null=True, blank=True)
+    cursa = models.ForeignKey(Cursa, on_delete=models.PROTECT, null=False, blank=False)
 
 
 class Colegiatura(models.Model):
