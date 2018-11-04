@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import json
+from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -20,7 +21,10 @@ def crear_carrera(request):
         print (request.POST)
         form = CrearEditarCarreraForm(request.POST)
         if form.is_valid():
-            form.save()
+            carrera = form.save(commit=False)
+            carrera.pensum_mes_carrera = datetime.today().month
+            carrera.pensum_anio_carrera = datetime.today().year
+            carrera.save()
             return HttpResponse('Se ha guardado la nueva carrera correctamente')
         else:
             return HttpResponse('Se recibieron datos incorrectos', status=500)
@@ -58,7 +62,7 @@ def crear_pensum(request, id_carrera):
             list_data = json.loads(lista)
             for a in list_data:
                 materia = Materia.objects.get(codigo_materia=list_data[a])
-                detalle_pensum = DetallePensum(carrera=carrera, materia=materia, ordinal_materia_cursa=int(a))
+                detalle_pensum = DetallePensum(carrera=carrera, materia=materia, ordinal_materia_cursa=int(a)+1)
                 detalle_pensum.save()
             return HttpResponse('Pensum creado con exito.')
         else:
@@ -72,6 +76,8 @@ def crear_pensum(request, id_carrera):
 
 @login_required
 def consultar_carrera(request):
-    # dummy
-    return 0
+    carreras = Carrera.objects.all().order_by('codigo_carrera')
+    pensum = DetallePensum.objects.all().order_by('ordinal_materia_cursa')
+    context = {'carreras': carreras, 'pensum': pensum}
+    return render(request, 'modulo_carrera/consultar_carreras.html', context)
 

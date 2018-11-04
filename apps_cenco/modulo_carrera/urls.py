@@ -5,4 +5,5 @@ urlpatterns = [
     url(r'^crear_carrera/$', carrViews.crear_carrera),
     url(r'^editar_carrera/(?P<id_carrera>\d+)$', carrViews.editar_carrera),
     url(r'^crear_pensum/(?P<id_carrera>\d+)$', carrViews.crear_pensum),
+    url(r'^consultar_carreras/$', carrViews.consultar_carrera),
 ]
