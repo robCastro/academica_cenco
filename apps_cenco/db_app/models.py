@@ -180,6 +180,9 @@ class Materia(models.Model):
     descripcion_materia = models.CharField(max_length=200, null=False, blank=False)
     activo_materia = models.BooleanField(default=True)
 
+    def __unicode__(self):
+        return self.nombre_materia
+
 
 class DetallePensum(models.Model):
     codigo_detalle_p = models.AutoField(primary_key=True)
@@ -193,7 +196,7 @@ class Documento(models.Model):
     codigo_doc = models.AutoField(primary_key=True)
     nombre_doc = models.CharField(max_length=20, null=False, blank=False)
     descripcion_doc = models.CharField(max_length=200, null=False, blank=False)
-    archivo = models.FileField()
+    archivo = models.FileField(upload_to='documentos/')
     # foreign keys
     materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
 

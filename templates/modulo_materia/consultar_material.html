@@ -1,0 +1,19 @@
+{% extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+{% block titulo %}{% endblock %}
+
+{% block head_content %}
+{% endblock %}
+
+{% block content %}
+    <br>
+        <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}

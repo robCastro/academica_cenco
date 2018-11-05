@@ -1,0 +1,38 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Subir un documento{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <br>
+    {% if post %}
+        <!-- ALERTAS -->
+        <div class="alerta exito" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong>{{ mensaje }}</strong>
+        </div>
+    {% endif %}
+
+    <h3>Subir Una Gu&iacute;a de Trabajo</h3>
+    <br>
+<div style="width: 40px; display: inline-block;"></div>
+<div style="width: 50%; display: inline-block;">
+   <form method="POST" enctype="multipart/form-data">
+       {% csrf_token %}
+    <table class="table">
+        <tbody>
+        <tr><td style="width: 100px;"></td><td></td></tr>
+    {{ form }}
+        </tbody>
+    </table>
+    <input type="submit" class="btn btn-primary" value="Guardar">
+       </form>
+</div>
+
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}
