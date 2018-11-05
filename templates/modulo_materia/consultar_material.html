@@ -4,15 +4,79 @@
 {% block titulo %}{% endblock %}
 
 {% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+
+
+    <style type="text/css">
+<!--
+
+
+.css3-shadow,
+.css3-gradient1,
+.css3-gradient2
+{
+  	position:relative;
+	-webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
+            box-shadow:0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/*==================================================
+ * Drop shadow effect with box-shadow
+ * ===============================================*/
+.css3-shadow:after
+{
+	content:"";
+    position:absolute;
+    z-index:-1;
+    -webkit-box-shadow:0 0 40px rgba(0,0,0,0.8);
+    		box-shadow:0 0 40px rgba(0,0,0,0.8);
+    bottom:0px;
+	width:80%;
+	height:10%;
+    -moz-border-radius:100%;
+    border-radius:100%;
+	left:10%;
+	right:10%;
+}
+
+.box h4{
+	background:#eee;
+	margin:0;
+    padding:15px 20px;
+	text-align:left;
+	-webkit-box-shadow:0 0px 4px rgba(0, 0, 0, 0.2);
+            box-shadow:0 0px 4px rgba(0, 0, 0, 0.2);
+}
+.box {
+	width:70%;
+	padding:20px;
+	background:#fff;
+	margin:20px auto 20px;
+	border-radius:2px;
+    min-height: 250px;
+
+}
+
+
+-->
+</style>
+
+
 {% endblock %}
 
 {% block content %}
     <br>
-        <!-- ALERTAS -->
-        <div class="divEscondido" id="mensajeEmergente">
-        <span class="btnCerrar">&times;</span>
-            <strong></strong>
-        </div>
+    <h2 style="padding: 20px 0px 20px; text-align: center">Curso: {{ materia.nombre_materia }}</h2>
+    {% for d in documentos %}
+        <div class="box css3-shadow">
+    <h4>{{ d.nombre_doc }}</h4>
+            <br>
+    <p>{{ d.descripcion_doc }}</p>
+            <br>
+        <p><a href="/media/{{ d.archivo }}" download><img style="width: 120px; height: 35px;" src="{% static 'img/btn_descargar.png' %}"></a></p>
+</div>
+
+    {% endfor %}
 
 
 <script src="{% static 'js/cerrar_alertas.js' %}"></script>

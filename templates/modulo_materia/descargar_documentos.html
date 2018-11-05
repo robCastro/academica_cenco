@@ -1,9 +1,12 @@
 {% extends 'plantillas_base/base_profesor.html' %}
 {% load staticfiles %}
 
-{% block titulo %}{% endblock %}
+{% block titulo %}Descargar Material{% endblock %}
+
 
 {% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/contenido_colapsable.css' %} " rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -13,7 +16,31 @@
         <span class="btnCerrar">&times;</span>
             <strong></strong>
         </div>
+    <h3>Descarga de Documentos</h3>
+    {% for m in materias %}
+    <p></p>
+        <button class="collapsible" style="width: 70%;"><strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div> &nbsp; &nbsp;&nbsp; {{ m.nombre_materia }}</strong></button>
+        <div class="content" style="width: 70%">
+    <table class="table border-dark">
+        <thead>
+        <th style="width: 150px;">Nombre</th>
+        <th>Descripci&oacute;n</th>
+        <th>Descargar archivo</th>
+        </thead>
+    <tbody>
+    {% for d in documentos %}
+        {% if d.materia == m %}
+           <tr><td>{{ d.nombre_doc }}</td><td>{{ d.descripcion_doc }}</td><td><a href="/media/{{ d.archivo }}" download><img style="width: 120px; height: 35px;" src="{% static 'img/btn_descargar.png' %}"></a></td></tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+    {% endfor %}
 
 
-<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+    <script src="{% static 'js/contenido_colapsable.js' %}"></script>
 {% endblock %}

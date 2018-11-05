@@ -62,15 +62,15 @@ def subir_documentos(request):
 
 def descargar_documentos(request):
     materias = Materia.objects.all().order_by('codigo_materia')
-    documentos = Documento.objects.all().order_by('materia')
+    documentos = Documento.objects.all().order_by('codigo_doc')
     context = {'materias': materias, 'documentos': documentos}
-    return render(request, '', context)
+    return render(request, 'modulo_materia/descargar_documentos.html', context)
 
 
 def consultar_material(request):
     user = request.user
     alumno = get_object_or_404(Alumno, username=user)
     cursa = get_object_or_404(Cursa, alumno=alumno, actual_cursa=True)
-    documentos = Documento.objects.filter(materia=cursa.materia)
-    context = {'documentos': documentos}
-    return render(request, '', context)
+    documentos = Documento.objects.filter(materia=cursa.materia).order_by('codigo_doc')
+    context = {'documentos': documentos, 'materia': cursa.materia}
+    return render(request, 'modulo_materia/consultar_material.html', context)
