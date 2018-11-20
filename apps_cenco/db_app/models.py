@@ -227,7 +227,7 @@ class Evaluacion(models.Model):
     nombre_evaluacion = models.CharField(max_length=100, null=False, blank=False)
     ponderacion_evaluacion = models.DecimalField(max_digits=5, decimal_places=4)
     nota_evaluacion = models.DecimalField(max_digits=6, decimal_places=4, null=True)
-    fecha_ingreso_evaluacion = models.DateField()
+    fecha_ingreso_evaluacion = models.DateField(auto_now=True)
     fecha_realizacion_evaluacion = models.DateField()
     # foreign keys
     profesor = models.ForeignKey(Empleado, on_delete=models.PROTECT, null=True, blank=True)
@@ -249,6 +249,7 @@ class DetallePago(models.Model):
     monto_pago = models.DecimalField(max_digits=10, decimal_places=2)
     cancelado = models.BooleanField(default=False)
     cantidad_semanas = models.IntegerField(blank=False)
+    en_cola = models.BooleanField(default=False)
     # foreign keys
     colegiatura = models.ForeignKey(Colegiatura, on_delete=models.PROTECT, null=False, blank=False)
 
@@ -258,3 +259,12 @@ class MetricaEstado(models.Model):
     cantidad = models.IntegerField(default=0)
     # foreign keys
     estado = models.ForeignKey(Estado, on_delete=models.PROTECT, null=False, blank=False)
+
+
+class Reservacion(models.Model):
+    codigo_reservacion = models.AutoField(primary_key=True)
+    fecha_reservacion = models.DateField()
+    # foreign keys
+    horario = models.ForeignKey(Horario, on_delete=models.PROTECT, null=False, blank=False)
+    alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
+
