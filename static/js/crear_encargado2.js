@@ -75,7 +75,7 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
     a.preventDefault();
     $('#btnGuardarAlumno').attr('disabled', true);
     $('#espereI').css('display', 'inline');
-
+    console.log($('#cbxCarrera').val());
     $.ajax({
         type: 'POST',
         url: '/alumnos/insertarAlum/',
@@ -87,6 +87,7 @@ $(document).on('submit', '#inscribirAlumno', function (a) {
             fechaNacimiento:$('#txtFechaNacAlumno').val(),
             dui:$('#txtDuiAlumno').val(),
             grupo:$('#cbxGrupo').val(),
+            carrera:$('#cbxCarrera').val(),
             encargado:$('#detalleCodigoE').val(),
             numero:$('#txtTelefonoAlumno').val(),
             tipo:$('#cbxTipoTelefonoAlumno').val(),

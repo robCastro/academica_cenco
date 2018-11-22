@@ -251,7 +251,7 @@
     <div style="padding-left: 1%; padding-top: 1%">
         <h3>Inscribir Alumno</h3>
     </div>
-    {% if cantidadGrupos > 0 %}
+    {% if cantidadGrupos > 0 and cantidadCarreras > 0 %}
     <div style="padding-left: 10%">
         <table width="100%">
             <tr>
@@ -368,6 +368,21 @@
             </tr>
             <tr>
                 <td>
+                    <label for="cbxCarrera"><strong>Carrera*:</strong></label>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <select id="cbxCarrera" name="cbxCarrera" class="custom-select">
+                            {% for carrera in carreras %}
+                                <option value="{{ carrera.codigo_carrera }}">{{ carrera.nombre_carrera }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
                     <label><strong>Responsable Económico*:</strong></label>
                 </td>
                 <td>
@@ -470,7 +485,7 @@
     </form>
     </div>
     {% else %}
-        <h5>No hay grupos disponibles, solicite al director que cree grupos.</h5>
+        <h5>No hay grupos o carreras disponibles, solicite al director que los cree.</h5>
     {% endif %}
 
 

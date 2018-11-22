@@ -14,7 +14,7 @@ from django.shortcuts import render,redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
-from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado, Carrera, Expediente, Cursa, Colegiatura
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -23,7 +23,7 @@ from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
 
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from apps_cenco.db_app.models import Alumno,Telefono
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from io import BytesIO
@@ -258,6 +258,7 @@ def inscribirAlumno(request):
             correo = request.POST.get('correo')
             dui = request.POST.get('dui')
             codGrupo = request.POST.get('grupo')
+            codCarrera = request.POST.get('carrera')
             codEncargado = request.POST.get('encargado')
             numero = request.POST.get('numero')
             tipo = request.POST.get('tipo')
@@ -307,6 +308,33 @@ def inscribirAlumno(request):
             inscripcion = Inscripcion.objects.create(fecha_inscripcion=datetime.now(), actual_inscripcion=True, alumno = alumno, grupo = grupo)
             inscripcion.save()
 
+            #expediente
+            try:
+                carrera = Carrera.objects.get(codigo_carrera=codCarrera)
+            except Carrera.DoesNotExist:
+                mensaje = "Error en guardado de alumno, Carrera invalido."
+                print mensaje, codCarrera
+                respuesta = {
+                    'mensaje': mensaje
+                }
+                return JsonResponse(respuesta, status=500)
+            expediente = Expediente.objects.create(fecha_inicio_exp=datetime.now(), fecha_proximo_pago_exp=datetime.now() + timedelta(days=7),
+                                                   pagado_hasta=datetime.now(), alumno=alumno, carrera=carrera, progreso_expediente=0.0)
+            expediente.save()
+
+            #colegiatura
+            colegiatura = Colegiatura.objects.create(cuota_semanal=carrera.cuota_semanal_carrera, forma_pago="mensual", actual_colegiatura=True,
+                                                     expediente= expediente)
+            colegiatura.save()
+
+            #cursa
+            #Aca puede arrojar error ya que no hay validacion que pensum se haya creado
+            cursa = Cursa.objects.create(nota_final=0.0, actual_cursa=True, materia=carrera.detallepensum_set.get(ordinal_materia_cursa=1).materia,
+                                         alumno=alumno)
+            cursa.save()
+
+            print (expediente.codigo_expediente, colegiatura.codigo_colegiatura, cursa.codigo_cursa)
+
             #estado
             estado = Estado.objects.filter(tipo_estado="Inscrito").first()
             detalle_estado = DetalleEstado.objects.create(fecha_detalle_e = datetime.now(), actual_detalle_e=True, estado = estado, alumno = alumno)
@@ -337,10 +365,14 @@ def inscribirAlumno(request):
         else:
             grupos = Grupo.objects.all().order_by('-codigo').filter(activo_grupo = True)
             cantidadGrupos = Grupo.objects.all().filter(activo_grupo = True).count()
+            carreras = Carrera.objects.all().filter(activo_carrera = True)
+            cantidadCarreras = carreras.count()
             encargados = Encargado.objects.all().order_by('nombre')
             context = {
                 'grupos' : grupos,
                 'cantidadGrupos' : cantidadGrupos,
+                'carreras' : carreras,
+                'cantidadCarreras' : cantidadCarreras,
                 'encargados' : encargados,
             }
             return render(request, "modulo_alumnos/inscribir_alumnos.html", context)
