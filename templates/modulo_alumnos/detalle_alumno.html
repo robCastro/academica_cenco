@@ -106,6 +106,13 @@
                         <td style="padding-left: 1rem">{{ alumno.encargado|default_if_none:"—"}}</td>
                     </tr>
                     <tr>
+                        <td>Tipo de Pago:  </td>
+                        <td style="padding-left: 1rem">{{ tipoPago|default_if_none:"—"}}</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#" data-toggle="modal" data-target="#cambiarTipoPagoModal"><u>Cambiar tipo de Pago</u></a></td>
+                    </tr>
+                    <tr>
                         <td><a href="{% url 'detalle_asistencia' alumno.codigo %}"><u>Ver Asistencias</u></a></td>
                     </tr>
                     <tr>
@@ -246,6 +253,40 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+</div>
+    </form>
+
+
+    <!-- Modal Cambiar tipo de Pago-->
+    <form method="post" action="" id="form4">
+    {% csrf_token %}
+<div class="modal fade" id="cambiarTipoPagoModal" tabindex="-1" role="dialog" aria-labelledby="cambiarTipoPagoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="cambiarTipoPagoModalLabel">Cambiar Tipo de Pago</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+            </div>
+            <div class="modal-body">
+                <p>  Seleccione el tipo de pago:</p>
+                <div align="center">
+                <input type="radio" name="tipoPago" value="semanal" id="tipo1" {% if tipoPago == 'semanal' %} checked{% endif %}>
+                    <label for="tipo1">Semanal &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </label>
+                <input type="radio" name="tipoPago" value="mensual" id="tipo2" {% if tipoPago == 'mensual' %} checked{% endif %}>
+                    <label for="tipo2">Mensual  </label>
+                </div>
+             </div>
+                <div class="modal-footer">
+
+                    <button type="button submit" class="btn btn-primary" id="cambiarTipoPago" name="cambiarTipoPago">Guardar</button>
+                    <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
+                        <i class="icon-remove"></i>Cancelar
+                    </button>
+                </div>
+
+
         </div>
     </div>
 </div>
