@@ -12,6 +12,12 @@ window.onload = function(){
           filterSelection('{{ mats.0.pk }}')
       };
 
+var examen_id = -1;
+
+function examSelector(valor) {
+    examen_id = valor;
+}
+
 function clearHeaderFields(){
 
     $('#id_nombre_evaluacion').val("") ;
@@ -65,6 +71,7 @@ $(document).on('submit', '#notasForm', function (a) {
     }
     var select = document.getElementById("selectMateria");
     var materia_id = select.options[select.selectedIndex].value;
+
        {#$('#btnGuardar').attr('disabled', true);#}
        {#$('#espereG').css('display', 'inline');#}
             $.ajax({
@@ -74,10 +81,7 @@ $(document).on('submit', '#notasForm', function (a) {
                 data: {
                     JSONdata: JSON.stringify(list),
                     materia: materia_id,
-                    nombre_evaluacion: $('#id_nombre_evaluacion').val(),
-                    ponderacion_evaluacion: $('#id_ponderacion_evaluacion').val(),
-                    fecha_realizacion_evaluacion: $('#id_fecha_realizacion_evaluacion').val(),
-
+                    examen: examen_id,
                     csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
                 },
                 success: function (response) {
@@ -170,8 +174,16 @@ $(document).on('submit', '#notasForm', function (a) {
     </form>
         {% for m in mats %}
        <div style="width: 70%" class="all divGrupo {{ m.pk }}">
-           <form method="POST" id="notasForm">
-            {% csrf_token %}
+       <form method="POST" id="notasForm">
+       {% csrf_token %}
+       <select id="selectExamen" onchange="examSelector(this[this.selectedIndex].id);">
+       <option selected>------Seleccione una Evaluaci&oacute;n------</option>
+        {% for e in examenes %}
+            {% if e.materia == m %}<option id="{{ e.pk }}" value="{{ e.pk }}">{{ e.nombre_examen }}</option>{% endif %}
+            {% endfor %}
+       </select>
+
+            <tr style="height: 20px;"><td></td></tr>
             <table id="tabla" class="table-sm table">
                 <thead><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cod. Materia</th><th>Materia</th><th>Calificaci&oacute;n</th></thead><tbody>
             {% for a in inscripciones %}{% if m.pk == a.materia.pk %}

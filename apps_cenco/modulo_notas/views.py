@@ -8,8 +8,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
-from apps_cenco.db_app.models import Empleado, Grupo, Alumno, Inscripcion, Cursa, Materia, Evaluacion
-from apps_cenco.modulo_notas.forms import CrearEditarEvaluacionForm
+from apps_cenco.db_app.models import Empleado, Grupo, Alumno, Inscripcion, Cursa, Materia, Evaluacion, Examen
+# from apps_cenco.modulo_notas.forms import CrearEditarExamenForm
 
 
 def ingresar_nota(request, id_grupo):
@@ -21,27 +21,25 @@ def ingresar_nota(request, id_grupo):
     all_cursa = Cursa.objects.all()
     if request.method == 'POST':
         try:
-            form = CrearEditarEvaluacionForm(request.POST)
+            # form = CrearEditarEvaluacionForm(request.POST)
             json_alumnos = json.loads(request.POST.get('JSONdata'))
             materia = request.POST.get('materia')
-            if form.is_valid():
-                counter = 0
-                lista = []
-                for d in json_alumnos:
-                    print json_alumnos[d]
-                    evaluacion = Evaluacion(**form.cleaned_data)
-                    evaluacion.profesor = empleado
-                    alumno = Alumno.objects.get(pk=d)
-                    cursa = Cursa.objects.get(alumno=alumno, materia= materia)
-                    evaluacion.nota_evaluacion = json_alumnos[d]
-                    evaluacion.cursa = cursa
-                    evaluacion.save()
-                    counter +=1
+            examen = request.POST.get('examen')
+            print "examen " + examen.__str__()
+            counter = 0
+            for d in json_alumnos:
+                evaluacion = Evaluacion()
+                evaluacion.profesor = empleado
+                alumno = Alumno.objects.get(pk=d)
+                cursa = Cursa.objects.get(alumno=alumno, materia=materia)
+                evaluacion.nota_evaluacion = json_alumnos[d]
+                evaluacion.cursa = cursa
+                evaluacion.examen = Examen.objects.get(pk=examen)
+                evaluacion.save()
+                counter +=1
                 # Evaluacion.objects.bulk_create(lista)
-                return HttpResponse(counter.__str__() + ' calificaciones han sido ingresadas con exito.')
-            else:
-                print (form.errors)
-                return HttpResponse('Se recibieron datos incorrectos', status=500)
+            return HttpResponse(counter.__str__() + ' calificaciones han sido ingresadas con exito.')
+
         except Exception as e:
             print (e)
             traceback.print_exc()
@@ -49,13 +47,14 @@ def ingresar_nota(request, id_grupo):
 
     else:
         inscripciones = Inscripcion.objects.filter(grupo=id_grupo)
+        examenes = Examen.objects.all()
         for i in inscripciones:
             for c in all_cursa:
                 if i.alumno == c.alumno:
                     i.materia = c.materia
 
-        form = CrearEditarEvaluacionForm()
-        context = {'inscripciones': inscripciones, 'form': form, 'mats': materias, 'id_grupo':id_grupo}
+        # form = CrearEditarEvaluacionForm()
+        context = {'inscripciones': inscripciones, 'mats': materias, 'id_grupo':id_grupo, 'examenes': examenes}
         return render(request, 'modulo_notas/ingresar_modificar_notas.html', context)
 
 
