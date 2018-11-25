@@ -12,12 +12,6 @@ window.onload = function(){
           filterSelection('{{ mats.0.pk }}')
       };
 
-var examen_id = -1;
-
-function examSelector(valor) {
-    examen_id = valor;
-}
-
 function clearHeaderFields(){
 
     $('#id_nombre_evaluacion').val("") ;
@@ -63,52 +57,78 @@ function RemoveClass(element, name) {
 
 $(document).on('submit', '#notasForm', function (a) {
     a.preventDefault();
-    var list = {};
-    var elementos = document.getElementsByClassName("show")[0].getElementsByTagName("tr");
-    for (var i = 1; i < elementos.length; i++) {
-        var celda = elementos[i].getElementsByTagName("td")[5].firstChild;
-            list[celda.id]= celda.value;
+    if (form_esValido() && select_esValido()) {
+        var list = {};
+        var elementos = document.getElementsByClassName("show")[0].getElementsByTagName("tr");
+        for (var i = 1; i < elementos.length; i++) {
+            var celda = elementos[i].getElementsByTagName("td")[5].firstChild;
+            list[celda.id] = celda.value;
+        }
+        var select = document.getElementById("selectMateria");
+        var materia_id = select.options[select.selectedIndex].value;
+
+        var select2 = document.getElementsByClassName("show")[0].getElementsByTagName("select")[0];
+        var examen_id = select2.options[select2.selectedIndex].value;
+
+        $('#btnGuardarNotas').attr('disabled', true);
+        $('#espereG').css('display', 'block');
+        $.ajax({
+            type: 'POST',
+            url: '/notas/ingresar_notas/{{ grupo.pk }}',
+            datatype: 'json',
+            data: {
+                JSONdata: JSON.stringify(list),
+                materia: materia_id,
+                examen: examen_id,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (response) {
+                $('#btnGuardarNotas').attr('disabled', false);
+                $('#espereG').css('display', 'none');
+                var m = $('#mensajeEmergente');
+                m.children('strong').html(response);
+                m.css('display', 'block');
+                m.css('opacity', 1);
+                m.removeClass();
+                m.addClass('alerta exito');
+                $("html, body").animate({scrollTop: 0}, "slow");
+            },
+            error: function (response) {
+
+                $('#btnGuardarNotas').attr('disabled', false);
+                $('#espereG').css('display', 'none');
+                var m = $('#mensajeEmergente');
+                m.children('strong').html(response.responseText);
+                m.css('display', 'block');
+                m.css('opacity', 1);
+                m.removeClass();
+                m.addClass('alerta cuidado');
+                $("html, body").animate({scrollTop: 0}, "slow");
+            }
+        })
+    }else{
+        if (form_esValido())
+        $('#errorDeBtn').html("<font color=\"red\"> *Debe seleccionar una evaluaci&oacute;n correctamente</font>");
+        else
+        $('#errorDeBtn').html("<font color=\"red\"> *Las calificaciones deben tener un valor entre 0.0 y 10.0 puntos.</font>");
     }
-    var select = document.getElementById("selectMateria");
-    var materia_id = select.options[select.selectedIndex].value;
+    });
 
-       {#$('#btnGuardar').attr('disabled', true);#}
-       {#$('#espereG').css('display', 'inline');#}
-            $.ajax({
-                type: 'POST',
-                url: '/notas/ingresar_notas/{{ id_grupo }}',
-                datatype: 'json',
-                data: {
-                    JSONdata: JSON.stringify(list),
-                    materia: materia_id,
-                    examen: examen_id,
-                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-                },
-                success: function (response) {
-                  {#$('#btnGuardar').attr('disabled', false);#}
-                  {#$('#espereG').css('display', 'none');#}
-                  var m = $('#mensajeEmergente');
-                  m.children('strong').html(response);
-                  m.css('display','block');
-                  m.css('opacity',1);
-                  m.removeClass();
-                  m.addClass('alerta exito');
-                  $("html, body").animate({ scrollTop: 0 }, "slow");
-                },
-                error: function (response) {
 
-                  {#$('#btnGuardar').attr('disabled', false);#}
-                  {#$('#espereG').css('display', 'none');#}
-                  var m = $('#mensajeEmergente');
-                  m.children('strong').html(response.responseText);
-                  m.css('display','block');
-                  m.css('opacity',1);
-                  m.removeClass();
-                  m.addClass('alerta cuidado');
-                  $("html, body").animate({ scrollTop: 0 }, "slow");
-                }
-            })
-    })
+    function form_esValido() {
+        var inputs = document.getElementsByClassName("show")[0].getElementsByClassName("calif");
+        for (var i=0; i<=inputs.length; i++){
+            var x = inputs[i].valueAsNumber;
+            return !(x < 0.0 || x > 10.0 || isNaN(x));
+        }
+    }
+
+    function select_esValido() {
+        var select = document.getElementById("selectExamen");
+        var sel_id = select.options[select.selectedIndex].id;
+        return sel_id !== "default0";
+    }
+
 
     </script>
 
@@ -119,13 +139,11 @@ $(document).on('submit', '#notasForm', function (a) {
 
 .divGrupo {
 	width: 28%;
-    border: 2px solid black;
-    padding:1%;
+    padding-left:3%;
     margin: 1%;
     text-align:left;
-    box-shadow: 5px 5px 2px #888888;
     display: none;
-    min-height: 350px;
+
 }
 
 .divNotifGrupo {
@@ -156,34 +174,28 @@ $(document).on('submit', '#notasForm', function (a) {
             <strong></strong>
         </div>
 
-    <h3>{% if editar %}Editar {% else %}Ingresar {% endif %}Calificaciones</h3>
+    <h3>{% if editar %}Editar {% else %}Ingresar {% endif %}Calificaciones. Grupo {{ grupo.pk }} </h3>
+    <h4>Horario: {{ grupo.horario.dias_asignados }} de {{ grupo.horario.hora_inicio|time:"h:i A" }} a {{ grupo.horario.hora_fin|time:"h:i A" }}</h4>
     <br>
+    <div style="width: 70%; padding-left: 4%;">
 
-    <select onchange="filterSelection(this[this.selectedIndex].id)" id="selectMateria">
+    <select  class="custom-select" onchange="filterSelection(this[this.selectedIndex].id)" id="selectMateria" style="width: 50.8%">
     {% for m in mats %}<option id="{{ m.pk }}" value="{{ m.pk }}" {% if forloop.first %}selected{% endif %}>{{ m }}</option>{% endfor %}
     </select>
-    <br>
-    <form method="POST" id="notasForm">
-        {% csrf_token %}
-
-            <h4>{{ m.nombre_materia }}</h4>
-                <div style="width: 50%">
-                {{ form }}
-                </div>
-                <br>
-    </form>
+    </div>
+    <div style="display: block; padding-left: 10px;" id="errorDeBtn" ></div>
         {% for m in mats %}
        <div style="width: 70%" class="all divGrupo {{ m.pk }}">
+
+       <br>
        <form method="POST" id="notasForm">
        {% csrf_token %}
-       <select id="selectExamen" onchange="examSelector(this[this.selectedIndex].id);">
-       <option selected>------Seleccione una Evaluaci&oacute;n------</option>
+           <select id="selectExamen" class="custom-select" style="width: 50%">
         {% for e in examenes %}
             {% if e.materia == m %}<option id="{{ e.pk }}" value="{{ e.pk }}">{{ e.nombre_examen }}</option>{% endif %}
             {% endfor %}
        </select>
-
-            <tr style="height: 20px;"><td></td></tr>
+            <div style="min-height: 60px"></div>
             <table id="tabla" class="table-sm table">
                 <thead><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cod. Materia</th><th>Materia</th><th>Calificaci&oacute;n</th></thead><tbody>
             {% for a in inscripciones %}{% if m.pk == a.materia.pk %}
@@ -192,22 +204,20 @@ $(document).on('submit', '#notasForm', function (a) {
                     <td>{{ a.alumno.apellido }}</td>
                     <td>{{ a.materia.pk }}</td>
                     <td>{{ a.materia.nombre_materia }}</td>
-                    <td><input type="number" id="{{ a.alumno.pk }}" step="0.01" placeholder="0.00" min="0.00" max="10.00" required></td></tr>
+                    <td><input class="calif" type="number" id="{{ a.alumno.pk }}" step="0.01" placeholder="0.00" min="0.00" max="10.00" required></td></tr>
                 {% endif %}
 
             {% endfor %}
             </tbody>
                 </table>
                        <input type="submit" id="btnGuardarNotas" class="btn btn-primary" value="Guardar calificaciones">
-
         </form>
              </div>
+                        <div style="display: none" id="espereG">
+                        <img src="{% static 'img/ajax-loader.gif' %}">
+                            Procesando. Por Favor Espere.
+                        </div>
         {% endfor %}
-
-
-
-
-
 
 <script src="{% static 'js/cerrar_alertas.js' %}"></script>
 {% endblock %}

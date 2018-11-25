@@ -47,6 +47,7 @@ def ingresar_nota(request, id_grupo):
 
     else:
         inscripciones = Inscripcion.objects.filter(grupo=id_grupo)
+        grupo = Grupo.objects.get(pk=id_grupo)
         examenes = Examen.objects.all()
         for i in inscripciones:
             for c in all_cursa:
@@ -54,7 +55,7 @@ def ingresar_nota(request, id_grupo):
                     i.materia = c.materia
 
         # form = CrearEditarEvaluacionForm()
-        context = {'inscripciones': inscripciones, 'mats': materias, 'id_grupo':id_grupo, 'examenes': examenes}
+        context = {'inscripciones': inscripciones, 'mats': materias, 'grupo':grupo, 'examenes': examenes}
         return render(request, 'modulo_notas/ingresar_modificar_notas.html', context)
 
 

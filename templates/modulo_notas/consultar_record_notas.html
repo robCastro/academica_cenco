@@ -1,0 +1,26 @@
+{% extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Record de Notas{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <br>
+    {% if post %}
+        <!-- ALERTAS -->
+        <div class="alerta exito" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong>{{ mensaje }}</strong>
+        </div>
+    {% endif %}
+
+    <h3>Calificaciones</h3>
+    <br>
+
+
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}
