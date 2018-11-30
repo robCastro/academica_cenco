@@ -1,0 +1,68 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Gesti&oacute;n de Calificaciones{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
+    <script src="{% static 'js/jquery-1.12.4/jquery-ui.js' %}"></script>
+
+    <script>
+    $( function() {
+        $( "#id_fecha_realizacion_examen" ).datepicker({
+            dateFormat: "dd/mm/yy",
+            altFormat: "yy-mm-dd",
+            minDate: "-90Y",
+            yearRange: "-90:+1",
+            monthNames: [ "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+            monthNamesShort: [ "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+            dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+            changeMonth: true,
+            changeYear: true,
+        });
+    } );
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+    {% if post %}
+        <!-- ALERTAS -->
+        <div class="alerta {% if error %}accionPeligrosa{% elif alert %}cuidado{% else %}exito{% endif %}" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong>{{ mensaje }}</strong>
+        </div>
+    {% endif %}
+    <br>
+    <h3>Ingresar Nueva Evaluaci&oacute;n</h3>
+
+<div style="width: 50%;">
+    <form method="POST">
+    {% csrf_token %}
+    <tr><th><label for="id_nombre_examen">Nombre de la Evaluación:</label></th><td><input type="text" name="nombre_examen" id="id_nombre_examen" required class="form-control" maxlength="100" /></td></tr>
+<tr><th><label for="id_ponderacion_examen">Ponderación:</label></th><td><input type="number" name="ponderacion_examen" step="0.0001" required class="form-control" id="id_ponderacion_examen" /></td></tr>
+<tr><th><label for="id_fecha_realizacion_examen">Fecha en que se realizará:</label></th><td><input type="text" name="fecha_realizacion_examen" required class="form-control" id="id_fecha_realizacion_examen" /></td></tr>
+<tr><th><label for="id_materia">Asignatura:</label></th><td>
+    <select name="materia" required class="form-control" id="id_materia">
+  <option value="" selected>---------</option>
+    {% for m in materias %}
+        <option value="{{ m.pk }}">{{ m.nombre_materia }} ({{ m.porcentaje }}% ya asignado)</option>
+    {% endfor %}
+
+</select></td></tr>
+    <tr><p></p></tr>
+    <input type="submit" class="btn-primary btn" value="Guardar Evaluaci&oacute;n">
+    </form>
+</div>
+
+
+
+    <div style="display: none" id="espereG">
+        <img src="{% static 'img/ajax-loader.gif' %}">
+        Procesando. Por Favor Espere.
+    </div>
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}

@@ -5,14 +5,18 @@ import json
 import traceback
 from decimal import Decimal
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
-from apps_cenco.db_app.models import Empleado, Grupo, Alumno, Inscripcion, Cursa, Materia, Evaluacion, Examen
+from apps_cenco.db_app.models import Empleado, Grupo, Alumno, Inscripcion, Cursa, Materia, Evaluacion, Examen, \
+    Expediente, DetallePensum
 # from apps_cenco.modulo_notas.forms import CrearEditarExamenForm
+from apps_cenco.modulo_notas.forms import CrearEditarExamenForm
 
 
+@login_required
 def ingresar_nota(request, id_grupo):
     if request.user.groups.filter(name="Profesor").exists():
         empleado = get_object_or_404(Empleado, username=request.user)
@@ -78,20 +82,94 @@ def ingresar_nota(request, id_grupo):
 
 
 # def modificar_nota(request):
-#     empleado = get_object_or_404(Empleado, username=request.user)
-#     if request.method == 'POST':
-#
-#     else:
 #
 #
 
+@login_required
+def ingresar_evaluaciones(request):
+    if request.user.groups.filter(name="Director").exists():
+        form = CrearEditarExamenForm()
+        materias = Materia.objects.raw(
+            'select m.codigo_materia, m.nombre_materia, coalesce(round(sum(ponderacion_examen)*100, 2), 0.00) '
+            'as porcentaje from db_app_materia as m left join db_app_examen as e '
+            'on e.materia_id = m.codigo_materia '
+            'group by codigo_materia order by codigo_materia;')
+        if request.method == 'POST':
+            form = CrearEditarExamenForm(request.POST)
+            if form.is_valid():
+                examen = form.save(commit=False)
+                set_exams = Examen.objects.filter(materia=examen.materia)
+                porcentaje = 0
+                for e in set_exams:
+                    porcentaje += Decimal(e.ponderacion_examen)
+                porcentaje_final = porcentaje + Decimal(examen.ponderacion_examen)
+                if porcentaje_final >= 1:
+                    context = {'materias': materias, 'post': True, 'alert': True,
+                               'mensaje': 'No puede agregar ponderación superior a '+str(round((1-porcentaje)*100, 2))+
+                                          '% para esta evaluación.'}
+                    return render(request, 'modulo_notas/ingresar_evaluaciones.html', context)
+                else:
+                    examen.save()
+                    context = {'materias': materias, 'post': True, 'mensaje': 'Evaluación agregada con exito.'}
+                    return render(request, 'modulo_notas/ingresar_evaluaciones.html', context)
+            else:
+                context = {'materias': materias, 'post': True, 'error': True, 'mensaje': 'Se recibieron datos incorrectos.'}
+                return render(request, 'modulo_notas/ingresar_evaluaciones.html', context)
+        else:
+
+            context={'materias': materias, 'form': form}
+            return render(request, 'modulo_notas/ingresar_evaluaciones.html', context)
+    else:
+        return HttpResponseForbidden("No tiene permiso para ver este contenido")
+
+
+@login_required
+def consultar_evaluaciones(request):
+    if request.user.groups.filter(name="Director").exists():
+        examenes = Examen.objects.all().order_by('materia')
+        materias = Materia.objects.all().order_by('pk')
+        context = {'examenes': examenes, 'materias': materias}
+        return render(request, 'modulo_notas/consultar_evaluaciones.html', context)
+    else:
+        return HttpResponseForbidden("No tiene permiso para ver este contenido")
+
+
+@login_required
 def ver_record_notas(request):
-    dummy = 's'
+    if request.user.groups.filter(name="Alumno").exists():
+        alumno = Alumno.objects.get(username=request.user)
+        cursa = Cursa.objects.filter(alumno=alumno).order_by('-actual_cursa')
+        evaluaciones = Evaluacion.objects.filter(cursa_in=cursa)
+        context = {'evaluaciones': evaluaciones, 'cursa': cursa}
+        return render(request, 'modulo_notas/consultar_record_notas.html', context)
+    else:
+        return HttpResponseForbidden("No tiene permiso para ver este contenido")
 
 
-def finalizar_materia(request):
-    dummy = 's'
-
-
-
+@login_required
+def finalizar_materia(request, id_alumno):
+    if request.user.groups.filter(name="Profesor").exists():
+        alumno = Alumno.objects.get(pk=id_alumno)
+        cursa = Cursa.objects.filter(alumno=alumno, actual_cursa=True)
+        if request.method == 'POST':
+            expediente = Expediente.objects.get(alumno=alumno, activo_expediente=True)
+            cursa.actual_cursa = False
+            detalle_pensum = DetallePensum.objects.filter(carrera=expediente.carrera)
+            detalle_actual = ''
+            for d in detalle_pensum:
+                if d.materia == cursa.materia:
+                    detalle_actual = d
+                    break
+            detalle_nuevo = DetallePensum.objects.get(
+                carrera=detalle_actual.carrera, ordinal_materia_cursa=int(detalle_actual.ordinal_materia_cursa)+1)
+            nuevo_cursa = Cursa(
+                nota_final=0.0000, actual_cursa=True, alumno=alumno, materia=detalle_nuevo.materia)
+            nuevo_cursa.save()
+            # return render(request, '', ) Redireccionar a la lista de alumnos
+        else:
+            evaluaciones = Evaluacion.objects.filter(cursa=cursa)
+            context = {'evaluaciones': evaluaciones, 'cursa': cursa}
+            return render(request, 'modulo_notas/finalizar_materia.html', context)
+    else:
+        return HttpResponseForbidden("No tiene permiso para ver este contenido")
 
