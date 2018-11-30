@@ -1,0 +1,225 @@
+{% extends plantillaBase %}
+{% load staticfiles %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+{% endblock %}
+
+{% block titulo %} Pagos {% endblock %}
+
+{% block content %}
+
+    <!-- ALERTAS -->
+    <div id="mensajeEmergente" class="divEscondido">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+
+
+    <div style="padding-top: 2%; padding-left: 5%">
+        <table width="100%">
+            <tr>
+                <td width="70%">
+                    <h3>Pagos de <strong>{{ alumno.nombre }} {{ alumno.apellido }}</strong></h3>
+                </td>
+                <td width="20%">
+                    {% if linkIngresarPago %}
+                        <button class="btn btn-primary" type="button">Ingresar Pago</button>
+                    {% endif %}
+                    {% if linkModPago%}
+                        <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#modPagos">Modificar Pago</button>
+                    {% endif %}
+                </td>
+                <td width="10%"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="padding-top: 2%; padding-left: 20%">
+            <table width="45%" cellpadding="15">
+            <tr>
+                <td>
+                    Ultimo Pago:
+                </td>
+                <td>
+                    <strong>{{ ultimoPago.fecha_pago }}</strong>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Proximo Pago:
+                </td>
+                <td>
+                    <strong>{{ expediente.fecha_proximo_pago_exp }}</strong>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Estado:
+                </td>
+                <td>
+                    <strong>{{ estado }}</strong>
+                </td>
+            </tr>
+
+                {% if estado == 'Insolvente' %}
+
+            <tr>
+                <td>
+                    Deuda:
+                </td>
+                <td>
+                    <strong>{{ cantidadSemanas }} Semanas</strong>
+                </td>
+            </tr>
+                <tr>
+                <td>
+                    Monto:
+                </td>
+                <td>
+                    <strong>{{ monto }}</strong>
+                </td>
+            </tr>
+
+                {% endif %}
+        </table>
+    </div>
+
+    <div style="padding-top: 5%; padding-left: 15%">
+        <form action="{% url 'detalle_pagos' alumno.codigo %}" method="post">
+        {% csrf_token %}
+        <table width="35%" cellpadding="10">
+            <tr>
+                <td>
+                    Periodo:
+                </td>
+                <td>
+                    <select name="cbxPeriodo" id="cbxPeriodo" class="custom-select">
+                        <option value="mes" {% if rango == 'mes' %} selected {% endif %}>Ultimo Mes</option>
+                        <option value="trim" {% if rango == 'trim' %} selected {% endif %}>Ultimo Trimestre</option>
+                        <option value="sem" {% if rango == 'sem' %} selected {% endif %}>Ultimo Semestre</option>
+                        <option value="anual"{% if rango == 'anual' %} selected {% endif %}>Ultimo Año</option>
+                        <option value="todo" {% if rango == 'todo' %} selected {% endif %}>Todo</option>
+                    </select>
+                </td>
+                <td><button type="submit" class="btn btn-primary">Filtrar</button></td>
+            </tr>
+        </table>
+        </form>
+    </div>
+
+    <div style="padding-top: 2%">
+        <table id="pagos" class="table table-hover">
+            <thead>
+                <td><strong>Tipo</strong></td>
+                <td><strong>Cantidad</strong></td>
+                <td><strong>Monto</strong></td>
+                <td><strong>Fecha</strong></td>
+                <td></td>
+            </thead>
+            <tbody>
+                {% for pago in pagos %}
+                    <tr>
+                        <td>{{ colegiatura.forma_pago }}</td>
+                        <td>{{ pago.cantidad_semanas }}</td>
+                        <td>{{ pago.monto_pago }}</td>
+                        <td>{{ pago.fecha_pago }}</td>
+                        <td><a href="#">Imprimir</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modPagos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ultimo Pago</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {% if permitirModPago %}
+                        <form method="post" action="">
+                            {% csrf_token %}
+                            <table width="100%">
+                                <tr>
+                                    <td>Ultimo Pago: </td>
+                                    <td>{{ ultimoPago.fecha_pago }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Monto: </td>
+                                    <td>{{ ultimoPago.monto_pago }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cantidad: </td>
+                                    <td><input type="text" value="{{ ultimoPago.cantidad_semanas }}"></td>
+                                </tr>
+                            </table>
+                            <div style="padding-top: 10%">
+                                <table width="100%">
+                                    <tr>
+                                        <td width="20%"><button class="btn btn-warning" type="submit">Guardar</button></td>
+                                        <td width="20%"><button class="btn btn-default" type="button" data-dismiss="modal">Cancelar</button></td>
+                                        <td width="40%">.</td>
+                                        <td width="20%"><button class="btn btn-danger" type="submit">Eliminar</button></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </form>
+                    {% else %}
+                        No se puede modificar el ultimo pago del alumno ya que no lo hay o han pasado demasiados dias
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+    <script>
+        $(document).ready(function() {
+        var tabla = $('#pagos').DataTable( {
+        "ordering": false,
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+        tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });
+        });
+    </script>
+{% endblock %}
+

@@ -329,7 +329,7 @@ def inscribirAlumno(request):
 
             #cursa
             #Aca puede arrojar error ya que no hay validacion que pensum se haya creado
-            cursa = Cursa.objects.create(nota_final=0.0, actual_cursa=True, materia=carrera.detallepensum_set.get(ordinal_materia_cursa=1).materia,
+            cursa = Cursa.objects.create(nota_final=0.0, actual_cursa=True, materia=carrera.detallepensum_set.filter(ordinal_materia_cursa=1).last().materia,
                                          alumno=alumno)
             cursa.save()
 
