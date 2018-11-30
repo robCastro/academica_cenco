@@ -126,8 +126,10 @@ def ingresar_evaluaciones(request):
 @login_required
 def consultar_evaluaciones(request):
     if request.user.groups.filter(name="Director").exists():
-        examenes = Examen.objects.all().order_by('materia')
-        materias = Materia.objects.all().order_by('pk')
+        examenes = Examen.objects.all().order_by('materia', 'codigo_examen')
+        materias = Materia.objects.raw('Select codigo_materia, nombre_materia from db_app_materia as m '
+                                       'inner join db_app_examen as e on e.materia_id = m.codigo_materia '
+                                       'group by codigo_materia order by codigo_materia')
         context = {'examenes': examenes, 'materias': materias}
         return render(request, 'modulo_notas/consultar_evaluaciones.html', context)
     else:
@@ -139,7 +141,7 @@ def ver_record_notas(request):
     if request.user.groups.filter(name="Alumno").exists():
         alumno = Alumno.objects.get(username=request.user)
         cursa = Cursa.objects.filter(alumno=alumno).order_by('-actual_cursa')
-        evaluaciones = Evaluacion.objects.filter(cursa_in=cursa)
+        evaluaciones = Evaluacion.objects.filter(cursa__in=cursa)
         context = {'evaluaciones': evaluaciones, 'cursa': cursa}
         return render(request, 'modulo_notas/consultar_record_notas.html', context)
     else:
