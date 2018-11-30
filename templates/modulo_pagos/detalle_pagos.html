@@ -11,11 +11,12 @@
 {% block content %}
 
     <!-- ALERTAS -->
-    <div id="mensajeEmergente" class="divEscondido">
-        <span class="btnCerrar">&times;</span>
-            <strong></strong>
-    </div>
-
+    {% if mensaje != "" %}
+        <div id="mensajeEmergente" class="alerta exito">
+            <span class="btnCerrar">&times;</span>
+                <strong>{{ mensaje }}</strong>
+        </div>
+    {% endif %}
 
     <div style="padding-top: 2%; padding-left: 5%">
         <table width="100%">
@@ -132,6 +133,11 @@
         </table>
     </div>
 
+    <!-- form externo utilizado para eliminar, se relaciona en boton Eliminar en Modal-->
+    <form action="{% url 'eliminar_pago' idAlumno=alumno.codigo idPago=ultimoPago.codigo_detalle_pago  %}" method="post" id="frmEliminar">
+        {% csrf_token %}
+    </form>
+
     <!-- Modal -->
     <div class="modal fade" id="modPagos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -144,7 +150,7 @@
                 </div>
                 <div class="modal-body">
                     {% if permitirModPago %}
-                        <form method="post" action="">
+                        <form method="post" action="{% url 'modificar_pago' idAlumno=alumno.codigo idPago=ultimoPago.codigo_detalle_pago %}">
                             {% csrf_token %}
                             <table width="100%">
                                 <tr>
@@ -157,16 +163,16 @@
                                 </tr>
                                 <tr>
                                     <td>Cantidad: </td>
-                                    <td><input type="text" value="{{ ultimoPago.cantidad_semanas }}"></td>
+                                    <td><input onkeyup="validarCantidadDias()" type="text" id="nuevaCantidad" name="nuevaCantidad" value="{{ ultimoPago.cantidad_semanas }}" class="form-control"></td>
                                 </tr>
                             </table>
                             <div style="padding-top: 10%">
                                 <table width="100%">
                                     <tr>
-                                        <td width="20%"><button class="btn btn-warning" type="submit">Guardar</button></td>
+                                        <td width="20%"><button id="btnGuardar" class="btn btn-warning" type="submit">Guardar</button></td>
                                         <td width="20%"><button class="btn btn-default" type="button" data-dismiss="modal">Cancelar</button></td>
                                         <td width="40%">.</td>
-                                        <td width="20%"><button class="btn btn-danger" type="submit">Eliminar</button></td>
+                                        <td width="20%"><button class="btn btn-danger" type="submit" form="frmEliminar">Eliminar</button></td>
                                     </tr>
                                 </table>
                             </div>
@@ -185,6 +191,18 @@
     <script src="{% static 'js/cerrar_alertas.js' %}"></script>
     <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
     <script>
+
+        function validarCantidadDias(){
+            txtCantidad = document.getElementById('nuevaCantidad');
+            cantidad = parseInt(txtCantidad.value, 10);
+            if (isNaN(cantidad) || cantidad <= 0){
+                document.getElementById('btnGuardar').disabled = true;
+            }
+            else{
+                document.getElementById('btnGuardar').disabled = false;
+            }
+        }
+
         $(document).ready(function() {
         var tabla = $('#pagos').DataTable( {
         "ordering": false,
