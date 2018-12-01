@@ -134,9 +134,11 @@
     </div>
 
     <!-- form externo utilizado para eliminar, se relaciona en boton Eliminar en Modal-->
-    <form action="{% url 'eliminar_pago' idAlumno=alumno.codigo idPago=ultimoPago.codigo_detalle_pago  %}" method="post" id="frmEliminar">
-        {% csrf_token %}
-    </form>
+    {% if ultimoPago %}
+        <form action="{% url 'eliminar_pago' idAlumno=alumno.codigo idPago=ultimoPago.codigo_detalle_pago  %}" method="post" id="frmEliminar">
+            {% csrf_token %}
+        </form>
+    {% endif %}
 
     <!-- Modal -->
     <div class="modal fade" id="modPagos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

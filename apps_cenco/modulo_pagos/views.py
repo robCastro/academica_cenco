@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
 
-from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Colegiatura
+from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Estado, DetalleEstado, Colegiatura
 
 from datetime import datetime, timedelta
 
@@ -52,7 +52,7 @@ def detalle_pago(request, idAlumno, cod_mensaje = 0):
     ultimoPago = DetallePago.objects.filter(colegiatura=colegiatura).order_by('fecha_pago').last()
     permitirModPago = False
     if ultimoPago != None:
-        permitirModPago = (datetime.date(hoy) - ultimoPago.fecha_pago) < timedelta(days=7) and request.user.groups.filter(name="Director").exists()
+        permitirModPago = (datetime.date(hoy) - ultimoPago.fecha_pago) < timedelta(days=7) and request.user.groups.filter(name="Director").exists() and ultimoPago != None
     rango = 'mes' #El rango por defecto
     cantidadDias = 30 #Utilizado para rangos de mes, trimestre, semestre, etc.
     if request.method == 'POST':
@@ -232,3 +232,17 @@ def imprimir_cola(request):
             return HttpResponseForbidden("No tiene acceso a esta pagina")
     else:
         return redirect('cola_pagos')
+
+
+@login_required
+def ver_alumnos(request):
+    if request.user.groups.filter(name="Director").exists():
+        estadoActivo = Estado.objects.get(tipo_estado="Activo")
+        detallesEstadosActivos = estadoActivo.detalleestado_set.filter(actual_detalle_e=True)
+        alumnos = Alumno.objects.filter(detalleestado__in=detallesEstadosActivos).order_by('codigo')
+        context = {
+            'alumnos' : alumnos,
+        }
+        return render(request,'modulo_pagos/director_verAlumnos.html', context)
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta pagina")

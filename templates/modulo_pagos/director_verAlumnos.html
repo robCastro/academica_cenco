@@ -1,0 +1,93 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block head_content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+{% endblock %}
+
+{% block titulo %} Pagos de Alumnos {% endblock %}
+
+{% block content %}
+    <div style="padding-top: 2%; padding-left: 5%">
+        <table width="100%">
+            <tr>
+                <td><h2>Alumnos</h2></td>
+                <td width="60%"></td>
+                <td><a href="{% url 'cola_pagos' %}" target="_blank">Ver cola de Impresion</a></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="padding-top: 4%;">
+        <table width="100%" id="alumnos" class="table table-hover">
+            <thead>
+                <td><strong>Codigo</strong></td>
+                <td><strong>Nombre</strong></td>
+                <td><strong>Apellido</strong></td>
+                <td><strong>Telefono</strong></td>
+                <td><strong>Encargado</strong></td>
+            </thead>
+            <tbody>
+                {% for alumno in alumnos %}
+                    <tr>
+                        <td><a href="{% url 'detalle_pagos' alumno.codigo %}" target="_blank">{{ alumno.codigo }}</a></td>
+                        <td>{{ alumno.nombre }}</td>
+                        <td>{{ alumno.apellido }}</td>
+                        <td>{{ alumno.telefono_set.first|default_if_none:"-" }}</td>
+                        <td>
+                            {% if alumno.encargado.nombre  %}
+                                {{ alumno.encargado.nombre }}
+                            {% else %}
+                                Independiente
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+
+    <script>
+
+
+        $(document).ready(function() {
+            var tabla = $('#alumnos').DataTable( {
+        "ordering": false,
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+            tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.open(href, '_blank');
+                //window.location = href;
+            }
+        });
+        });
+    </script>
+{% endblock %}
