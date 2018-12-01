@@ -75,6 +75,10 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'apps_cenco.db_local.context_processors.agregar_a_context',
             ],
+            'libraries':{
+                'split': 'apps_cenco.modulo_practicas.views',
+
+            }
         },
     },
 ]
