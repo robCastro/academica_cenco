@@ -173,3 +173,62 @@ def eliminar_pago(request, idAlumno, idPago):
             return redirect('detalle_pagos', idAlumno)
     else:
         return HttpResponseForbidden("No tiene acceso a esta url")
+
+@login_required
+def ver_cola_impresion(request):
+    plantillaBase = "plantillas_base/"
+    if request.user.groups.filter(name="Asistente").exists():
+        plantillaBase = plantillaBase + "base_asistente.html"
+    elif request.user.groups.filter(name="Director").exists():
+        plantillaBase = plantillaBase + "base_director.html"
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta pagina")
+    pagos = DetallePago.objects.filter(en_cola=True).order_by('codigo_detalle_pago')
+    for pago in pagos:
+        pago.nombreAlumno = pago.colegiatura.expediente.alumno.nombre
+        pago.tipo = pago.colegiatura.forma_pago
+    context = {
+        'pagos' : pagos,
+        'plantillaBase' : plantillaBase,
+    }
+    return render(request, 'modulo_pagos/cola_impresion.html', context)
+
+@login_required
+def imprimir_cola(request):
+    if request.method == "POST":
+        if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Director").exists():
+            marcados = request.POST.get('chxMarcados')
+            imprimir = request.POST.get('chxImprimir')
+            pagos = DetallePago.objects.filter(en_cola=True)
+            codigosRecibos = []
+            print (pagos)
+            # Si todos los registros están marcados
+            if marcados:
+                if imprimir:
+                    for pago in pagos:
+                        codigosRecibos.append(pago.codigo_detalle_pago)
+                    print ("Llamada a la funcion de impresion aqui, todos los pagos")
+                    print (codigosRecibos)
+                else:
+                    for pago in pagos:
+                        pago.en_cola = False
+                        pago.save()
+                    print ("Fin de sacado de cola de TODOS")
+            else:
+                if imprimir:
+                    for pago in pagos:
+                        if request.POST.get(str(pago.codigo_detalle_pago)):
+                            codigosRecibos.append(pago.codigo_detalle_pago)
+                    print ("Llamada a la funcion de impresion aqui, solo algunos pagos")
+                    print (codigosRecibos)
+                else:
+                    for pago in pagos:
+                        if request.POST.get(str(pago.codigo_detalle_pago)):
+                            pago.en_cola = False
+                            pago.save()
+                    print ("Fin de sacado de cola de ALGUNOS")
+            return redirect('cola_pagos')
+        else:
+            return HttpResponseForbidden("No tiene acceso a esta pagina")
+    else:
+        return redirect('cola_pagos')
