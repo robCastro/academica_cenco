@@ -12,7 +12,10 @@
         <a href="{% url 'Constancias' %}">Constancias</a>
     </li>
     <li>
-{#        <a href="{% url 'detalle_asistencia' alumno.codigo %}">Asistencias</a>#}
+        <a href="{% url 'detalle_asistencia' alumno.codigo %}">Asistencias</a>
+    </li>
+    <li>
+        <a href="{% url 'detalle_pagos' alumno.codigo %}">Pagos</a>
     </li>
 {% endblock %}
 
