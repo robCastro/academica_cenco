@@ -1,0 +1,111 @@
+{% extends plantillaBase %}
+{% load staticfiles %}
+{% load l10n %} {% comment %} para evitar manejar decimal con separador de coma {% endcomment %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block titulo %} Ingresar Pago {% endblock %}
+
+{% block content %}
+    <div id="mensajeEmergente" class="divEscondido">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+
+
+    <div style="padding-top: 2%; padding-left: 5%">
+    <table width="100%">
+        <tr>
+            <td width="20%"><h2>Buscar</h2></td>
+            <td></td>
+            <td width="10%"><a target="_blank" href="{% url 'ver_alumnos' %}">Ver Pagos</a></td>
+            <td width="20%"><a target="_blank" href="{% url 'cola_pagos' %}">Cola de Impresion</a></td>
+        </tr>
+    </table>
+    </div>
+
+    <div style="padding-top: 2%; padding-left: 9%">
+    <table width="50%" cellpadding="10">
+        <tr>
+            <td><strong>Grupo: </strong></td>
+            <td>
+                <select name="cbxGrupos" id="cbxGrupos" class="custom-select">
+                    {% for grupo in grupos %}
+                        <option value="{{ grupo.codigo }}">{{ grupo }}</option>
+                    {% endfor %}
+                </select>
+                <div style="display: none" id="espereG">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    Procesando. Por Favor Espere.
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Alumno: </strong></td>
+            <td>
+                <select name="cbxAlumnos" id="cbxAlumnos" class="custom-select">
+                    {% for alumno in alumnos %}
+                        <option value="{{ alumno.codigo }}">{{ alumno.nombre }} {{ alumno.apellido }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Cantidad: </strong></td>
+            <td>
+                <input class="form-control" type="text" id="txtCantidadSemanas" name="txtCantidadSemanas">
+            </td>
+        </tr>
+    </table>
+    </div>
+    <div style="padding-top: 4%; padding-left: 5%">
+        <h2>Detalle</h2>
+    </div>
+    <div style="padding-top: 2%; padding-left: 9%">
+    <table width="100%" cellpadding="10">
+        <tr>
+            <td>Codigo: </td>
+            <td><strong id="codAlumno">{{ alumnoAux.codigo }}</strong></td>
+        </tr>
+        <tr>
+            <td>Nombre: </td>
+            <td><strong id="nomAlumno">{{ alumnoAux.nombre }} {{ alumnoAux.apellido }}</strong></td>
+        </tr>
+        <tr>
+            <td>Codigo Coleg: </td>
+            <td><strong id="codColegiatura">{{ colegiatura.codigo_colegiatura }}</strong></td>
+        </tr>
+        <tr>
+            <td>Tipo de Pago: </td>
+            <td><strong id="tipoPago">{{ colegiatura.forma_pago }}</strong></td>
+        </tr>
+        <tr>
+            <td>Colegiatura: </td>
+            <td><strong id="cuota">${{ colegiatura.cuota_semanal|unlocalize }}</strong></td>
+        </tr>
+        <tr>
+            <td>Descuento: </td>
+            <td><strong id="descuento">{% if aplicaDescuento %}$0{% else %} No aplica {% endif %}</strong></td>
+        </tr>
+        <tr>
+            <td>Monto: </td>
+            <td><strong id="monto">$0</strong></td>
+        </tr>
+    </table>
+    </div>
+    <div style="padding-top: 4%; padding-left: 5%">
+        <button id="btnGuardar" type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery.min.js' %} "></script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+    <script type="text/javascript">
+        //Variables globales para usarse en ingresar pago.js
+        var url_filtro = '{% url 'filtrar_alumnos' %}';
+        var descuento = {% if aplicaDescuento %} 0.9 {% else %} 0.0 {% endif %};
+        var cuota = parseFloat('{{ colegiatura.cuota_semanal|unlocalize }}');
+
+    </script>
+    <script type="text/javascript" src="{% static 'js/ingresar_pago.js' %}"></script>
+{% endblock %}

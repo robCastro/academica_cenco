@@ -4,8 +4,9 @@ from __future__ import unicode_literals
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
+from django.core.serializers import serialize  #Para convertir QuerySet a JSON
 
-from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Estado, DetalleEstado, Colegiatura
+from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Estado, Grupo
 
 from datetime import datetime, timedelta
 
@@ -246,3 +247,74 @@ def ver_alumnos(request):
         return render(request,'modulo_pagos/director_verAlumnos.html', context)
     else:
         return HttpResponseForbidden("No tiene acceso a esta pagina")
+
+@login_required
+def ingresar_pago(request):
+    plantillaBase = "plantillas_base/"
+    if request.user.groups.filter(name="Director").exists():
+        plantillaBase = plantillaBase + "base_director.html"
+    elif request.user.groups.filter(name="Asistente").exists():
+        plantillaBase = plantillaBase + "base_asistente.html"
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta url")
+    hoy = datetime.today()
+    grupos = Grupo.objects.filter(activo_grupo=True).order_by('codigo')
+    alumnos = Alumno.objects.filter(inscripcion__in=grupos.first().inscripcion_set.filter(actual_inscripcion=True)).order_by('codigo')
+    alumnoAux = alumnos.first()
+    expediente = alumnoAux.expediente_set.get(activo_expediente=True)
+    aplicaDescuento = (expediente.fecha_proximo_pago_exp - datetime.date(hoy)) > timedelta(days = 5)
+    colegiatura = expediente.colegiatura_set.get(actual_colegiatura=True)
+    context = {
+        'grupos' : grupos,
+        'alumnos' : alumnos,
+        'plantillaBase' : plantillaBase,
+        'alumnoAux' : alumnoAux,
+        'aplicaDescuento' : aplicaDescuento,
+        'colegiatura' : colegiatura,
+    }
+    return render(request, 'modulo_pagos/ingresar_pago.html', context)
+
+def filtrarAlumnos(request):
+    if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Director").exists():
+        codGrupo = request.GET.get('cbxGrupos')
+        if codGrupo:
+            try:
+                grupo = Grupo.objects.get(pk = codGrupo)
+            except Grupo.DoesNotExist:
+                return HttpResponse('Grupo no existe, refresque la pagina', status=500)
+            inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
+            alumnos = Alumno.objects.filter(inscripcion__in=inscripciones)
+            if alumnos.count() > 0:
+                hoy = datetime.today()
+                codigosAlumnos = []
+                codigosColegiaturas = []
+                nombresAlumnos = []
+                apellidosAlumnos = []
+                tiposPago = []
+                cuotas = []
+                descuentos = []
+                for alumno in alumnos:
+                    codigosAlumnos.append(alumno.codigo)
+                    nombresAlumnos.append(alumno.nombre)
+                    apellidosAlumnos.append(alumno.apellido)
+                    expediente = alumno.expediente_set.get(activo_expediente=True)
+                    colegiatura = expediente.colegiatura_set.get(actual_colegiatura=True)
+                    codigosColegiaturas.append(colegiatura.codigo_colegiatura)
+                    tiposPago.append(colegiatura.forma_pago)
+                    cuotas.append(colegiatura.cuota_semanal)
+                    descuentos.append((expediente.fecha_proximo_pago_exp - datetime.date(hoy)) > timedelta(days = 5))
+                return JsonResponse({
+                    'codigosAlumnos' : codigosAlumnos,
+                    'nombresAlumnos' : nombresAlumnos,
+                    'apellidosAlumnos' : apellidosAlumnos,
+                    'codigosColegiaturas' : codigosColegiaturas,
+                    'tiposPago' : tiposPago,
+                    'cuotas' : cuotas,
+                    'descuentos' : descuentos,
+                }, status=200)
+            else:
+                return HttpResponse('No hay alumnos en horario', status=500)
+        else:
+            return redirect('ingresar_pago')
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta url")
