@@ -96,7 +96,7 @@
                         {% if dia|strip|diaSemana >= diaActual %}
                             {% if dia|strip|diaSemana == diaActual %}
                                 {% if horario.hora_inicio > horaActual %}
-                                <tr id="{{ horario.codigo }}|{{ dia|strip|diaSemana }}" data-toggle="modal" {% if existeReservacion %}data-target="#cambiarModal"{% else %}data-target="#reservarModal"{% endif %}>
+                                <tr id="{{ horario.codigo }}|{{ dia|strip|diaSemana }}" {% if dia|strip|diaSemana|reservaciones:horario.codigo > 0 %} data-toggle="modal" {% if existeReservacion %}data-target="#cambiarModal"{% else %}data-target="#reservarModal"{% endif %} {% endif %}>
                                 <td id="{{ dia|strip|diaSemana }}">{{ dia }}</td>
                                 <td>{{ horario.hora_inicio|time:"h:i A" }} </td>
                                 <td>{{ horario.hora_fin|time:"h:i A" }}</td>
@@ -104,7 +104,7 @@
                                 </tr>
                                 {%  endif %}
                             {% else %}
-                            <tr id="{{ horario.codigo }}|{{ dia|strip|diaSemana }}" data-toggle="modal" {% if existeReservacion %}data-target="#cambiarModal"{% else %}data-target="#reservarModal"{% endif %}>
+                            <tr id="{{ horario.codigo }}|{{ dia|strip|diaSemana }}" {% if dia|strip|diaSemana|reservaciones:horario.codigo > 0 %}data-toggle="modal" {% if existeReservacion %}data-target="#cambiarModal"{% else %}data-target="#reservarModal"{% endif %} {% endif %}>
                             <td id="{{ dia|strip|diaSemana }}">{{ dia }}</td>
                             <td>{{ horario.hora_inicio|time:"h:i A" }} </td>
                             <td>{{ horario.hora_fin|time:"h:i A" }}</td>
