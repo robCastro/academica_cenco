@@ -323,7 +323,7 @@ def inscribirAlumno(request):
             expediente.save()
 
             #colegiatura
-            colegiatura = Colegiatura.objects.create(cuota_semanal=carrera.cuota_semanal_carrera, forma_pago="mensual", actual_colegiatura=True,
+            colegiatura = Colegiatura.objects.create(cuota_semanal=carrera.cuota_semanal_carrera, forma_pago="Semanal", actual_colegiatura=True,
                                                      expediente= expediente)
             colegiatura.save()
 

@@ -14,7 +14,8 @@
             <strong></strong>
     </div>
 
-
+    <form id="frmIngresarPago" action="{% url 'ingresar_pago' %}" method="post">
+    {% csrf_token %}
     <div style="padding-top: 2%; padding-left: 5%">
     <table width="100%">
         <tr>
@@ -55,7 +56,7 @@
         <tr>
             <td><strong>Cantidad: </strong></td>
             <td>
-                <input class="form-control" type="text" id="txtCantidadSemanas" name="txtCantidadSemanas">
+                <input onkeyup="validarCantidadSemanas()" class="form-control" type="text" id="txtCantidadSemanas" name="txtCantidadSemanas">
             </td>
         </tr>
     </table>
@@ -96,15 +97,61 @@
     </table>
     </div>
     <div style="padding-top: 4%; padding-left: 5%">
-        <button id="btnGuardar" type="submit" class="btn btn-primary">Guardar</button>
+        <button id="btnGuardar" disabled type="submit" class="btn btn-primary">Guardar</button>
     </div>
+    </form>
+
+
+
+
     <script type="text/javascript" charset="utf8" src="{% static 'js/jquery.min.js' %} "></script>
     <script src="{% static 'js/cerrar_alertas.js' %}"></script>
     <script type="text/javascript">
         //Variables globales para usarse en ingresar pago.js
-        var url_filtro = '{% url 'filtrar_alumnos' %}';
+        let url_filtro = '{% url 'filtrar_alumnos' %}';
+        let url_guardar = '{% url 'ingresar_pago' %}';
         var descuento = {% if aplicaDescuento %} 0.9 {% else %} 0.0 {% endif %};
         var cuota = parseFloat('{{ colegiatura.cuota_semanal|unlocalize }}');
+
+        var localCodAlumnos = [
+            {% for codigo in codigosAlumnos %}
+                '{{ codigo }}',
+            {% endfor %}
+        ];
+        var localNomAlumnos = [
+            {% for nombre in nombresAlumnos %}
+                '{{ nombre }}',
+            {% endfor %}
+        ];
+        var localApeAlumnos = [
+            {% for apellido in apellidosAlumnos %}
+                '{{ apellido }}',
+            {% endfor %}
+        ];
+        var localCodColegiaturas = [
+            {% for codigo in codigosColegiaturas %}
+                '{{ codigo }}',
+            {% endfor %}
+        ];
+        var localTiposPago = [
+            {% for tipo in tiposPago %}
+                '{{ tipo }}',
+            {% endfor %}
+        ];
+        var localCuotas = [
+            {% for cuota in cuotas %}
+                {{ cuota|unlocalize }},
+            {% endfor %}
+        ];
+        var localDescuentos = [
+            {% for descuento in descuentos %}
+                {% if descuento %}
+                    true,
+                {% else %}
+                    false,
+                {% endif %}
+            {% endfor %}
+        ];
 
     </script>
     <script type="text/javascript" src="{% static 'js/ingresar_pago.js' %}"></script>
