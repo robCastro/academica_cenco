@@ -379,3 +379,67 @@ def pdf_pagos(request,codigos):
 
     else:
         return HttpResponseForbidden("No tiene acceso a esta pagina")
+
+
+def pdf_recibo(request,codigo):
+    if request.user.groups.filter(name="Director").exists() or request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Alumno").exists() or request.user.groups.filter(name="Encargado").exists():
+
+        # Indicamos el tipo de contenido a devolver, en este caso un pdf
+        response = HttpResponse(content_type='application/pdf')
+        # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
+        buffer = BytesIO()
+        # Canvas nos permite hacer el reporte con coordenadas X y Y
+        pdf = canvas.Canvas(buffer, pagesize=letter)
+        # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
+        # self.cabecera(pdf)
+        # Con show page hacemos un corte de página para pasar a la siguiente
+
+        # def cabecera(self, pdf):
+        # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
+        archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+        # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+        pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+        # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+        pdf.setFont("Helvetica", 16)
+        # Dibujamos una cadena en la ubicación X,Y especificada
+        pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+        pdf.setFont("Helvetica", 14)
+        detalle= DetallePago.objects.get(codigo_detalle_pago=codigo)
+
+        archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+        # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+        pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+        # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+        pdf.setFont("Helvetica", 16)
+        # Dibujamos una cadena en la ubicación X,Y especificada
+        pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+        pdf.setFont("Helvetica", 14)
+        pdf.drawString(75, 695, "Fecha de pago: " + str(detalle.fecha_pago.strftime("%d/%m/%Y")))
+        pdf.drawString(75, 675, "Codigo de pago: " + str(detalle.codigo_detalle_pago))
+        pdf.drawString(75, 655, "Alumno: " + str(detalle.colegiatura.expediente.alumno.nombre)+" "+str(detalle.colegiatura.expediente.alumno.apellido))
+        pdf.drawString(75, 635, "Tipo de Pago: " + str(detalle.colegiatura.forma_pago))
+        col=detalle.colegiatura.cuota_semanal
+        pdf.drawString(75, 615, "Colegiatura: " + str(col))
+        can=detalle.cantidad_semanas
+        pdf.drawString(75, 595, "Cantidad: " + str(can))
+
+        tot=col*can
+        monto=detalle.monto_pago
+        if (monto-tot)==0:
+            des="No aplica"
+        else:
+            des=str(monto-tot)
+        pdf.drawString(75, 575, "Descuento: " + des)
+        pdf.drawString(75, 555, "Monto: " + str(monto))
+        t=0
+
+
+
+        pdf.showPage()
+        pdf.save()
+        pdf = buffer.getvalue()
+        buffer.close()
+        response.write(pdf)
+        return response
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta pagina")
