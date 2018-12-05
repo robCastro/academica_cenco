@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^cola_pagos/$', views.ver_cola_impresion, name='cola_pagos'),
     url(r'^imprimir_cola/$', views.imprimir_cola, name='imprimir_cola_pagos'),
     url(r'^ver_alumnos/$', views.ver_alumnos, name='ver_alumnos'),
+    url(r'^pagos_pdf/(?P<codigos>[\w\-]+)/$',views.pdf_pagos, name="pagos_pdf"),
 ]

@@ -60,8 +60,8 @@
     <div style="padding-top: 2%; padding-left: 2%;">
         <table width="25%">
             <tr>
-                <td><button form="frmPagos" id="btnImprimir" type="submit" class="btn btn-primary">Imprimir</button></td>
-                <td></td>
+
+                <td><button onchange="ActivarImprimir()"  form="frmPagos" id="btnImprimir" type="submit" class="btn btn-primary"  formtarget="_blank">Imprimir</button></td>
                 <td><button form="frmPagos" id="btnRemover" type="submit" class="btn btn-secondary">Remover</button></td>
             </tr>
         </table>
@@ -129,6 +129,7 @@
             $('#btnRemover').click(function(e){
                 $('#chxImprimir').prop('checked', false);
             });
+
         });
 
     </script>

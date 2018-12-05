@@ -10,6 +10,14 @@ from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Estado, Det
 from datetime import datetime, timedelta
 
 from math import ceil #Redondea hacia arriba
+
+#librerias para pdf
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from django.conf import settings
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+
 # Create your views here.
 
 @login_required
@@ -201,14 +209,15 @@ def imprimir_cola(request):
             imprimir = request.POST.get('chxImprimir')
             pagos = DetallePago.objects.filter(en_cola=True)
             codigosRecibos = []
+            codigos=""
             print (pagos)
             # Si todos los registros están marcados
             if marcados:
                 if imprimir:
                     for pago in pagos:
+                        codigos=codigos+str(pago.codigo_detalle_pago)+"s"
                         codigosRecibos.append(pago.codigo_detalle_pago)
-                    print ("Llamada a la funcion de impresion aqui, todos los pagos")
-                    print (codigosRecibos)
+                    return redirect('pagos_pdf', codigos=codigos)
                 else:
                     for pago in pagos:
                         pago.en_cola = False
@@ -219,8 +228,8 @@ def imprimir_cola(request):
                     for pago in pagos:
                         if request.POST.get(str(pago.codigo_detalle_pago)):
                             codigosRecibos.append(pago.codigo_detalle_pago)
-                    print ("Llamada a la funcion de impresion aqui, solo algunos pagos")
-                    print (codigosRecibos)
+                            codigos = codigos + str(pago.codigo_detalle_pago) + "s"
+                    return redirect('pagos_pdf', codigos=codigos)
                 else:
                     for pago in pagos:
                         if request.POST.get(str(pago.codigo_detalle_pago)):
@@ -244,5 +253,129 @@ def ver_alumnos(request):
             'alumnos' : alumnos,
         }
         return render(request,'modulo_pagos/director_verAlumnos.html', context)
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta pagina")
+
+
+def pdf_pagos(request,codigos):
+    if request.user.groups.filter(name="Director").exists() or request.user.groups.filter(name="Asistente").exists():
+
+        codig = codigos.split('s')
+        codig.pop(codig.__len__() - 1)
+
+
+
+
+
+
+        # Indicamos el tipo de contenido a devolver, en este caso un pdf
+        response = HttpResponse(content_type='application/pdf')
+        # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
+        buffer = BytesIO()
+        # Canvas nos permite hacer el reporte con coordenadas X y Y
+        pdf = canvas.Canvas(buffer, pagesize=letter)
+        # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
+        # self.cabecera(pdf)
+        # Con show page hacemos un corte de página para pasar a la siguiente
+
+        # def cabecera(self, pdf):
+        # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
+        archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+        # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+        pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+        # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+        pdf.setFont("Helvetica", 16)
+        # Dibujamos una cadena en la ubicación X,Y especificada
+        pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+        pdf.setFont("Helvetica", 14)
+        pagos=[]
+        colegiatura=[]
+        for cod in codig:
+            pagos.append(DetallePago.objects.get(codigo_detalle_pago=int(cod)))
+
+
+        x = 1
+        n = 0
+        for pag in pagos:
+            pag.en_cola = False
+            pag.save()
+            t = 1
+            n+=1
+            if x == 1:
+                archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+                # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+                pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+                # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+                pdf.setFont("Helvetica", 16)
+                # Dibujamos una cadena en la ubicación X,Y especificada
+                pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+                pdf.setFont("Helvetica", 14)
+                pdf.drawString(75, 695, "Fecha de pago: " + str(pag.fecha_pago.strftime("%d/%m/%Y")))
+                pdf.drawString(75, 675, "Codigo de pago: " + str(pag.codigo_detalle_pago))
+                pdf.drawString(75, 655, "Alumno: " + str(pag.colegiatura.expediente.alumno.nombre)+" "+str(pag.colegiatura.expediente.alumno.apellido))
+                pdf.drawString(75, 635, "Tipo de Pago: " + str(pag.colegiatura.forma_pago))
+                col=pag.colegiatura.cuota_semanal
+                pdf.drawString(75, 615, "Colegiatura: " + str(col))
+                can=pag.cantidad_semanas
+                pdf.drawString(75, 595, "Cantidad: " + str(can))
+
+                tot=col*can
+                monto=pag.monto_pago
+                if monto-tot==0:
+                    des="No aplica"
+
+                else:
+                    des=str(monto-tot)
+                pdf.drawString(75, 575, "Descuento: " + des)
+                pdf.drawString(75, 555, "Monto: " + str(monto))
+                t=0
+            if x==2:
+                k=380
+                archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+                # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+                pdf.drawImage(archivo_imagen, 40, 325, 120, 90, preserveAspectRatio=True)
+                # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+                pdf.setFont("Helvetica", 16)
+                # Dibujamos una cadena en la ubicación X,Y especificada
+                pdf.drawString(180, 365, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+                pdf.setFont("Helvetica", 14)
+                pdf.drawString(75, 695-k, "Fecha de pago: " + str(pag.fecha_pago.strftime("%d/%m/%Y")))
+                pdf.drawString(75, 675-k, "Codigo de pago: " + str(pag.codigo_detalle_pago))
+                pdf.drawString(75, 655-k, "Alumno: " + str(pag.colegiatura.expediente.alumno.nombre) + " " + str(
+                    pag.colegiatura.expediente.alumno.apellido))
+                pdf.drawString(75, 635-k, "Tipo de Pago: " + str(pag.colegiatura.forma_pago))
+                if pag.colegiatura.forma_pago == "mensual":
+                    col = pag.colegiatura.cuota_semanal * 4
+                else:
+                    col = pag.colegiatura.cuota_semanal
+
+                pdf.drawString(75, 615-k, "Colegiatura: " + str(col))
+                can = pag.cantidad_semanas
+                pdf.drawString(75, 595-k, "Cantidad: " + str(can))
+
+                tot = col * can
+                monto = pag.monto_pago
+                if monto - tot == 0:
+                    des = "No aplica"
+
+                else:
+                    des = str(monto - tot)
+                pdf.drawString(75, 575-k, "Descuento: " + des)
+                pdf.drawString(75, 555-k, "Monto: " + str(monto))
+                if n<pagos.__len__():
+                    pdf.showPage()
+                x = 1
+            if t==0:
+                x=2
+
+
+
+        pdf.showPage()
+        pdf.save()
+        pdf = buffer.getvalue()
+        buffer.close()
+        response.write(pdf)
+        return response
+
     else:
         return HttpResponseForbidden("No tiene acceso a esta pagina")

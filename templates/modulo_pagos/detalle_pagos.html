@@ -126,7 +126,7 @@
                         <td>{{ pago.cantidad_semanas }}</td>
                         <td>{{ pago.monto_pago }}</td>
                         <td>{{ pago.fecha_pago }}</td>
-                        <td><a href="#">Imprimir</a></td>
+                        <td><a href="{% url 'pagos_pdf' pago.codigo_detalle_pago %}" type="submit" target="_blank" >Imprimir</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
