@@ -76,8 +76,19 @@ def crear_pensum(request, id_carrera):
 
 @login_required
 def consultar_carrera(request):
+    es_director = request.user.groups.filter(name="Director").exists()
+    if es_director:
+        template= 'plantillas_base/base_director.html'
+    elif request.user.groups.filter(name="Profesor").exists():
+        template = 'plantillas_base/base_profesor.html'
+    elif request.user.groups.filter(name="Alumno").exists():
+        template = 'plantillas_base/base_alumno.html'
+    elif request.user.groups.filter(name="Encargado").exists():
+        template = 'plantillas_base/base_encargado.html'
+    else:
+        template = 'plantillas_base/base_asistente.html'
     carreras = Carrera.objects.all().order_by('codigo_carrera')
     pensum = DetallePensum.objects.all().order_by('ordinal_materia_cursa')
-    context = {'carreras': carreras, 'pensum': pensum}
+    context = {'carreras': carreras, 'pensum': pensum, 'es_director': es_director, 'template': template}
     return render(request, 'modulo_carrera/consultar_carreras.html', context)
 

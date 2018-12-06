@@ -1,4 +1,4 @@
-{% extends 'plantillas_base/base_director.html' %}
+{% extends template %}
 {% load staticfiles %}
 {% block titulo %}Consultar Carreras{% endblock %}
 
@@ -10,6 +10,12 @@
     <br>
     <h3>Consultar Carreras Disponibles</h3>
     <br>
+{% if es_director %}
+<div style="width: 80%; padding: 1%">
+<button  style="float: right;" class="btn btn-primary" onclick="window.location='{% url 'crear_carrera' %}';">Crear Nueva Carrera</button>
+</div>
+    {% endif %}
+<br>
     {% for c in carreras %}
     <p></p>
         <button class="collapsible" style="width: 80%;"><strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div> &nbsp; &nbsp;&nbsp; {{ c.nombre_carrera }}</strong></button>
