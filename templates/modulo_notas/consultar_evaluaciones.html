@@ -1,0 +1,39 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+{% block titulo %}Evaluaciones{% endblock %}
+
+{% block head_content %}
+<link href=" {% static 'css/contenido_colapsable.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <br>
+    <h3>Consultar Evaluaciones</h3>
+    <br>
+    {% for m in materias %}
+    <p></p>
+        <button class="collapsible" style="width: 80%;"><strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div> &nbsp; &nbsp;&nbsp; {{ m.nombre_materia }}</strong></button>
+        <div class="content" style="width: 80%">
+    <table class="table border-dark">
+        <thead>
+        <th style="width: 100px">Codigo</th>
+        <th style="width: 150px">Nombre</th>
+        <th>Ponderaci&oacute;n</th>
+        <th>Fecha de Realizaci&oacute;n</th>
+        </thead>
+    <tbody>
+    {% for e in examenes %}
+        {% if e.materia == m %}
+           <tr><td>{{ e.codigo_examen }}</td>
+               <td>{{ e.nombre_examen }}</td>
+               <td>{{ e.ponderacion_examen }}</td>
+               <td>{{ e.fecha_realizacion_examen }}</td></tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+    {% endfor %}
+
+<script src="{% static 'js/contenido_colapsable.js' %}"></script>
+{% endblock %}

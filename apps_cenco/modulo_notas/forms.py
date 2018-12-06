@@ -4,23 +4,26 @@ from django import forms
 from apps_cenco.db_app.models import Evaluacion, Examen
 
 
-# class CrearEditarExamenForm(forms.ModelForm):
-#     class Meta:
-#         model = Examen
-#         fields = [
-#             'nombre_evaluacion',
-#             'ponderacion_evaluacion',
-#             'fecha_realizacion_evaluacion',
-#         ]
-#
-#         labels = {
-#             'nombre_evaluacion': 'Nombre de la Evaluación',
-#             'ponderacion_evaluacion': 'Ponderación',
-#             'fecha_realizacion_evaluacion': 'Fecha en que se realizó',
-#         }
-#
-#         widgets = {
-#             'nombre_evaluacion': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
-#             'ponderacion_evaluacion': forms.NumberInput(attrs={'class': 'form-control', 'required': True}),
-#             'fecha_realizacion_evaluacion': forms.DateInput(attrs={'class': 'form-control', 'required': True}),
-#         }
+class CrearEditarExamenForm(forms.ModelForm):
+    class Meta:
+        model = Examen
+        fields = [
+            'nombre_examen',
+            'ponderacion_examen',
+            'fecha_realizacion_examen',
+            'materia',
+        ]
+
+        labels = {
+            'nombre_examen': 'Nombre de la Evaluación',
+            'ponderacion_examen': 'Ponderación',
+            'fecha_realizacion_examen': 'Fecha en que se realizará',
+            'materia': 'Asignatura',
+        }
+
+        widgets = {
+            'nombre_examen': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'ponderacion_examen': forms.NumberInput(attrs={'class': 'form-control', 'required': True}),
+            'fecha_realizacion_examen': forms.DateInput(attrs={'class': 'form-control', 'required': True}),
+            'materia': forms.Select(attrs={'class': 'form-control', 'required': True}),
+        }
