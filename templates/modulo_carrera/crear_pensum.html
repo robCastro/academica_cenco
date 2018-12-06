@@ -1,0 +1,150 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+{% block titulo %}Crear Nuevo Pensum{% endblock %}
+
+{% block head_content %}
+    <link rel="stylesheet" href="{% static 'css/jquery-1.12.1ui/jquery-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+  #elegible { list-style-type: none; margin: 0; padding: 0; margin-bottom: 10px; }
+  .draggable { margin: 5px; padding: 5px; width: 150px; }
+  </style>
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  <script>
+  $( function() {
+    $( "#sortable" ).sortable({
+      revert: false
+    });
+    $( ".draggable" ).draggable({
+      connectToSortable: "#sortable",
+      {#helper: "clone",#}
+      revert: "invalid"
+    });
+    $( " ul, li" ).disableSelection();
+
+  } );
+
+  $(function () {
+      $('#elegible').mousedown(function () {
+          $('#arrastrable').removeClass('overflow-y');
+          $('#arrastrable').css('overflow', 'visible');
+      });
+      $("html, body").mouseup(function () {
+          $('#arrastrable').css('overflow-y', 'scroll');
+      });
+  });
+
+  </script>
+
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <script>
+   $(document).on('submit', '#crearForm', function (a) {
+
+        var list = {};
+        var nodos = document.getElementById("sortable").getElementsByTagName("li");
+        for (var i = 0; i < nodos.length; i++) {
+            list[i]=nodos.item(i).id;
+        }
+        console.log(list);
+
+       a.preventDefault();
+       $('#btnGuardar').attr('disabled', true);
+       $('#espereG').css('display', 'inline');
+            $.ajax({
+                type: 'POST',
+
+                url: '/carrera/crear_pensum/{{ carrera.codigo_carrera }}',
+                datatype: 'json',
+                data: {
+                    lista: JSON.stringify(list),
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (response) {
+                  $('#btnGuardar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta exito');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
+                },
+                error: function (response) {
+                  $('#btnGuardar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response.responseText);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta cuidado');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
+                }
+            })
+    })
+    </script>
+
+
+{% endblock %}
+
+{% block content %}
+    {% if not existente %}
+        <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+    <h3>Crear Pensum para: {{ carrera.nombre_carrera }}</h3>
+    <br>
+    <h4><strong>Descripci&oacute;n: </strong></h4>
+    <h4>{{ carrera.descripcion_carrera }}</h4>
+    <br>
+    <div id="arrastrable"; style="display: inline-block; border: 1px solid black; width: 400px; height: 400px;vertical-align: top; padding: 20px; overflow-y: scroll;  " >
+    <h4>Materias Disponibles</h4>
+    <ul id="elegible">
+  {% for m in materias %}
+  <li id="{{ m.codigo_materia }}" class="ui-state-focus draggable">{{ m.nombre_materia }}</li>
+    {% endfor %}
+</ul>
+</div>
+<div style="display: inline-block; border: 1px solid black; width: 400px; height: 400px; vertical-align: top; padding: 20px; overflow-y: scroll;" >
+<h4>Orden en el Nuevo Pensum</h4>
+<ol id="sortable" style="width: 350px; min-height: 1400px;">
+
+</ol>
+</div>
+<br><br>
+<form id="crearForm" method="POST">
+{% csrf_token %}
+<input type="submit" value="Guardar Pensum" class="btn-primary btn">
+    <div style="display: none" id="espereG">
+        <img src="{% static 'img/ajax-loader.gif' %}">
+        Procesando. Por Favor Espere.
+    </div>
+    </form>
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% else %}
+    <script>
+    $(function () {
+        var m = $('#mensajeEmergente');
+        m.css('display','block');
+        m.css('opacity',1);
+        m.removeClass();
+        m.addClass('alerta cuidado');
+
+       });
+    </script>
+
+            <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar"></span>
+            <strong>La carrera seleccionada ya tiene un pensum asignado.</strong>
+        </div>
+
+{% endif %}
+
+{% endblock %}

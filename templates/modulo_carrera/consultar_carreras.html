@@ -1,0 +1,35 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+{% block titulo %}Consultar Carreras{% endblock %}
+
+{% block head_content %}
+<link href=" {% static 'css/contenido_colapsable.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <br>
+    <h3>Consultar Carreras Disponibles</h3>
+    <br>
+    {% for c in carreras %}
+    <p></p>
+        <button class="collapsible" style="width: 80%;"><strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div> &nbsp; &nbsp;&nbsp; {{ c.nombre_carrera }}</strong></button>
+        <div class="content" style="width: 80%">
+    <table class="table border-dark">
+        <thead>
+        <th style="width: 100px">No. de Curso</th>
+        <th style="width: 150px">Nombre Materia</th>
+        <th>Descripci&oacute;n</th>
+        </thead>
+    <tbody>
+    {% for p in pensum %}
+        {% if c == p.carrera %}
+           <tr><td>{{ p.ordinal_materia_cursa }}</td><td>{{ p.materia.nombre_materia }}</td><td>{{ p.materia.descripcion_materia }}</td></tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+    {% endfor %}
+
+<script src="{% static 'js/contenido_colapsable.js' %}"></script>
+{% endblock %}

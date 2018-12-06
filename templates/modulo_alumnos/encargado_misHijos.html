@@ -27,7 +27,14 @@
 </table>
     {% for estudiante in estudiantes %}
     <div class="divSelector {{ estudiante.codigo }}">
-    <div style="padding-left: 60%; padding-bottom: 3%; padding-up: 3%"><a href="{% url 'detalle_asistencia' estudiante.codigo %}">Ver Asistencias</a></div>
+    <div style="padding-left: 60%; padding-bottom: 3%; padding-up: 3%">
+        <table width="50%">
+            <tr>
+                <td><a target="_blank" href="{% url 'detalle_asistencia' estudiante.codigo %}">Ver Asistencias</a></td>
+                <td><a target="_blank" href="{% url 'detalle_pagos' estudiante.codigo %}">Ver Pagos</a></td>
+            </tr>
+        </table>
+    </div>
     <table class="table table-hover" style="width: 50%" align="center">
         <tbody>
            <tr><td><strong>Nombre:</strong></td> <td>{{ estudiante.nombre |default_if_none:"—"}}</td></tr>

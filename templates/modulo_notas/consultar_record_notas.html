@@ -1,0 +1,45 @@
+{% extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Record de Notas{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/contenido_colapsable.css' %} " rel="stylesheet">
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    <br>
+    <h3>Sus Calificaciones</h3>
+    <br>
+    {% for c in cursa %}
+    <p></p>
+        <button class="collapsible" style="width: 80%;">
+            <strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div>
+                &nbsp; &nbsp;&nbsp; {{ c.materia.nombre_materia }} &nbsp; {% if c.actual_cursa %} [EN CURSO] {% endif %}
+            </strong></button>
+        <div class="content" style="width: 80%">
+    <table class="table border-dark">
+        <thead>
+        {% for e in evaluaciones %}
+            {% if e.cursa == c %}
+        <th>{{ e.examen.nombre_examen }}</th>
+            {% endif %}
+        {% endfor %}
+        <th>Nota Promedio</th>
+        </thead>
+    <tbody>
+    <tr>
+    {% for e in evaluaciones %}
+         {% if e.cursa == c %}
+           <td>{{ e.nota_evaluacion }}</td>
+        {% endif %}
+    {% endfor %}
+    <td>{{ c.nota_final }}</td></tr>
+    </tbody>
+    </table>
+    </div>
+     {% endfor %}
+    <script src="{% static 'js/contenido_colapsable.js' %}"></script>
+{% endblock %}

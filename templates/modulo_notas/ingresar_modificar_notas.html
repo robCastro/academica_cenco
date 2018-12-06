@@ -1,0 +1,224 @@
+{% extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+
+{% block titulo %}Gesti&oacute;n de Calificaciones{% endblock %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+
+    <script>
+
+window.onload = function(){
+          filterSelection('{{ mats.0.pk }}')
+      };
+
+function clearHeaderFields(){
+
+    $('#id_nombre_evaluacion').val("") ;
+    $('#id_ponderacion_evaluacion').val("");
+    $('#id_fecha_realizacion_evaluacion').val("");
+}
+
+function filterSelection(c) {
+    clearHeaderFields();
+  var x, i;
+  x = document.getElementsByClassName("divGrupo");
+  if(c==null) c = "all";
+  for (i = 0; i < x.length; i++) {
+    RemoveClass(x[i], "show");
+    if (x[i].className.indexOf(c) > -1) {
+        AddClass(x[i], "show");
+
+    }
+  }
+}
+
+function AddClass(element, name) {
+  var i, arr1, arr2;
+  arr1 = element.className.split(" ");
+  arr2 = name.split(" ");
+  for (i = 0; i < arr2.length; i++) {
+    if (arr1.indexOf(arr2[i]) == -1) {element.className += " " + arr2[i];}
+  }
+}
+
+function RemoveClass(element, name) {
+  var i, arr1, arr2;
+  arr1 = element.className.split(" ");
+  arr2 = name.split(" ");
+  for (i = 0; i < arr2.length; i++) {
+    while (arr1.indexOf(arr2[i]) > -1) {
+      arr1.splice(arr1.indexOf(arr2[i]), 1);
+    }
+  }
+  element.className = arr1.join(" ");
+}
+
+
+$(document).on('submit', '#notasForm', function (a) {
+    a.preventDefault();
+    if (form_esValido() && select_esValido()) {
+        $('#errorDeBtn').html("");
+        var list = {};
+        var elementos = document.getElementsByClassName("show")[0].getElementsByTagName("tr");
+        for (var i = 1; i < elementos.length; i++) {
+            var celda = elementos[i].getElementsByTagName("td")[5].firstChild;
+            list[celda.id] = celda.value;
+        }
+        var select = document.getElementById("selectMateria");
+        var materia_id = select.options[select.selectedIndex].value;
+
+        var select2 = document.getElementsByClassName("show")[0].getElementsByTagName("select")[0];
+        var examen_id = select2.options[select2.selectedIndex].value;
+
+        $('#btnGuardarNotas').attr('disabled', true);
+        $('#espereG').css('display', 'block');
+        $.ajax({
+            type: 'POST',
+            url: '/notas/ingresar_notas/{{ grupo.pk }}',
+            datatype: 'json',
+            data: {
+                JSONdata: JSON.stringify(list),
+                materia: materia_id,
+                examen: examen_id,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (response) {
+                $('#btnGuardarNotas').attr('disabled', false);
+                $('#espereG').css('display', 'none');
+                var m = $('#mensajeEmergente');
+                m.children('strong').html(response);
+                m.css('display', 'block');
+                m.css('opacity', 1);
+                m.removeClass();
+                m.addClass('alerta exito');
+                $("html, body").animate({scrollTop: 0}, "slow");
+            },
+            error: function (response) {
+
+                $('#btnGuardarNotas').attr('disabled', false);
+                $('#espereG').css('display', 'none');
+                var m = $('#mensajeEmergente');
+                m.children('strong').html(response.responseText);
+                m.css('display', 'block');
+                m.css('opacity', 1);
+                m.removeClass();
+                m.addClass('alerta cuidado');
+                $("html, body").animate({scrollTop: 0}, "slow");
+            }
+        })
+    }else{
+        if (form_esValido())
+        $('#errorDeBtn').html("<font color=\"red\"> *Debe seleccionar una evaluaci&oacute;n correctamente</font>");
+        else
+        $('#errorDeBtn').html("<font color=\"red\"> *Las calificaciones deben tener un valor entre 0.0 y 10.0 puntos.</font>");
+    }
+    });
+
+
+    function form_esValido() {
+        var inputs = document.getElementsByClassName("show")[0].getElementsByClassName("calif");
+        for (var i=0; i<=inputs.length-1; i++){
+            var x = inputs[i].valueAsNumber;
+            if (x < 0.0 || x > 10.0 || isNaN(x)){return false;}
+        }
+        return true;
+    }
+
+    function select_esValido() {
+        var select = document.getElementsByClassName("show")[0].getElementsByTagName("form")[0].getElementsByTagName("select");
+        return select[0].options.length !== 0;
+    }
+
+
+    </script>
+
+    <style>
+    body {
+ font-size:16px;
+}
+
+.divGrupo {
+	width: 28%;
+    padding-left:3%;
+    margin: 1%;
+    text-align:left;
+    display: none;
+
+}
+
+.divNotifGrupo {
+    width: 90%;
+    border: 2px solid black;
+    padding:2%;
+    margin: 1%;
+    display: inline-block;
+    text-align:left;
+    box-shadow: 5px 5px 2px #888888;
+
+}
+
+.show {
+  display: inline-grid;
+}
+
+    </style>
+
+
+{% endblock %}
+
+{% block content %}
+    <br>
+        <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+
+    <h3>{% if editar %}Editar {% else %}Ingresar {% endif %}Calificaciones. Grupo {{ grupo.pk }} </h3>
+    <h4>Horario: {{ grupo.horario.dias_asignados }} de {{ grupo.horario.hora_inicio|time:"h:i A" }} a {{ grupo.horario.hora_fin|time:"h:i A" }}</h4>
+    <br>
+    <div style="width: 70%; padding-left: 4%;">
+
+    <select  class="custom-select" onchange="filterSelection(this[this.selectedIndex].id)" id="selectMateria" style="width: 50.8%">
+    {% for m in mats %}<option id="{{ m.pk }}" value="{{ m.pk }}" {% if forloop.first %}selected{% endif %}>{{ m }}</option>{% endfor %}
+    </select>
+    </div>
+    <div style="display: block; padding-left: 10px;" id="errorDeBtn" ></div>
+        {% for m in mats %}
+       <div style="width: 70%" class="all divGrupo {{ m.pk }}">
+
+       <br>
+       <form method="POST" id="notasForm">
+       {% csrf_token %}
+           <select id="selectExamen" class="custom-select" style="width: 50%">
+        {% for e in examenes %}
+            {% if e.materia == m %}<option id="{{ e.pk }}" value="{{ e.pk }}">{{ e.nombre_examen }}</option>{% endif %}
+            {% endfor %}
+       </select>
+            <div style="min-height: 60px"></div>
+            <table id="tabla" class="table-sm table">
+                <thead><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cod. Materia</th><th>Materia</th><th>Calificaci&oacute;n</th></thead><tbody>
+            {% for a in inscripciones %}{% if m.pk == a.materia_id %}
+                <tr><td>{{ a.codigo }}</td>
+                    <td>{{ a.nombre }}</td>
+                    <td>{{ a.apellido }}</td>
+                    <td>{{ a.materia_id }}</td>
+                    <td>{{ a.nombre_materia }}</td>
+                    <td><input class="calif" type="number" id="{{ a.alumno.pk }}" step="0.01" placeholder="0.00" min="0.00" max="10.00" required></td></tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+                </table>
+                       <input type="submit" id="btnGuardarNotas" class="btn btn-primary" value="Guardar calificaciones">
+        </form>
+             </div>
+
+        {% endfor %}
+    <div style="display: none" id="espereG">
+        <img src="{% static 'img/ajax-loader.gif' %}">
+        Procesando. Por Favor Espere.
+    </div>
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}

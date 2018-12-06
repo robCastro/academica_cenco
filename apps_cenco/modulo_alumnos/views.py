@@ -14,7 +14,8 @@ from django.shortcuts import render,redirect
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
-from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado, Carrera, Expediente, Cursa, Colegiatura
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado, Expediente, Colegiatura
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -23,7 +24,7 @@ from apps_cenco.db_app.models import Telefono, Grupo, Horario, Encargado
 
 from apps_cenco.modulo_alumnos.forms import ModificarAlumnoForm
 from apps_cenco.db_app.models import Alumno,Telefono
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from io import BytesIO
@@ -136,6 +137,17 @@ def detalle_alumno(request,id_alumno):
             metricaActivo.cantidad = metricaActivo.cantidad - 1
             metricaActivo.save()
             return HttpResponseRedirect(url)
+        elif 'cambiarTipoPago' in request.POST:
+            alumno = Alumno.objects.get(pk=id_alumno)
+            try:
+                tipoPago=request.POST.get('tipoPago')
+                expediente = Expediente.objects.filter(alumno=alumno, activo_expediente=True).first()
+                colegiatura=Colegiatura.objects.filter(expediente=expediente, actual_colegiatura=True).first()
+                colegiatura.forma_pago=tipoPago
+                colegiatura.save()
+            except:
+                colegiatura=None
+            return HttpResponseRedirect(url)
         elif request.method=='POST':
             if request.method == 'POST':
                 alum=Alumno.objects.get(pk=id_alumno)
@@ -178,7 +190,15 @@ def detalle_alumno(request,id_alumno):
                 estado=detalleEstado.estado.tipo_estado
             except:
                 estado=None
-            print estado
+            #print estado
+
+            try:
+                expediente = Expediente.objects.filter(alumno=alumno, activo_expediente=True).first()
+                colegiatura=Colegiatura.objects.filter(expediente=expediente, actual_colegiatura=True).first()
+                tipoPago=colegiatura.forma_pago
+            except:
+                tipoPago=None
+
             context={
                 'edad':edad,
                 'alumno':alumno,
@@ -186,6 +206,7 @@ def detalle_alumno(request,id_alumno):
                 'telefonos': telefonos,
                 'telAlum': telAlum,
                 'estado':estado,
+                'tipoPago':tipoPago,
             }
         return render(request, 'modulo_alumnos/detalle_alumno.html', context)
     else:
@@ -258,6 +279,7 @@ def inscribirAlumno(request):
             correo = request.POST.get('correo')
             dui = request.POST.get('dui')
             codGrupo = request.POST.get('grupo')
+            codCarrera = request.POST.get('carrera')
             codEncargado = request.POST.get('encargado')
             numero = request.POST.get('numero')
             tipo = request.POST.get('tipo')
@@ -307,6 +329,33 @@ def inscribirAlumno(request):
             inscripcion = Inscripcion.objects.create(fecha_inscripcion=datetime.now(), actual_inscripcion=True, alumno = alumno, grupo = grupo)
             inscripcion.save()
 
+            #expediente
+            try:
+                carrera = Carrera.objects.get(codigo_carrera=codCarrera)
+            except Carrera.DoesNotExist:
+                mensaje = "Error en guardado de alumno, Carrera invalido."
+                print mensaje, codCarrera
+                respuesta = {
+                    'mensaje': mensaje
+                }
+                return JsonResponse(respuesta, status=500)
+            expediente = Expediente.objects.create(fecha_inicio_exp=datetime.now(), fecha_proximo_pago_exp=datetime.now() + timedelta(days=7),
+                                                   pagado_hasta=datetime.now(), alumno=alumno, carrera=carrera, progreso_expediente=0.0)
+            expediente.save()
+
+            #colegiatura
+            colegiatura = Colegiatura.objects.create(cuota_semanal=carrera.cuota_semanal_carrera, forma_pago="Semanal", actual_colegiatura=True,
+                                                     expediente= expediente)
+            colegiatura.save()
+
+            #cursa
+            #Aca puede arrojar error ya que no hay validacion que pensum se haya creado
+            cursa = Cursa.objects.create(nota_final=0.0, actual_cursa=True, materia=carrera.detallepensum_set.filter(ordinal_materia_cursa=1).last().materia,
+                                         alumno=alumno)
+            cursa.save()
+
+            print (expediente.codigo_expediente, colegiatura.codigo_colegiatura, cursa.codigo_cursa)
+
             #estado
             estado = Estado.objects.filter(tipo_estado="Inscrito").first()
             detalle_estado = DetalleEstado.objects.create(fecha_detalle_e = datetime.now(), actual_detalle_e=True, estado = estado, alumno = alumno)
@@ -337,10 +386,14 @@ def inscribirAlumno(request):
         else:
             grupos = Grupo.objects.all().order_by('-codigo').filter(activo_grupo = True)
             cantidadGrupos = Grupo.objects.all().filter(activo_grupo = True).count()
+            carreras = Carrera.objects.all().filter(activo_carrera = True)
+            cantidadCarreras = carreras.count()
             encargados = Encargado.objects.all().order_by('nombre')
             context = {
                 'grupos' : grupos,
                 'cantidadGrupos' : cantidadGrupos,
+                'carreras' : carreras,
+                'cantidadCarreras' : cantidadCarreras,
                 'encargados' : encargados,
             }
             return render(request, "modulo_alumnos/inscribir_alumnos.html", context)
@@ -673,16 +726,6 @@ def ConstanciaEstudioPDF(request):
         return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)
 
 
-
-
-
-
-
-
-
-
-
-
 @login_required
 def constancias(request):
    if request.user.groups.filter(name="Alumno").exists():
@@ -697,3 +740,181 @@ def constancias(request):
         return render(request, 'modulo_alumnos/constancias.html', context)
    else:
         raise Http404('Error, no tiene permiso para esta página')
+
+@login_required
+def ConstanciaNotasPDF(request):
+    if request.user.groups.filter(name="Alumno").exists():
+        alumno = Alumno.objects.get(username=request.user)
+        estado = alumno.detalleestado_set.get(actual_detalle_e=True).estado
+        # Agregar ands aqui para otras condiciones
+        permitirConstancia = estado.tipo_estado == 'Activo'
+        if permitirConstancia:
+            # Indicamos el tipo de contenido a devolver, en este caso un pdf
+            response = HttpResponse(content_type='application/pdf')
+            # La clase io.BytesIO permite tratar un array de bytes como un fichero binario, se utiliza como almacenamiento temporal
+            buffer = BytesIO()
+            # Canvas nos permite hacer el reporte con coordenadas X y Y
+            pdf = canvas.Canvas(buffer,pagesize=letter)
+            # Llamo al método cabecera donde están definidos los datos que aparecen en la cabecera del reporte.
+            #self.cabecera(pdf)
+            # Con show page hacemos un corte de página para pasar a la siguiente
+
+            #def cabecera(self, pdf):
+            # Utilizamos el archivo logo_django.png que está guardado en la carpeta media/imagenes
+            archivo_imagen = settings.MEDIA_ROOT + 'static/img/encabezado.png'
+            # Definimos el tamaño de la imagen a cargar y las coordenadas correspondientes
+            pdf.drawImage(archivo_imagen, 40, 705, 120, 90, preserveAspectRatio=True)
+            # Establecemos el tamaño de letra en 16 y el tipo de letra Helvetica
+            pdf.setFont("Helvetica", 16)
+            # Dibujamos una cadena en la ubicación X,Y especificada
+            pdf.drawString(180, 745, u"CENTRO DE ENSEÑANZA EN COMPUTACIÓN")
+            pdf.drawString(235, 650, u"Constancia de Notas")
+            pdf.setFont("Helvetica", 14)
+            alum = Alumno.objects.get(username=request.user)
+            nom=alum.nombre+" "+alum.apellido
+            ahora = str((datetime.now().date().strftime("%d/%m/%Y")))
+            dia = "Apopa, " + ahora
+            pdf.drawString(425, 695, dia)
+
+            # tabla datos
+
+            # Creamos una tupla de encabezados para neustra tabla
+            encabezados = ('Codigo', 'Apellidos','Nombres')
+            # Creamos una lista de tuplas que van a contener a las personas
+            detalles = [(str(alum.codigo), " " + alum.apellido, " "+alum.nombre)]
+            # Establecemos el tamaño de cada una de las columnas de la tabla
+            detalle_orden = Table([encabezados] + detalles, colWidths=[3 * cm, 6.5 * cm, 6.5 * cm, 3 * cm, 6.5 * cm, 6.5 * cm])
+            # Aplicamos estilos a las celdas de la tabla
+            detalle_orden.setStyle(TableStyle(
+                [
+                    # La primera fila(encabezados) va a estar centrada
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    # Los bordes de todas las celdas serán de color negro y con un grosor de 1
+                    ('GRID', (0, 0), (2,1), 1, colors.black),
+                    # El tamaño de las letras de cada una de las celdas será de 10
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ]
+            ))
+            # Establecemos el tamaño de la hoja que ocupará la tabla
+            detalle_orden.wrapOn(pdf, 800, 600)
+            # Definimos la coordenada donde se dibujará la tabla
+            detalle_orden.drawOn(pdf, 80, 565)
+
+            # tabla carrera
+
+            # Creamos una tupla de encabezados para neustra tabla
+            encabezados = ('Codigo', 'Carrera')
+            # Creamos una lista de tuplas que van a contener a las personas
+            # detalles = [(str(alu.apellido)+" "+str(alu.nombre), " ") for alu in alumnos_in]
+            exp= Expediente.objects.get(alumno__codigo=alum.codigo)
+
+            detalles = [(str(exp.carrera.codigo_carrera), " " + str(exp.carrera.nombre_carrera))]
+            # Establecemos el tamaño de cada una de las columnas de la tabla
+            detalle_orden = Table([encabezados] + detalles, colWidths=[6 * cm, 10 * cm])
+            # Aplicamos estilos a las celdas de la tabla
+            detalle_orden.setStyle(TableStyle(
+                [
+                    # La primera fila(encabezados) va a estar centrada
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    # Los bordes de todas las celdas serán de color negro y con un grosor de 1
+                    ('GRID', (0, 0), (1, 1), 1, colors.black),
+                    # El tamaño de las letras de cada una de las celdas será de 10
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ]
+            ))
+            # Establecemos el tamaño de la hoja que ocupará la tabla
+            detalle_orden.wrapOn(pdf, 800, 600)
+            # Definimos la coordenada donde se dibujará la tabla
+            detalle_orden.drawOn(pdf, 80, 500)
+
+            # tabla resumen
+
+            # Creamos una tupla de encabezados para neustra tabla
+            encabezados = ('Materias cursadas', 'Aprobadas','Reprobadas','Promedio')
+            # Creamos una lista de tuplas que van a contener a las personas
+            # detalles = [(str(alu.apellido)+" "+str(alu.nombre), " ") for alu in alumnos_in]
+            cursadas=[]
+            cursadas= Cursa.objects.filter(alumno_id=alum.codigo,actual_cursa='False')
+
+            apro=0
+            re=0
+            acumulador=0.0000
+            for curs in cursadas:
+                if curs.nota_final>=5.95:
+                    apro+=1
+                    acumulador += float(curs.nota_final)
+                else:
+                    re+=1
+                    acumulador += float(curs.nota_final)
+
+            prome=acumulador/cursadas.count()
+
+            detalles = [(str(cursadas.__len__()), " " + str(apro), " "+str(re)," "+str(round(prome, 2)))]
+            # Establecemos el tamaño de cada una de las columnas de la tabla
+            detalle_orden = Table([encabezados] + detalles, colWidths=[4 * cm, 4 * cm, 4 * cm, 4 * cm, 4 * cm])
+            # Aplicamos estilos a las celdas de la tabla
+            detalle_orden.setStyle(TableStyle(
+                [
+                    # La primera fila(encabezados) va a estar centrada
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    # Los bordes de todas las celdas serán de color negro y con un grosor de 1
+                    ('GRID', (0, 0), (3,1), 1, colors.black),
+                    # El tamaño de las letras de cada una de las celdas será de 10
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ]
+            ))
+            # Establecemos el tamaño de la hoja que ocupará la tabla
+            detalle_orden.wrapOn(pdf, 800, 600)
+            # Definimos la coordenada donde se dibujará la tabla
+            detalle_orden.drawOn(pdf, 80, 435)
+
+            # tabla materias
+
+            # Creamos una tupla de encabezados para neustra tabla
+            encabezados = ('Codigo','Materia','Nota Final')
+            # Creamos una lista de tuplas que van a contener a las personas
+            # detalles = [(str(alu.apellido)+" "+str(alu.nombre), " ") for alu in alumnos_in]
+            #detalles = [(str(alu.apellido)+" "+str(alu.nombre), " ") for alu in alumnos_in]
+            exp= Expediente.objects.get(alumno__codigo=alum.codigo)
+            n=0
+            detalles = [(str(c.materia.codigo_materia)," "+str(c.materia.nombre_materia)," "+str(round(c.nota_final, 2)))for c in cursadas]
+            # Establecemos el tamaño de cada una de las columnas de la tabla
+            detalle_orden = Table([encabezados] + detalles, colWidths=[4 * cm, 8 * cm, 4 *cm])
+            # Aplicamos estilos a las celdas de la tabla
+            detalle_orden.setStyle(TableStyle(
+                [
+                    # La primera fila(encabezados) va a estar centrada
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    # Los bordes de todas las celdas serán de color negro y con un grosor de 1
+                    ('GRID', (0, 0), (2, 1), 1, colors.black),
+                    # El tamaño de las letras de cada una de las celdas será de 10
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ]
+            ))
+            # Establecemos el tamaño de la hoja que ocupará la tabla
+            detalle_orden.wrapOn(pdf, 800, 600)
+            # Definimos la coordenada donde se dibujará la tabla
+            detalle_orden.drawOn(pdf, 80, 370)
+
+
+            #pie de pagina
+            s=40
+            pdf.drawString(200, 100+s, u"_________________________")
+            grupo = Group.objects.filter(name="Director").first()
+            director= grupo.user_set.first()
+            dir= director.first_name+" "+director.last_name
+            pdf.drawString(250,80+s,dir)
+            pdf.drawString(240, 60+s, u"Director de CENCO")
+            pdf.setFont("Helvetica", 10)
+            pdf.drawString(65, +s, u"*Valida solo con firma y sello del director por un periodo no mayor a un mes")
+            pdf.showPage()
+            pdf.save()
+            pdf = buffer.getvalue()
+            buffer.close()
+            response.write(pdf)
+            return response
+        else:
+            return redirect("Constancias")
+
+    else:
+        return HttpResponseForbidden('No tiene permiso para esta pagina', status=403)

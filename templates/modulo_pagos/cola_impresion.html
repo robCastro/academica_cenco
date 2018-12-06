@@ -1,0 +1,137 @@
+{% extends plantillaBase %}
+{% load staticfiles %}
+
+{% block head_content %}
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+{% endblock %}
+
+{% block titulo %} Cola de Impresion {% endblock %}
+
+{% block content %}
+
+    <!-- ALERTAS -->
+    <div id="mensajeEmergente" class="divEscondido">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+    </div>
+
+
+    <div style="padding-top: 2%; padding-left: 5%">
+        <table width="100%">
+            <tr>
+                <td width="40%">
+                    <h2>Cola de Impresion</h2>
+                </td>
+                <td width="40%"></td>
+                <td width="20%"><button type="button" onclick="marcarTodos()" class="btn btn-outline-info">Marcar/Desmarcar Todos</button></td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div style="padding-top: 3%">
+        <form action="{% url 'imprimir_cola_pagos' %}" method="post" id="frmPagos">
+        {% csrf_token %}
+        <table id="pagos" class="table table-hover">
+            <thead>
+                <td><strong>Codigo</strong></td>
+                <td><strong>Nombre</strong></td>
+                <td><strong>Tipo</strong></td>
+                <td><strong>Cantidad</strong></td>
+                <td><strong>Marcar</strong></td>
+            </thead>
+            <tbody>
+            {% for pago in pagos %}
+                <tr>
+                    <td>{{ pago.codigo_detalle_pago }}</td>
+                    <td>{{ pago.nombreAlumno }}</td>
+                    <td>{{ pago.tipo }}</td>
+                    <td>{{ pago.cantidad_semanas }}</td>
+                    <td><input onchange="desmarcar()" type="checkbox" checked id="{{ pago.codigo_detalle_pago }}" name="{{ pago.codigo_detalle_pago }}"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <input type="checkbox" id="chxImprimir" hidden name="chxImprimir" checked>
+        <input type="checkbox" id="chxMarcados" hidden name="chxMarcados" checked>
+        </form>
+    </div>
+    <div style="padding-top: 2%; padding-left: 2%;">
+        <table width="25%">
+            <tr>
+
+                <td><button onchange="ActivarImprimir()"  form="frmPagos" id="btnImprimir" type="submit" class="btn btn-primary"  formtarget="_blank">Imprimir</button></td>
+                <td><button form="frmPagos" id="btnRemover" type="submit" class="btn btn-secondary">Remover</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+    <script>
+        function desmarcar(){
+            document.getElementById("chxMarcados").checked = false;
+        }
+        var codigos = [
+            {% for pago in pagos %}
+                {{ pago.codigo_detalle_pago }},
+            {% endfor %}
+        ];
+        var marcar = false;
+        function marcarTodos(){
+            var i = 0;
+            for (i; i<codigos.length; i++){
+                document.getElementById(""+codigos[i]).checked = marcar;
+            }
+            document.getElementById("chxMarcados").checked = marcar;
+            marcar = !marcar;
+        }
+
+        $(document).ready(function() {
+            var tabla = $('#pagos').DataTable( {
+        "ordering": false,
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+            tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });
+
+            $('#btnImprimir').click(function(e){
+                $('#chxImprimir').prop('checked', true);
+            });
+            $('#btnRemover').click(function(e){
+                $('#chxImprimir').prop('checked', false);
+            });
+
+        });
+
+    </script>
+{% endblock %}
+

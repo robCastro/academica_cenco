@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf.urls import include
 
@@ -36,9 +37,11 @@ urlpatterns = [
     url(r'^configuracion/', include('apps_cenco.db_local.urls')),
     url(r'^asistencia/', include('apps_cenco.modulo_asistencia.urls')),
     url(r'^empleados/', include('apps_cenco.modulo_empleados.urls')),
-
-
-    url(r'^empleados/', include('apps_cenco.modulo_empleados.urls')),
+    url(r'^carrera/', include('apps_cenco.modulo_carrera.urls')),
+    url(r'^materia/', include('apps_cenco.modulo_materia.urls')),
+    url(r'^notas/',  include('apps_cenco.modulo_notas.urls')),
+    url(r'^pagos/',  include('apps_cenco.modulo_pagos.urls')),
+    url(r'^practicas/',  include('apps_cenco.modulo_practicas.urls')),
 
     # for reset passwords
     url(r'^password_reset/$', auth_views.password_reset, {'template_name': 'sesiones/password_reset_form.html',
@@ -49,5 +52,5 @@ urlpatterns = [
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         auth_views.password_reset_confirm, {'template_name': 'sesiones/password_reset_confirm.html'}, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, {'template_name': 'sesiones/password_reset_complete.html'}, name='password_reset_complete'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

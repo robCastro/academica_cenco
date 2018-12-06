@@ -1,0 +1,77 @@
+{% extends 'plantillas_base/base_director.html' %}
+{% load staticfiles %}
+
+{% block titulo %}{% if editar %}Editar{% else %}Crear{% endif %} Materia{% endblock %}
+
+{% block head_content %}
+<link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <script>
+   $(document).on('submit', '#crearEditarform', function (a) {
+       a.preventDefault();
+       $('#btnGuardar').attr('disabled', true);
+       $('#espereG').css('display', 'inline');
+            $.ajax({
+                type: 'POST',
+                {% if editar %}
+                url: '/materia/editar_materia/{{ id_materia }}',
+                {% else %}
+                url: '/materia/crear_materia/',
+                {% endif %}
+                data: {
+                    nombre_materia: $('#id_nombre_materia').val(),
+                    descripcion_materia: $('#id_descripcion_materia').val(),
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (response) {
+                  $('#btnGuardar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta exito');
+                },
+                error: function (response) {
+                  $('#btnGuardar').attr('disabled', false);
+                  $('#espereG').css('display', 'none');
+                  var m = $('#mensajeEmergente');
+                  m.children('strong').html(response.responseText);
+                  m.css('display','block');
+                  m.css('opacity',1);
+                  m.removeClass();
+                  m.addClass('alerta cuidado');
+                  $("html, body").animate({ scrollTop: 0 }, "slow");
+                }
+            })
+    })
+    </script>
+
+
+{% endblock %}
+
+{% block content %}
+    <br>
+        <!-- ALERTAS -->
+        <div class="divEscondido" id="mensajeEmergente">
+        <span class="btnCerrar">&times;</span>
+            <strong></strong>
+        </div>
+    <br>
+    <h3>{% if editar %}Editar Una{% else %}Crear Nueva{% endif %} Materia</h3>
+    <form method="POST" id="crearEditarform">
+    {% csrf_token %}
+    <table width="50%" cellpadding="10px">
+    <tr><td width="100px"></td><td></td></tr>
+
+    {{ form }}
+    </table>
+    <input type="submit" class="btn-primary btn" style="font-size: 20px" value="{% if editar %}Editar{% else %}Crear{% endif %} Materia" >
+        <div style="display: none" id="espereG">
+            <img src="{% static 'img/ajax-loader.gif' %}">
+            Procesando. Por Favor Espere.
+        </div>
+    </form>
+
+<script src="{% static 'js/cerrar_alertas.js' %}"></script>
+{% endblock %}
