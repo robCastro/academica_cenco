@@ -17,4 +17,5 @@ urlpatterns = [
     url(r'^guardarAlDep/$', views.guardarModificacionAlumnoDependiente, name="guardarAlDep"),
     url(r'^guardarAlIndep/$', views.guardarModificacionAlumnoIndependiente, name="guardarAlIndep"),
     url(r'^consultar/inactivos/$', views.consultar_alumnos_inactivos, name="consultarAlumnosInactivos"),
+    url(r'^constancia_notas_pdf/$',views.ConstanciaNotasPDF, name="constancia_notas_pdf"),
 ]
