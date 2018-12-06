@@ -142,7 +142,7 @@ def ver_record_notas(request):
         alumno = Alumno.objects.get(username=request.user)
         cursa = Cursa.objects.filter(alumno=alumno).order_by('-actual_cursa')
         evaluaciones = Evaluacion.objects.filter(cursa__in=cursa)
-        context = {'evaluaciones': evaluaciones, 'cursa': cursa}
+        context = {'evaluaciones': evaluaciones, 'cursa': cursa,'alumno': alumno}
         return render(request, 'modulo_notas/consultar_record_notas.html', context)
     else:
         return HttpResponseForbidden("No tiene permiso para ver este contenido")

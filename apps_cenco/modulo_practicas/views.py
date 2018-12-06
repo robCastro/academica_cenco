@@ -84,7 +84,7 @@ def reservar_practica(request):
             else:
                 reservacion_actual = reservacion
 
-        context = {"solvente": solvente, "horarios": horarios, "diaActual": dia,"existeReservacion": reservacion_actual,"horaActual":horaActual}
+        context = {"solvente": solvente, "horarios": horarios, "diaActual": dia,"existeReservacion": reservacion_actual,"horaActual":horaActual,'alumno': alumno,}
 
         if 'reservar' in request.POST:
             horario=request.POST.get('codigoHorario')
