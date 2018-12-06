@@ -1,0 +1,282 @@
+{%  extends 'plantillas_base/base_alumno.html' %}
+{% load staticfiles %}
+{% block titulo %}Reservación de practica libre{% endblock %}
+
+{% block head_content %}
+    {{ block.super }}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery/css/jquery.dataTables.min.css' %} ">
+    <link href=" {% static 'css/alerts_notificaciones.css' %} " rel="stylesheet">
+    <script>
+
+        $(function() {
+            selectFilas();
+        });
+        function selectFilas(){
+            var tr = $('#example').find('tr');
+            tr.bind('click', function(event) {
+                tr.removeClass('row-highlight');
+                indexSelected = tr.index($(this));
+                var tds = $(this).addClass('row-highlight').find('td');
+                    values = tds[1].innerHTML+ " de "+ tds[2].innerHTML+" a "+tds[3].innerHTML;
+
+                // Asignacion a formulario para reservar.
+                $('#dia').html(tds[0].innerHTML);
+                $('#horaInicio').html(tds[1].innerHTML);
+                $('#horaFin').html(tds[2].innerHTML);
+
+                var datosFila=$(this).attr('id');
+                $('#codigoHorario').val( datosFila.split('|')[0] );
+                $('#diaSemana').val( datosFila.split('|')[1] );
+
+                $('#codigoHorario2').val( datosFila.split('|')[0] );
+                $('#diaSemana2').val( datosFila.split('|')[1] );
+
+                // Asignacion a formulario para cambiar.
+                $('#dia2').html(tds[0].innerHTML);
+                $('#horaInicio2').html(tds[1].innerHTML);
+                $('#horaFin2').html(tds[2].innerHTML);
+
+            });
+       }
+    </script>
+{% endblock %}
+
+
+
+{% block content %}
+{% load split %}
+
+    <div class="container-fluid" style="display: inline-flex">
+    {{ block.super }}
+    {% if solvente %}
+    <table style="width: 80%;" cellpadding="30px">
+<tr>
+    <td align="left"><h3>Reservar Practica Libre</h3></td>
+    <td style="width: 75%" align="right">
+    </td>
+</tr>
+
+<td align="center" style="width: 100%">
+    {% for message in messages %}
+             {% if 'success' in message.tags %}
+             <div class="alerta exito">
+            <span class="btnCerrar">&times;</span>
+                 <strong></strong>
+            {{ message }}
+            </div><br>
+             {% endif %}
+    {% endfor %}
+    {% if existeReservacion %}
+        <div align="left" style="padding-left: 10%">
+            <h5>Reservación:</h5>
+        </div>
+        <div align="left" style="padding-left: 23%">
+            <p>{{ existeReservacion.fecha_reservacion|date:"l" }} de {{ existeReservacion.horario.hora_inicio|time:"h:i A" }} a {{ existeReservacion.horario.hora_fin|time:"h:i A" }}</p>
+        </div>
+        <div align="left" style="padding-left: 55%">
+            <input type="button" class="btn btn-primary" data-toggle="modal" data-target="#cancelarModal" value="Cancelar Reservación"></input>
+        </div>
+        <br><br>
+    {% endif %}
+        <table id="example" class="table table-bordered table-hover table-sm" style="min-width: 300px;">
+            <thead>
+                <tr bgcolor="#f0f8ff" >
+                    <th style="width: 25%">Dia</th>
+                    <th style="width: 25%">Hora de Inicio</th>
+                    <th style="width: 25%">Hora de Fin</th>
+                    <th style="width: 25%">Cupos</th>
+                </tr>
+            </thead>
+                <tbody>
+                {% for horario in horarios%}
+                    {% with horario.dias_asignados|split:"y" as dias %}
+                    {% for dia in dias %}
+                        {% if dia|strip|diaSemana >= diaActual %}
+                            {% if dia|strip|diaSemana == diaActual %}
+                                {% if horario.hora_inicio > horaActual %}
+                                <tr id="{{ horario.codigo }}|{{ dia|strip|diaSemana }}" {% if dia|strip|diaSemana|reservaciones:horario.codigo > 0 %} data-toggle="modal" {% if existeReservacion %}data-target="#cambiarModal"{% else %}data-target="#reservarModal"{% endif %} {% endif %}>
+                                <td id="{{ dia|strip|diaSemana }}">{{ dia }}</td>
+                                <td>{{ horario.hora_inicio|time:"h:i A" }} </td>
+                                <td>{{ horario.hora_fin|time:"h:i A" }}</td>
+                                <td>{{ dia|strip|diaSemana|reservaciones:horario.codigo }}</td>
+                                </tr>
+                                {%  endif %}
+                            {% else %}
+                            <tr id="{{ horario.codigo }}|{{ dia|strip|diaSemana }}" {% if dia|strip|diaSemana|reservaciones:horario.codigo > 0 %}data-toggle="modal" {% if existeReservacion %}data-target="#cambiarModal"{% else %}data-target="#reservarModal"{% endif %} {% endif %}>
+                            <td id="{{ dia|strip|diaSemana }}">{{ dia }}</td>
+                            <td>{{ horario.hora_inicio|time:"h:i A" }} </td>
+                            <td>{{ horario.hora_fin|time:"h:i A" }}</td>
+                            <td>{{ dia|strip|diaSemana|reservaciones:horario.codigo }}</td>
+                            </tr>
+                            {%  endif %}
+                        {%  endif %}
+                        {% endfor %}
+                    {% endwith %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+</td>
+</table>
+    {% else %}
+        <div style="padding-top: 5%">
+    <h5>Necesita ser estudiante activo y/o estar solvente con su pago para solicitar practica libre.</h5>
+    </div>
+    {% endif %}
+
+    </div>
+
+
+    <!-- Modal Reservar-->
+    <form method="post" action="" id="form1">
+    {% csrf_token %}
+<div class="modal fade" id="reservarModal" tabindex="-1" role="dialog" aria-labelledby="reservarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="reservarModalLabel">Reservación</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+            </div>
+            <div class="modal-body">
+                <table align="center">
+                                <tr>
+                                    <td><b>Dia:</b></td>
+                                    <td><div id="dia"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Hora de inicio:</b> &nbsp; &nbsp;</td>
+                                    <td><div id="horaInicio"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Hora de fin:</b> &nbsp; &nbsp;</td>
+                                    <td><div id="horaFin"></div></td>
+                                </tr>
+                                <tr><td><p></p></td></tr>
+                            </table>
+                </div>
+                <input type="hidden" id="codigoHorario" name="codigoHorario">
+                <input type="hidden" id="diaSemana" name="diaSemana">
+                <div class="modal-footer">
+
+                    <button type="button submit" class="btn btn-primary" id="reservar" name="reservar">Reservar</button>
+                    <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
+                        <i class="icon-remove"></i>Cancelar
+                    </button>
+                </div>
+        </div>
+    </div>
+</div>
+    </form>
+
+       <!-- Modal Cambiar-->
+    <form method="post" action="" id="form2">
+    {% csrf_token %}
+<div class="modal fade" id="cambiarModal" tabindex="-1" role="dialog" aria-labelledby="cambiarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="cambiarModalLabel">Cambiar Reservación</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+            </div>
+            <div class="modal-body">
+                <table align="center">
+                                <tr>
+                                    <td><b>Dia:</b></td>
+                                    <td><div id="dia2"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Hora de inicio:</b> &nbsp; &nbsp;</td>
+                                    <td><div id="horaInicio2"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Hora de fin:</b> &nbsp; &nbsp;</td>
+                                    <td><div id="horaFin2"></div></td>
+                                </tr>
+                                <tr><td><p></p></td></tr>
+                            </table>
+                </div>
+                <input type="hidden" id="codigoHorario2" name="codigoHorario2">
+                <input type="hidden" id="diaSemana2" name="diaSemana2">
+                <input type="hidden" id="codResExistente" name="codResExistente" value="{{ existeReservacion.codigo_reservacion }}">
+                <div class="modal-footer">
+
+                    <button type="button submit" class="btn btn-primary" id="cambiar" name="cambiar">Cambiar</button>
+                    <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
+                        <i class="icon-remove"></i>Cancelar
+                    </button>
+                </div>
+        </div>
+    </div>
+</div>
+    </form>
+
+    <!-- Modal Cancelar-->
+    <form method="post" action="" id="form3">
+    {% csrf_token %}
+<div class="modal fade" id="cancelarModal" tabindex="-1" role="dialog" aria-labelledby="cancelarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="cambiarModalLabel">Cancelar Reservación</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Desea cancelar la reservación?</p>
+                </div>
+                <input type="hidden" id="codResCancelar" name="codResCancelar" value="{{ existeReservacion.codigo_reservacion }}">
+                <div class="modal-footer">
+
+                    <button type="button submit" class="btn btn-primary" id="cancelar" name="cancelar">Sí</button>
+                    <button class="btn btn-danger btn-small pull-left" data-dismiss="modal">
+                        <i class="icon-remove"></i>No
+                    </button>
+                </div>
+        </div>
+    </div>
+</div>
+    </form>
+
+    <script type="text/javascript" charset="utf8" src="{% static 'js/jquery/jquery.dataTables.min.js' %} "></script>
+
+    <script>
+        $(document).ready(function() {
+        var tabla = $('#example').DataTable( {
+         "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por p&aacute;gina",
+            "zeroRecords": "No se encontr&oacute; nada",
+            "info": "Mostrando p&aacute;ginas _PAGE_ de _PAGES_",
+            "infoEmpty": "vac&iacute;o",
+            "infoFiltered": "(filtrados de _MAX_ registros totales)",
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "loadingRecords": "Cargando registros...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Ir al primero",
+                "last":       "Ir al &uacute;ltimo",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": ordenar columnas en orden ascendente",
+                "sortDescending": ": ordenar columnas en orden descendente"
+            }
+        }});
+
+        tabla.$('tr').click(function() {
+            var href = $(this).find("a").attr("href");
+            if(href) {
+                window.location = href;
+            }
+        });
+
+    });
+    </script>
+    <script src="{% static 'js/cerrar_alertas.js' %}"></script>
+
+{% endblock %}

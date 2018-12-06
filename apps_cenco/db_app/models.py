@@ -222,16 +222,26 @@ class Cursa(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
 
 
+class Examen(models.Model):
+    codigo_examen = models.AutoField(primary_key=True)
+    nombre_examen = models.CharField(max_length=100, null=False, blank=False)
+    ponderacion_examen = models.DecimalField(max_digits=5, decimal_places=4)
+    fecha_realizacion_examen= models.DateField()
+    # foreign keys
+    materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
+
+
 class Evaluacion(models.Model):
     codigo_evaluacion = models.AutoField(primary_key=True)
-    nombre_evaluacion = models.CharField(max_length=100, null=False, blank=False)
-    ponderacion_evaluacion = models.DecimalField(max_digits=5, decimal_places=4)
+    # nombre_evaluacion = models.CharField(max_length=100, null=False, blank=False)
+    # ponderacion_evaluacion = models.DecimalField(max_digits=5, decimal_places=4)
     nota_evaluacion = models.DecimalField(max_digits=6, decimal_places=4, null=True)
     fecha_ingreso_evaluacion = models.DateField(auto_now=True)
-    fecha_realizacion_evaluacion = models.DateField()
+    # fecha_realizacion_evaluacion = models.DateField()
     # foreign keys
     profesor = models.ForeignKey(Empleado, on_delete=models.PROTECT, null=True, blank=True)
     cursa = models.ForeignKey(Cursa, on_delete=models.PROTECT, null=False, blank=False)
+    examen = models.ForeignKey(Examen, on_delete=models.PROTECT, null=False, blank=False)
 
 
 class Colegiatura(models.Model):

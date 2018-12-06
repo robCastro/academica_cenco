@@ -15,6 +15,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 import sys
 from django.contrib.auth.models import Group
 from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado, Carrera, Expediente, Cursa, Colegiatura
+from apps_cenco.db_app.models import Alumno, DetalleEstado, Estado, Inscripcion, MetricaEstado, Expediente, Colegiatura
 from apps_cenco.modulo_alumnos.forms import InsertarAlumnoForm, CrearEncargadoForm, TelefonoForm
 from django.shortcuts import render
 from django.template import loader
@@ -136,6 +137,17 @@ def detalle_alumno(request,id_alumno):
             metricaActivo.cantidad = metricaActivo.cantidad - 1
             metricaActivo.save()
             return HttpResponseRedirect(url)
+        elif 'cambiarTipoPago' in request.POST:
+            alumno = Alumno.objects.get(pk=id_alumno)
+            try:
+                tipoPago=request.POST.get('tipoPago')
+                expediente = Expediente.objects.filter(alumno=alumno, activo_expediente=True).first()
+                colegiatura=Colegiatura.objects.filter(expediente=expediente, actual_colegiatura=True).first()
+                colegiatura.forma_pago=tipoPago
+                colegiatura.save()
+            except:
+                colegiatura=None
+            return HttpResponseRedirect(url)
         elif request.method=='POST':
             if request.method == 'POST':
                 alum=Alumno.objects.get(pk=id_alumno)
@@ -178,7 +190,15 @@ def detalle_alumno(request,id_alumno):
                 estado=detalleEstado.estado.tipo_estado
             except:
                 estado=None
-            print estado
+            #print estado
+
+            try:
+                expediente = Expediente.objects.filter(alumno=alumno, activo_expediente=True).first()
+                colegiatura=Colegiatura.objects.filter(expediente=expediente, actual_colegiatura=True).first()
+                tipoPago=colegiatura.forma_pago
+            except:
+                tipoPago=None
+
             context={
                 'edad':edad,
                 'alumno':alumno,
@@ -186,6 +206,7 @@ def detalle_alumno(request,id_alumno):
                 'telefonos': telefonos,
                 'telAlum': telAlum,
                 'estado':estado,
+                'tipoPago':tipoPago,
             }
         return render(request, 'modulo_alumnos/detalle_alumno.html', context)
     else:
