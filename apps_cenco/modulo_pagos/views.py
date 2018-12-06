@@ -4,8 +4,9 @@ from __future__ import unicode_literals
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse, Http404
+from django.core.serializers import serialize  #Para convertir QuerySet a JSON
 
-from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Estado, DetalleEstado, Colegiatura
+from apps_cenco.db_app.models import Alumno, Encargado, DetallePago, Estado, Grupo, Colegiatura
 
 from datetime import datetime, timedelta
 
@@ -255,6 +256,146 @@ def ver_alumnos(request):
         return render(request,'modulo_pagos/director_verAlumnos.html', context)
     else:
         return HttpResponseForbidden("No tiene acceso a esta pagina")
+
+@login_required
+def ingresar_pago(request):
+    if request.method == "POST":
+        #Seccion para guardar pagos
+        codColegiatura = request.POST.get('codColegiatura')
+        if codColegiatura != None:
+            try:
+                colegiatura = Colegiatura.objects.get(pk = codColegiatura)
+            except Colegiatura.DoesNotExist:
+                return HttpResponse('Error en ingreso de pago, refrescar pagina', status=500)
+            strCantidadSemanas = request.POST.get('cantidadSemanas')
+            try:
+                cantidadSemanas = int(strCantidadSemanas, 10)
+            except ValueError:
+                return HttpResponse('Error en cantidad de Semanas, verificar', status=500)
+            if cantidadSemanas > 0:
+                aplicarDescuento = request.POST.get('aplicarDescuento')
+                pagoAux = cantidadSemanas * float(colegiatura.cuota_semanal)
+                print aplicarDescuento, cantidadSemanas, colegiatura.cuota_semanal, pagoAux
+                if aplicarDescuento == "true":
+                    pagoAux = pagoAux * 0.9
+                    print "Aplicando descuento ", pagoAux
+
+                detallePago = DetallePago.objects.create(
+                    fecha_pago = datetime.today(),
+                    monto_pago = pagoAux,
+                    cancelado = True,
+                    cantidad_semanas = cantidadSemanas,
+                    en_cola = True,
+                    colegiatura = colegiatura
+                )
+                detallePago.save()
+                expediente = colegiatura.expediente
+                expediente.fecha_proximo_pago_exp = expediente.fecha_proximo_pago_exp + timedelta(days = 7 * cantidadSemanas)
+                expediente.pagado_hasta = expediente.pagado_hasta + timedelta(days = 7 * cantidadSemanas)
+                expediente.save()
+                return HttpResponse("Pago guardado correctamente", status=200)
+            else:
+                return HttpResponse('Error en cantidad de Semanas, verificar', status=500)
+        else:
+            return HttpResponse('Error en toma de colegiatura, refrescar pagina', status=500)
+    else:
+        #Seccion para renderizar pagina
+        plantillaBase = "plantillas_base/"
+        if request.user.groups.filter(name="Director").exists():
+            plantillaBase = plantillaBase + "base_director.html"
+        elif request.user.groups.filter(name="Asistente").exists():
+            plantillaBase = plantillaBase + "base_asistente.html"
+        else:
+            return HttpResponseForbidden("No tiene acceso a esta url")
+        hoy = datetime.today()
+        grupos = Grupo.objects.filter(activo_grupo=True).order_by('codigo')
+        alumnos = Alumno.objects.filter(inscripcion__in=grupos.first().inscripcion_set.filter(actual_inscripcion=True)).order_by('codigo')
+        codigosAlumnos = []
+        codigosColegiaturas = []
+        nombresAlumnos = []
+        apellidosAlumnos = []
+        tiposPago = []
+        cuotas = []
+        descuentos = []
+        for alumno in alumnos:
+            codigosAlumnos.append(alumno.codigo)
+            nombresAlumnos.append(alumno.nombre)
+            apellidosAlumnos.append(alumno.apellido)
+            expediente = alumno.expediente_set.get(activo_expediente=True)
+            colegiatura = expediente.colegiatura_set.get(actual_colegiatura=True)
+            codigosColegiaturas.append(colegiatura.codigo_colegiatura)
+            tiposPago.append(colegiatura.forma_pago)
+            cuotas.append(colegiatura.cuota_semanal)
+            aplicarDescuento = expediente.fecha_proximo_pago_exp + timedelta(days=5) >= datetime.date(hoy)
+            descuentos.append(aplicarDescuento)
+            #descuentos.append((expediente.fecha_proximo_pago_exp - datetime.date(hoy)) > timedelta(days=5))
+        alumnoAux = alumnos.first()
+        expediente = alumnoAux.expediente_set.get(activo_expediente=True)
+        aplicaDescuento = (expediente.fecha_proximo_pago_exp - datetime.date(hoy)) > timedelta(days = 5)
+        colegiatura = expediente.colegiatura_set.get(actual_colegiatura=True)
+        context = {
+            'grupos' : grupos,
+            'alumnos' : alumnos,
+            'plantillaBase' : plantillaBase,
+            'alumnoAux' : alumnoAux,
+            'aplicaDescuento' : aplicaDescuento,
+            'colegiatura' : colegiatura,
+            'codigosAlumnos': codigosAlumnos,
+            'nombresAlumnos': nombresAlumnos,
+            'apellidosAlumnos': apellidosAlumnos,
+            'codigosColegiaturas': codigosColegiaturas,
+            'tiposPago': tiposPago,
+            'cuotas': cuotas,
+            'descuentos': descuentos,
+        }
+        return render(request, 'modulo_pagos/ingresar_pago.html', context)
+
+def filtrarAlumnos(request):
+    if request.user.groups.filter(name="Asistente").exists() or request.user.groups.filter(name="Director").exists():
+        codGrupo = request.GET.get('cbxGrupos')
+        if codGrupo:
+            try:
+                grupo = Grupo.objects.get(pk = codGrupo)
+            except Grupo.DoesNotExist:
+                return HttpResponse('Grupo no existe, refresque la pagina', status=500)
+            inscripciones = grupo.inscripcion_set.filter(actual_inscripcion=True)
+            alumnos = Alumno.objects.filter(inscripcion__in=inscripciones)
+            if alumnos.count() > 0:
+                hoy = datetime.today()
+                codigosAlumnos = []
+                codigosColegiaturas = []
+                nombresAlumnos = []
+                apellidosAlumnos = []
+                tiposPago = []
+                cuotas = []
+                descuentos = []
+                for alumno in alumnos:
+                    codigosAlumnos.append(alumno.codigo)
+                    nombresAlumnos.append(alumno.nombre)
+                    apellidosAlumnos.append(alumno.apellido)
+                    expediente = alumno.expediente_set.get(activo_expediente=True)
+                    colegiatura = expediente.colegiatura_set.get(actual_colegiatura=True)
+                    codigosColegiaturas.append(colegiatura.codigo_colegiatura)
+                    tiposPago.append(colegiatura.forma_pago)
+                    cuotas.append(colegiatura.cuota_semanal)
+                    aplicarDescuento = expediente.fecha_proximo_pago_exp + timedelta(days=5) >= datetime.date(hoy)
+                    descuentos.append(aplicarDescuento)
+                    #descuentos.append((expediente.fecha_proximo_pago_exp - datetime.date(hoy)) > timedelta(days = 5))
+                return JsonResponse({
+                    'codigosAlumnos' : codigosAlumnos,
+                    'nombresAlumnos' : nombresAlumnos,
+                    'apellidosAlumnos' : apellidosAlumnos,
+                    'codigosColegiaturas' : codigosColegiaturas,
+                    'tiposPago' : tiposPago,
+                    'cuotas' : cuotas,
+                    'descuentos' : descuentos,
+                }, status=200)
+            else:
+                return HttpResponse('No hay alumnos en horario', status=500)
+        else:
+            return redirect('ingresar_pago')
+    else:
+        return HttpResponseForbidden("No tiene acceso a esta url")
 
 
 def pdf_pagos(request,codigos):
