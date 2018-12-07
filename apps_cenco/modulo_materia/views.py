@@ -74,13 +74,19 @@ def subir_documentos(request):
 
 @login_required
 def descargar_documentos(request):
+    plantillaBase = "plantillas_base/"
     if request.user.groups.filter(name="Profesor").exists():
-        materias = Materia.objects.all().order_by('codigo_materia')
-        documentos = Documento.objects.all().order_by('codigo_doc')
-        context = {'materias': materias, 'documentos': documentos}
-        return render(request, 'modulo_materia/descargar_documentos.html', context)
+        plantillaBase = plantillaBase + "base_profesor.html"
+    elif request.user.groups.filter(name="Director").exists():
+        plantillaBase = plantillaBase + "base_director.html"
     else:
         return HttpResponseForbidden('No tiene acceso a esta dirección')
+    materias = Materia.objects.all().order_by('codigo_materia')
+    documentos = Documento.objects.all().order_by('codigo_doc')
+    context = {'materias': materias, 'documentos': documentos, 'plantillaBase' : plantillaBase}
+    return render(request, 'modulo_materia/descargar_documentos.html', context)
+
+
 
 
 @login_required
@@ -90,7 +96,8 @@ def consultar_material(request):
         alumno = get_object_or_404(Alumno, username=user)
         cursa = get_object_or_404(Cursa, alumno=alumno, actual_cursa=True)
         documentos = Documento.objects.filter(materia=cursa.materia).order_by('codigo_doc')
-        context = {'documentos': documentos, 'materia': cursa.materia}
+        context = {'documentos': documentos, 'materia': cursa.materia, 'alumno' : alumno}
+        #Agregue alumno al cotext porque se necesita para renderizar bien base_alumno.html
         return render(request, 'modulo_materia/consultar_material.html', context)
     else:
         return HttpResponseForbidden('No tiene acceso a esta dirección')
