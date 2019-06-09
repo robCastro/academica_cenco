@@ -10,6 +10,12 @@
     <li>
         <a href="{% url 'empleado_datos_propios' %}">Mis Datos</a>
     </li>
+    <li>
+        <a href="{% url 'descargar_doc' %}">Guias de Clase</a>
+    </li>
+    <li>
+    <a href="{% url 'consultar_carreras' %}">Carreras Disponibles</a>
+    </li>
 {% endblock %}
 
 {% block navbar_content %}
@@ -19,4 +25,5 @@
     <li class="nav-item">
         <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar Sesión</a>
     </li>
+
 {% endblock %}

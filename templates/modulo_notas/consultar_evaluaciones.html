@@ -8,7 +8,15 @@
 
 {% block content %}
     <br>
-    <h3>Consultar Evaluaciones</h3>
+    <table width="100%">
+    <tr>
+        <td><h3>Consultar Evaluaciones</h3></td>
+        <td></td>
+        <td><button class="btn btn-primary" onclick="window.location='{% url 'ingresar_evaluaciones' %}';">Nueva Evaluacion</button></td>
+    </tr>
+
+    </table>
+
     <br>
     {% for m in materias %}
     <p></p>

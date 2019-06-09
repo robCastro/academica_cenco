@@ -1,4 +1,4 @@
-{% extends 'plantillas_base/base_director.html' %}
+{% extends template %}
 {% load staticfiles %}
 {% block titulo %}Consultar Carreras{% endblock %}
 
@@ -10,20 +10,38 @@
     <br>
     <h3>Consultar Carreras Disponibles</h3>
     <br>
+{% if es_director %}
+<div style="width: 80%; padding: 1%">
+    <table align="right" style="padding: 10px"><tr>
+    <td style="padding: 10px;"><button class="btn btn-primary" onclick="window.location='{% url 'crear_materia' %}';">Crear Nueva Materia</button></td>
+    <td><button class="btn btn-primary" onclick="window.location='{% url 'crear_carrera' %}';">Crear Nueva Carrera</button></td>
+    <td style="padding: 10px;"><button class="btn btn-primary" onclick="window.location='{% url 'consultar_evaluaciones' %}';">Evaluaciones</button></td>
+    </tr></table>
+</div>
+    <br>
+    {% endif %}
+<br>
     {% for c in carreras %}
     <p></p>
-        <button class="collapsible" style="width: 80%;"><strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div> &nbsp; &nbsp;&nbsp; {{ c.nombre_carrera }}</strong></button>
+        <button class="collapsible" style="width: 80%;"><strong><div style="display: inline-block;" class="accion">[Expandir &#9660;]</div> &nbsp; &nbsp;&nbsp; {{ c.nombre_carrera }}
+            &nbsp; &nbsp; &nbsp;
+            {% if es_director %}<a href="{% url 'editar_carrera' c.pk %}" style="color: #9fcdff">[Modificar]</a>{% endif %} </strong></button>
         <div class="content" style="width: 80%">
     <table class="table border-dark">
         <thead>
         <th style="width: 100px">No. de Curso</th>
         <th style="width: 150px">Nombre Materia</th>
         <th>Descripci&oacute;n</th>
+        {% if es_director %}<th>Acci&oacute;n</th>{% endif %}
         </thead>
     <tbody>
     {% for p in pensum %}
         {% if c == p.carrera %}
-           <tr><td>{{ p.ordinal_materia_cursa }}</td><td>{{ p.materia.nombre_materia }}</td><td>{{ p.materia.descripcion_materia }}</td></tr>
+           <tr><td>{{ p.ordinal_materia_cursa }}</td>
+               <td>{{ p.materia.nombre_materia }}</td>
+               <td>{{ p.materia.descripcion_materia }}</td>
+           {% if es_director %}<td><a href="{% url 'modificar_materia' p.materia.pk %}">[Modificar]</a></td> {% endif %}
+           </tr>
         {% endif %}
     {% endfor %}
     </tbody>

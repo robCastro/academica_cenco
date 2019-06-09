@@ -220,8 +220,6 @@ class Cursa(models.Model):
     # foreign keys
     materia = models.ForeignKey(Materia, on_delete=models.PROTECT, null=False, blank=False)
     alumno = models.ForeignKey(Alumno, on_delete=models.PROTECT, null=False, blank=False)
-
-
 class Examen(models.Model):
     codigo_examen = models.AutoField(primary_key=True)
     nombre_examen = models.CharField(max_length=100, null=False, blank=False)

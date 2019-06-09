@@ -29,7 +29,7 @@ def ingresar_nota(request, id_grupo):
             'on i.alumno_id = c.alumno_id inner join db_app_grupo as g '
             'on i.grupo_id = ' + id_grupo + ' inner join db_app_detalleestado as d '
             'on d.alumno_id = a.codigo '
-            'where d.estado_id between 1 and 2 '
+            'where d.estado_id between 1 and 3 '
             'group by codigo_materia order by codigo_materia')
         if request.method == 'POST':
             try:
@@ -71,10 +71,9 @@ def ingresar_nota(request, id_grupo):
                 'on d.alumno_id = a.codigo inner join db_app_cursa as c '
                 'on a.codigo = c.alumno_id inner join db_app_materia as m '
                 'on m.codigo_materia = c.materia_id '
-                'where d.estado_id between 1 and 2 and i.grupo_id = ' + id_grupo + ' and d.actual_detalle_e = True')
+                'where d.estado_id between 1 and 3 and i.grupo_id = ' + id_grupo + ' and d.actual_detalle_e = True')
             grupo = Grupo.objects.get(pk=id_grupo)
             examenes = Examen.objects.all()
-
             context = {'inscripciones': inscripciones, 'mats': materias, 'grupo':grupo, 'examenes': examenes}
             return render(request, 'modulo_notas/ingresar_modificar_notas.html', context)
     else:

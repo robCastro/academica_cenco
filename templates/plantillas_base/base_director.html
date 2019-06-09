@@ -23,11 +23,18 @@
         <a href="{% url 'director_credenciales_propias' %}">Credenciales</a>
     </li>
     <li>
-        <a href="{% url 'editarConfig' %}">Configuaci&oacute;n General</a>
-    </li>
-    <li>
         <a href="{% url 'director_datos_propios' %}">Mis Datos</a>
     </li>
+    <li>
+    <a href="{% url 'consultar_carreras' %}">Carreras Disponibles</a>
+    </li>
+    <li>
+        <a href="{% url 'subir_doc' %}">Guias de Clase</a>
+    </li>
+    <li>
+        <a href="{% url 'editarConfig' %}">Configuaci&oacute;n General</a>
+    </li>
+
 {% endblock %}
 
 {% block navbar_content %}

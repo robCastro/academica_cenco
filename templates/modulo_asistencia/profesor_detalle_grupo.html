@@ -48,6 +48,7 @@
 
                     <td align="left" valign="top" style="padding: 35px;">
                     <a style="color: #f9f9f9" type="button" href="{% url 'asistencia_grupo' grupo.codigo%}" class="btn btn-primary" >Ingresar Asistencia</a>
+                    <a style="color: #f9f9f9" type="button" href="{% url 'ingresar_notas' grupo.codigo %}" class="btn btn-primary" >Ingresar Notas</a>
 
                     <a href="{%url 'listado_asistencia_pdf' id_grupo=grupo.codigo%}" target="_blank" style="margin-left: 500px; color:#f9f9f9" type="button" class="btn btn-primary" >Generar Listado</a>
                     </td>
