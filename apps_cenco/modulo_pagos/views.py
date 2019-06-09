@@ -77,10 +77,10 @@ def detalle_pago(request, idAlumno, cod_mensaje = 0):
         else:
             cantidadDias = -1
     if cantidadDias == -1: #Si se solicitan todos los pagos
-        pagos = colegiatura.detallepago_set.order_by('fecha_pago')
+        pagos = colegiatura.detallepago_set.order_by('fecha_pago').filter(cancelado = True)
     else:
         pagos = colegiatura.detallepago_set.filter(fecha_pago__range=
-                                                   (hoy - timedelta(days=cantidadDias), hoy)).order_by('fecha_pago')
+                                                   (hoy - timedelta(days=cantidadDias), hoy)).filter(cancelado = True).order_by('fecha_pago')
     if expediente.fecha_proximo_pago_exp > datetime.date(hoy):
         estado = 'Solvente'
     else:

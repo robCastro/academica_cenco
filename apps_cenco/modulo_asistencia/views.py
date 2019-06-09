@@ -665,6 +665,7 @@ def asistencia_a_clases(request, id_grupo):
         if asistencia.inscripcion.grupo == grupo:
             tomarAsistencia = False
             break;
+    tomarAsistencia = True
     if tomarAsistencia:
         insertarFechasMetricasEstado()
         inscripciones = grupo.inscripcion_set.filter(actual_inscripcion = True)

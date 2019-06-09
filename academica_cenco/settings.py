@@ -94,10 +94,10 @@ DATABASE_ROUTERS = ['apps_cenco.db_local.router.Router', ]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd8imaqbtc06d21',
-        'USER' : 'dprawldrttnoum',
-        'PASSWORD' : '6ef5882389db25d4431538211ca9ff78d82509bc2cde7f158fdaa14c5d2f1b0e',
-        'HOST' : 'ec2-50-16-231-2.compute-1.amazonaws.com',
+        'NAME': 'dfhvmdjj2n0g5d',
+        'USER' : 'zytqytvejtyjlo',
+        'PASSWORD' : 'fe1ff2fe15e4eccad2c7d2ec7919f04b07c98ed9ec1a6d16870511dd5c725ad1',
+        'HOST' : 'ec2-23-21-156-171.compute-1.amazonaws.com',
         'PORT' : '5432',
     },
 

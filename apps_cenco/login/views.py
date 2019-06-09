@@ -215,7 +215,7 @@ def consultar_asistentes(request):
         else:
 
 
-            asistentes = Empleado.objects.filter(tipo='Asi').order_by('codigo')
+            asistentes = Empleado.objects.all()
 
             for asistente in asistentes:
                 asistente.primerTelefono = asistente.telefono_set.first()
